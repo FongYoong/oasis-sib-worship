@@ -1,5 +1,8 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import React from 'react'
 import { Avatar, Stack, Nav } from 'rsuite'
+import { NavItemProps } from 'rsuite'
 import Link from 'next/link'
 import NextHead from 'next/head'
 import hoverStyles from '../styles/hover.module.css'
@@ -11,11 +14,11 @@ interface HeadProps {
 }
 
 // eslint-disable-next-line react/display-name
-const NavLink = React.forwardRef((props, ref) => {
-  const { as, href, ...rest } = props;
+const NavLink = React.forwardRef((props: NavItemProps, ref: React.LegacyRef<HTMLAnchorElement>) => {
+  const { href, ...rest } = props;
   return (
-    <Link href={href} as={as}>
-      <a ref={ref} {...rest} />
+    <Link href={href as string} >
+      <a ref={ref} {...rest as React.DetailedHTMLProps<React.AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>} />
     </Link>
   );
 });

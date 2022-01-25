@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import type { NextPage } from 'next'
-import { Container, IconButton, Input, InputGroup, Stack, Divider, Table, Column, Cell, HeaderCell } from 'rsuite';
+import { Container, IconButton, Input, InputGroup, Stack, Divider } from 'rsuite';
+// , Table, Column, Cell, HeaderCell
 import Head from '../../components/Head'
 import Footer from '../../components/Footer'
 import AddSongModal from '../../components/AddSongModal'
-import { SessionProps, PageName } from '../../components/types'
-import { isPresentOrFutureDate } from '../../components/utils'
+import { PageName } from '../../components/types'
+//import { isPresentOrFutureDate } from '../../components/utils'
 import { Plus, Search } from '@rsuite/icons';
 //import Image from 'next/image'
 
@@ -18,19 +19,18 @@ const AllSongsPage: NextPage = () => {
     }
 
     const sortColumn = () => {
-
+        1+1
     };
     const getData = () => {
-
+        1+1
     };
 
     const sortType = () => {
-
+        1+1
     };
     const handleSortColumn = () => {
-
+        1+1
     };
-    const loading = false;
 
     return (
         <Container className='page' >
