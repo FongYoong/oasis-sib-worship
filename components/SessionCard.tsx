@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 //import { Nav } from 'rsuite';
-import { Container, Stack, Divider, Popover, Whisper, Button, IconButton } from 'rsuite'
+import { Stack, Divider, Popover, Whisper, Button, IconButton } from 'rsuite'
 import { FcNext } from 'react-icons/fc'
 import { SessionProps } from './types'
 import hoverStyles from '../styles/hover.module.css'
@@ -13,7 +13,7 @@ interface SessionCardProps extends SessionProps {
 // eslint-disable-next-line react/display-name
 const SongList = React.forwardRef(({songs, ...rest}: {songs: string[]}, ref) => {
     return (
-        <Popover ref={ref} {...rest}  >
+        <Popover ref={ref as React.RefObject<HTMLDivElement>} {...rest}  >
             <ul>
             {
                 songs.map((song, index) => 
