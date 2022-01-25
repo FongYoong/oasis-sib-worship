@@ -1,8 +1,8 @@
 import React from 'react'
-import Link from 'next/link';
+import Link from 'next/link'
 //import { Nav } from 'rsuite';
 import { Container, Stack, Divider, Popover, Whisper, Button, IconButton } from 'rsuite'
-import { FcNext } from 'react-icons/fc';
+import { FcNext } from 'react-icons/fc'
 import { SessionProps } from './types'
 import hoverStyles from '../styles/hover.module.css'
 
@@ -31,7 +31,7 @@ const SongList = React.forwardRef(({songs, ...rest}: {songs: string[]}, ref) => 
 
 const SessionCard = (props: SessionCardProps) => {
     return (
-        <Link href="google.com" passHref >
+        <Link href="all_songs" passHref >
             <Stack justifyContent='space-between' direction='row'
                 className={hoverStyles.hover_grow}
                 style={{
@@ -41,7 +41,7 @@ const SessionCard = (props: SessionCardProps) => {
                 }}
             >
                 <Stack direction='column'>
-                    <h2>{props.date.getDay()}</h2>
+                    <h2>{props.date.getDate()}</h2>
                     <h2>{props.date.toDateString().split(' ')[1]}</h2>
                     <h2>{props.date.getFullYear()}</h2>
                 </Stack>

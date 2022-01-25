@@ -1,11 +1,24 @@
-import { Avatar, Stack, Nav } from 'rsuite';
-import NextHead from 'next/head';
-import { FcNext } from 'react-icons/fc';
+import React from 'react'
+import { Avatar, Stack, Nav } from 'rsuite'
+import Link from 'next/link'
+import NextHead from 'next/head'
+import hoverStyles from '../styles/hover.module.css'
+import { PageName } from './types'
 
 interface HeadProps {
-  title: string,
+  title: PageName,
   description: string
 }
+
+// eslint-disable-next-line react/display-name
+const NavLink = React.forwardRef((props, ref) => {
+  const { as, href, ...rest } = props;
+  return (
+    <Link href={href} as={as}>
+      <a ref={ref} {...rest} />
+    </Link>
+  );
+});
 
 const Head = (props: HeadProps) => {
     return (
@@ -16,20 +29,30 @@ const Head = (props: HeadProps) => {
           <link rel="icon" href="/favicon.ico" />
         </NextHead>
         <Stack direction='row' alignItems='center' spacing='1em' style={{marginBottom: '0em'}} >
-          <Avatar src="images/oasis_sib_logo.jpg" alt="oasis_sib_logo" onClick={() => {
-            const w = window.open('https://www.facebook.com/theoasissibs2/', '_blank');
-            if(w) {
-              w.focus()
-            }
+          <Avatar src="images/oasis_sib_logo.jpg" alt="oasis_sib_logo"
+            className={hoverStyles.hover_glow}
+            style={{
+              cursor: 'pointer',
+              margin: "1em",
+              outlineStyle: 'solid',
+              outlineWidth: '1px',
+              outlineColor: "#9e9e9e"
+            }}
+            onClick={() => {
+              const w = window.open('https://www.facebook.com/theoasissibs2/', '_blank');
+              if(w) {
+                w.focus()
+              }
           }}
           
           />
+          <Nav activeKey={props.title} appearance='tabs' style={{marginBottom: '1em'}} >
+            <Nav.Item as={NavLink} href="/" eventKey={PageName.Home} >Home</Nav.Item>
+            <Nav.Item as={NavLink} href="/all_songs" eventKey={PageName.AllSongs}  >All Songs</Nav.Item>
+            <Nav.Item as={NavLink} href="/about" eventKey={PageName.About} >About</Nav.Item>
+          </Nav>
         </Stack>
-        <Nav appearance='tabs' style={{marginBottom: '1em'}} >
-          <Nav.Item>Home</Nav.Item>
-          <Nav.Item>All Songs</Nav.Item>
-          <Nav.Item>About</Nav.Item>
-        </Nav>
+
       </>
     )
 }
