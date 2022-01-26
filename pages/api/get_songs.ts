@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '../../lib/prisma'
 
-async function get_all_songs({lastSongId, orderBy, where}: {lastSongId: string, orderBy: object, where: object}) {
+async function get_all_songs({lastSongId, ...props}: {lastSongId: string}) {
     const last_song_id_int = parseInt(lastSongId);
     console.log("Last song id: " + last_song_id_int);
     const all_songs = await prisma.song.findMany({
@@ -10,14 +10,13 @@ async function get_all_songs({lastSongId, orderBy, where}: {lastSongId: string, 
         //cursor: {
         //    id: last_song_id_int + 1,
         //},
-        orderBy,
-        where,
         select: {
             id: true,
             updatedAt: true,
             title: true,
             artist: true
         },
+        ...props
     });
     return all_songs;
 }

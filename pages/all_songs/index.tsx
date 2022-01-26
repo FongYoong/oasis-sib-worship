@@ -9,7 +9,7 @@ import SongModal from '../../components/SongModal'
 import DeleteSongModal from '../../components/DeleteSongModal'
 import { PageName, SongProps } from '../../components/types'
 import { json_fetcher } from '../../lib/utils'
-import { Plus, Search, More, Edit } from '@rsuite/icons'
+import { Plus, Search, More } from '@rsuite/icons'
 import { FiEdit } from 'react-icons/fi'
 import { BiExport } from 'react-icons/bi'
 import { RiDeleteBin2Fill } from 'react-icons/ri'
@@ -36,8 +36,8 @@ type SortType = 'asc' | 'desc' | undefined;
 
 const AllSongsPage: NextPage = () => {
     const [searchText, setSearchText] = useState<string>('');
-    const [sortColumn, setSortColumn] = useState<string>('');
-    const [sortType, setSortType] =useState<SortType>(undefined);
+    const [sortColumn, setSortColumn] = useState<string>('id');
+    const [sortType, setSortType] =useState<SortType>('desc');
 
     const [lastSongId, setLastSongId] = useState<number>(0);
     const fetcher = json_fetcher({

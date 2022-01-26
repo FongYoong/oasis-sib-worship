@@ -4,7 +4,7 @@ const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import useSWR from 'swr'
 import { useFilePicker } from 'use-file-picker'
 import Tesseract from 'tesseract.js'
-import { Modal, Stack, Button, IconButton, Input, InputGroup, Progress } from 'rsuite'
+import { Modal, Stack, Button, IconButton, Form, Input, InputGroup, Progress } from 'rsuite'
 import { json_fetcher } from '../lib/utils'
 import { BsFillPersonFill } from 'react-icons/bs'
 import { MdTitle } from 'react-icons/md'
@@ -24,10 +24,9 @@ const initialLyrics = "<h2>Verse 1</h2><p>Type something here</p><h2>Verse 2</h2
 const fetcher = json_fetcher();
 
 const SongModal = (props: SongModalProps) => {
-    const titleInputRef = useRef<HTMLInputElement>(null);
-    const artistInputRef = useRef<HTMLInputElement>(null);
+    const [formData, setFormData] = useState<Record<string, string>|undefined>(undefined);
+    const [songLyrics, setSongLyrics] = useState<string>(props.editSong ? '' : initialLyrics);
 
-    const [songLyrics, setSongLyrics] = useState<string>(initialLyrics);
     const [loading, setLoading] = useState<boolean>(false);
     const [OCRProgress, setOCRProgress] = useState<number>(0);
     const OCRProgressRef = useRef<number>(0);
@@ -37,7 +36,7 @@ const SongModal = (props: SongModalProps) => {
 
     useEffect(() => {
         if(data) {
-            console.log("bruh");
+            setFormData(data);
             setSongLyrics(data.lyrics);
         }
     }, [data]);
@@ -53,48 +52,44 @@ const SongModal = (props: SongModalProps) => {
     });
 
     const addSong = () => {
-        if (titleInputRef.current && artistInputRef.current) {
-            const body = JSON.stringify({
-                title: titleInputRef.current.value,
-                artist: artistInputRef.current.value,
-                lyrics: songLyrics
+        const body = JSON.stringify({
+            title: formData?.title,
+            artist: formData?.artist,
+            lyrics: songLyrics
+        });
+        fetch('/api/add_song', {
+            method: 'POST',
+            body: body,
+        }).then((res) => {
+            res.json().then((res_data) => {
+                console.log("Added song");
+                console.log(res_data);
             });
-            fetch('/api/add_song', {
-                method: 'POST',
-                body: body,
-            }).then((res) => {
-                res.json().then((res_data) => {
-                    console.log("Added song");
-                    console.log(res_data);
-                });
-                props.handleClose();
-            }).catch((error) => {
-                console.log(error);
-            });
-        }
+            props.handleClose();
+        }).catch((error) => {
+            console.log(error);
+        });
     };
 
     const updateSong = () => {
-        if (titleInputRef.current && artistInputRef.current) {
-            const body = JSON.stringify({
-                id: props.editSongId,
-                title: titleInputRef.current.value,
-                artist: artistInputRef.current.value,
-                lyrics: songLyrics
+        const body = JSON.stringify({
+            id: props.editSongId,
+            title: formData?.title,
+            artist: formData?.artist,
+            lyrics: songLyrics
+        });
+        fetch('/api/update_song', {
+            method: 'POST',
+            body: body,
+        }).then((res) => {
+            res.json().then((res_data) => {
+                console.log("Updated song");
+                console.log(res_data);
             });
-            fetch('/api/update_song', {
-                method: 'POST',
-                body: body,
-            }).then((res) => {
-                res.json().then((res_data) => {
-                    console.log("Updated song");
-                    console.log(res_data);
-                });
-                props.handleClose();
-            }).catch((error) => {
-                console.log(error);
-            });
-        }
+            props.handleClose();
+        }).catch((error) => {
+            console.log(error);
+        });
     };
 
     useEffect(() => {
@@ -119,7 +114,6 @@ const SongModal = (props: SongModalProps) => {
 
     return (
         <Modal overflow={false} backdrop='static' open={props.visibility} onClose={props.handleClose}>
-
             <Modal.Header>
                 <Stack wrap direction='row' spacing='2em' >
                     <h4>{props.editSong ? "Edit":"Add"} Song</h4>
@@ -134,7 +128,7 @@ const SongModal = (props: SongModalProps) => {
                 </Stack>
             </Modal.Header>
             <Modal.Body>
-                <InputGroup style={{marginBottom:'0.5em'}}>
+                {/* <InputGroup style={{marginBottom:'0.5em'}}>
                     <InputGroup.Addon>
                         <MdTitle />
                     </InputGroup.Addon>
@@ -142,7 +136,7 @@ const SongModal = (props: SongModalProps) => {
                         <Input disabled={pauseModal} defaultValue={data.title} ref={titleInputRef} placeholder="Title of the song" />
                     }
                     {(!props.editSong || !data) &&
-                        <Input disabled={pauseModal} ref={titleInputRef} placeholder="Title of the song" />
+                        <Input disabled={pauseModal} onChange={} placeholder="Title of the song" />
                     }
                 </InputGroup>
                 <InputGroup>
@@ -155,11 +149,38 @@ const SongModal = (props: SongModalProps) => {
                     {(!props.editSong || !data) &&
                         <Input disabled={pauseModal} ref={artistInputRef} placeholder="Artist" />
                     }
-                </InputGroup>
+                </InputGroup> */}
+                <Form fluid
+                    onChange={setFormData} formValue={formData} style={{marginBottom:'1em'}} >
+                    <Form.Group controlId="title">
+                        <InputGroup>
+                            <InputGroup.Addon>
+                                <MdTitle />
+                            </InputGroup.Addon>
+                            <Form.Control
+                                name="title"
+                                placeholder="Song Title"
+                                errorMessage={formData?.title ? '' : 'This field is required'}
+                                errorPlacement='bottomStart'
+                            />
+                        </InputGroup>
+                    </Form.Group>
+                    <Form.Group controlId="artist">
+                        <InputGroup>
+                            <InputGroup.Addon>
+                                <BsFillPersonFill />
+                            </InputGroup.Addon>
+                            <Form.Control
+                                name="artist"
+                                placeholder="Artist"
+                            />
+                        </InputGroup>
+                    </Form.Group>
+                </Form>
                 <ReactQuill readOnly={pauseModal} theme="snow" value={songLyrics} onChange={setSongLyrics}/>
             </Modal.Body>
             <Modal.Footer>
-                <Button disabled={pauseModal} onClick={props.editSong ? updateSong : addSong} color="green" appearance="primary">
+                <Button disabled={pauseModal || !formData?.title} onClick={props.editSong ? updateSong : addSong} color="green" appearance="primary">
                     Confirm
                 </Button>
                 <Button onClick={props.handleClose} appearance="subtle">
