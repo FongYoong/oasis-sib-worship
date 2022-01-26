@@ -1,10 +1,10 @@
-import type { NextPage } from 'next'
+import { NextPage } from 'next'
 import { Container, Button, Stack, Divider, Sidebar } from 'rsuite';
 import Head from '../../components/Head'
 import Footer from '../../components/Footer'
 import SessionCard from '../../components/SessionCard'
 import { SessionProps, PageName } from '../../components/types'
-import { isPresentOrFutureDate } from '../../components/utils'
+import { isPresentOrFutureDate } from '../../lib/utils'
 
 //import Image from 'next/image'
 

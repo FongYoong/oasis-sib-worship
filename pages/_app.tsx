@@ -1,7 +1,7 @@
 import 'rsuite/dist/rsuite.min.css'
 import 'react-quill/dist/quill.snow.css';
 import '../styles/global.css';
-import type { AppProps } from 'next/app'
+import { AppProps } from 'next/app'
 
 function MyApp({ Component, pageProps }: AppProps) {
   return <Component {...pageProps} />

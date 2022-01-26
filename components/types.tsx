@@ -12,9 +12,12 @@ export interface SessionProps {
 }
 
 export interface SongProps {
-    dateModified: Date,
+    id?: number,
+    createdAt: Date,
+    updatedAt: Date,
     title: string,
     artist?: string
+    lyrics: string
 }
 
 export enum PageName {
