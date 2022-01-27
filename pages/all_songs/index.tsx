@@ -2,7 +2,7 @@ import React from 'react'
 import { useState } from 'react'
 import { NextPage } from 'next'
 import useSWR from 'swr'
-import { Container, IconButton, Input, InputGroup, Stack, Divider, Table, Whisper, Popover, Dropdown } from 'rsuite';
+import { Container, IconButton, Input, InputGroup, Stack, Divider, Table, Whisper, Popover, Dropdown, toaster, Message, Tag } from 'rsuite';
 import Head from '../../components/Head'
 import Footer from '../../components/Footer'
 import SongModal from '../../components/SongModal'
@@ -10,6 +10,7 @@ import DeleteSongModal from '../../components/DeleteSongModal'
 import { PageName, SongProps } from '../../components/types'
 import { json_fetcher } from '../../lib/utils'
 import { Plus, Search, More } from '@rsuite/icons'
+import { AiOutlineLink } from 'react-icons/ai'
 import { FiEdit } from 'react-icons/fi'
 import { BiExport } from 'react-icons/bi'
 import { RiDeleteBin2Fill } from 'react-icons/ri'
@@ -25,6 +26,7 @@ const renderRowMenu = (row_data: SongProps, handleRowMenuSelect: (eventKey?: str
       <Popover ref={ref} className={className} full>
         <Dropdown.Menu onSelect={onSelect} >
           <Dropdown.Item icon={<FiEdit style={{marginRight: '0.4em'}} />} eventKey='edit'>Edit</Dropdown.Item>
+          <Dropdown.Item icon={<AiOutlineLink style={{marginRight: '0.4em'}} />} eventKey='share'>Share</Dropdown.Item>
           <Dropdown.Item icon={<BiExport style={{marginRight: '0.4em'}} />} eventKey='export'>Export</Dropdown.Item>
           <Dropdown.Item icon={<RiDeleteBin2Fill style={{marginRight: '0.4em'}} />} eventKey='delete'>Delete</Dropdown.Item>
         </Dropdown.Menu>
@@ -38,7 +40,7 @@ const songs_fetcher = json_fetcher('GET');
 
 const AllSongsPage: NextPage = () => {
     const [searchText, setSearchText] = useState<string>('');
-    const [sortColumn, setSortColumn] = useState<string>('id');
+    const [sortColumn, setSortColumn] = useState<string>('updatedAt');
     const [sortType, setSortType] =useState<SortType>('desc');
 
     const [lastSongId, setLastSongId] = useState<number>(0);
@@ -62,16 +64,28 @@ const AllSongsPage: NextPage = () => {
     }
 
     const handleRowMenuSelect = (eventKey?: string, song_data?: SongProps) => {
-        if (eventKey == 'edit') {
-            setEditSongShow(true)
-            setEditSongId(song_data?.id)
-        }
-        else if (eventKey == 'export') {
-            // Export modal
-        }
-        else if (eventKey == 'delete') {
-            setDeleteSongShow(true)
-            setDeleteSongData(song_data)
+        if (song_data) {
+            if (eventKey == 'edit') {
+                setEditSongShow(true)
+                setEditSongId(song_data?.id)
+            }
+            else if (eventKey == 'share') {
+                const url = `/api/?${song_data.id}`;
+                navigator.clipboard.writeText(url);
+                toaster.push(
+                    <Message showIcon closable duration={7000} type='info' >
+                        URL: <Tag>{url} </Tag> <br />
+                        Copied URL to clipboard.
+                    </Message>
+                , {placement: 'topCenter'});
+            }
+            else if (eventKey == 'export') {
+                // Export modal
+            }
+            else if (eventKey == 'delete') {
+                setDeleteSongShow(true)
+                setDeleteSongData(song_data)
+            }
         }
     };
 
