@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '../../lib/prisma'
+import { convertStringToIds } from '../../lib/utils'
 
-async function get_all_sessions({lastSessionId='0', searchText='', sortColumn='', sortType=''}: {lastSessionId?: string, searchText?: string, sortColumn?: string, sortType?: string}) {
+async function get_all_sessions({lastSessionId='0', searchText='', sortColumn='id', sortType='desc'}: {lastSessionId?: string, searchText?: string, sortColumn?: string, sortType?: string}) {
     const last_session_id_int = parseInt(lastSessionId);
     console.log("Last session id: " + last_session_id_int);
     const orderBy = sortColumn && sortType ? {
@@ -50,9 +51,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 console.log("Request query: ");
                 console.log(req.query);
                 const all_sessions = await get_all_sessions(req.query);
+                const all_sessionsWithSongIDs = all_sessions.map((session) => {
+                    return {
+                        ...session,
+                        songs: convertStringToIds(session.songs)
+                    }
+                });
                 console.log('Success:');
-                console.log(all_sessions);
-                res.status(200).json(JSON.stringify(all_sessions));
+                console.log(all_sessionsWithSongIDs);
+                res.status(200).json(JSON.stringify(all_sessionsWithSongIDs));
             } catch(e) {
                 console.error("Request error", e);
                 res.status(500).json({ error: "Error getting sessions" });

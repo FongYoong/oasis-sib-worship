@@ -3,7 +3,7 @@ type Person = string;
 export interface SessionProps {
     id?: number,
     date: Date,
-    songs: string[],
+    songs: number[],
     worship_leader: Person
     vocalist?: Person
     keyboard?: Person

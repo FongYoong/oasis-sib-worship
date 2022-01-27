@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { Modal, Stack, Button, Tag } from 'rsuite'
+import { Modal, Stack, Button, InputGroup, Input } from 'rsuite'
 import { SongProps } from './types'
+import { MdTitle } from 'react-icons/md'
 import { BsFillPersonFill } from 'react-icons/bs'
-import { Image as ImageIcon } from '@rsuite/icons'
 
 interface DeleteSongModalProps {
     visibility: boolean,
@@ -44,7 +44,27 @@ const DeleteSongModal = (props: DeleteSongModalProps) => {
                 <Modal.Title>Delete Song</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <p>Delete <Tag size="lg">{props.songData?.title}</Tag>?</p>
+                <Stack direction='column' spacing='1em' >
+                    <p>Are you sure?</p>
+                    <InputGroup>
+                        <InputGroup.Addon>
+                            <MdTitle />
+                        </InputGroup.Addon>
+                        <Input
+                            placeholder={props.songData?.title}
+                            readOnly={true}
+                        />
+                    </InputGroup>
+                    <InputGroup>
+                        <InputGroup.Addon>
+                            <BsFillPersonFill />
+                        </InputGroup.Addon>
+                        <Input
+                            placeholder={props.songData?.artist}
+                            readOnly={true}
+                        />
+                    </InputGroup>
+                </Stack>
             </Modal.Body>
             <Modal.Footer>
                 <Button disabled={!props.songData} onClick={deleteSong} color="red" appearance="primary">

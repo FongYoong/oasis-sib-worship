@@ -1,10 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
 import dynamic from 'next/dynamic'
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+const ReactQuill = dynamic(() => import('react-quill'), {
+    ssr: false,
+    loading: () => <Loader content="Loading lyrics..." />
+});
 import useSWR from 'swr'
 import { useFilePicker } from 'use-file-picker'
 import Tesseract from 'tesseract.js'
-import { Modal, Stack, Button, IconButton, Form, Input, InputGroup, Progress } from 'rsuite'
+import { Modal, Stack, Button, IconButton, Form, Loader, InputGroup, Progress } from 'rsuite'
 import { json_fetcher } from '../lib/utils'
 import { BsFillPersonFill } from 'react-icons/bs'
 import { MdTitle } from 'react-icons/md'
@@ -28,12 +31,16 @@ const SongModal = (props: SongModalProps) => {
     const [formData, setFormData] = useState<Record<string, string>|undefined>(undefined);
     const [songLyrics, setSongLyrics] = useState<string>(props.editSong ? '' : initialLyrics);
 
-    const [loading, setLoading] = useState<boolean>(false);
+    const [OCRLoading, setOCRLoading] = useState<boolean>(false);
     const [OCRProgress, setOCRProgress] = useState<number>(0);
     const OCRProgressRef = useRef<number>(0);
     OCRProgressRef.current = OCRProgress
 
-    const { data, error } = useSWR(props.editSong ? `/api/get_song/${props.editSongId}` : null, song_fetcher);
+    const { data, isValidating, error, mutate } = useSWR(props.editSong ? `/api/get_song/${props.editSongId}` : null, song_fetcher, {
+        revalidateIfStale: false,
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false
+    });
 
     useEffect(() => {
         if(data) {
@@ -42,7 +49,7 @@ const SongModal = (props: SongModalProps) => {
         }
     }, [data]);
 
-    const pauseModal = loading || (props.editSong && !data);
+    const pauseModal = isValidating || OCRLoading || (props.editSong && !data);
 
     const [openFileSelector, { filesContent, loading : fileLoading, errors }] = useFilePicker({
         readAs: 'DataURL',
@@ -56,7 +63,7 @@ const SongModal = (props: SongModalProps) => {
         if (props.onSuccess) {
             props.onSuccess();
         }
-        props.handleClose();
+        closeModal();
     }
 
     const addSong = () => {
@@ -94,6 +101,7 @@ const SongModal = (props: SongModalProps) => {
                 console.log("Updated song");
                 console.log(res_data);
             });
+            mutate();
             onSuccess();
         }).catch((error) => {
             console.log(error);
@@ -102,7 +110,7 @@ const SongModal = (props: SongModalProps) => {
 
     useEffect(() => {
         if (errors.length <= 0 && filesContent.length > 0) {
-            setLoading(true);
+            setOCRLoading(true);
             Tesseract.recognize(
                 filesContent[0].content,
                 'eng',
@@ -114,21 +122,34 @@ const SongModal = (props: SongModalProps) => {
                 }
             ).then(({ data: { text } }) => {
                 setSongLyrics(songLyrics + `<p>${text}</p>`)
-                setLoading(false);
+                setOCRLoading(false);
                 setOCRProgress(0);
             })
         }
     }, [filesContent, errors])
 
+    const closeModal = () => {
+        if (props.editSong) {
+            setFormData(undefined);
+        }
+        props.handleClose();
+    }
+
     return (
-        <Modal overflow={false} backdrop='static' open={props.visibility} onClose={props.handleClose}>
+        <Modal overflow={false} backdrop='static' open={props.visibility}
+            onClose={closeModal}
+        
+        >
+            {isValidating &&
+                <Loader style={{zIndex: 1000}} backdrop center content="Fetching song..." />
+            }
             <Modal.Header>
                 <Stack wrap direction='row' spacing='2em' >
                     <h4>{props.editSong ? "Edit":"Add"} Song</h4>
-                    <IconButton disabled={loading} appearance="primary" icon={<ImageIcon />} onClick={() => {openFileSelector()}} >
+                    <IconButton disabled={OCRLoading} appearance="primary" icon={<ImageIcon />} onClick={() => {openFileSelector()}} >
                         OCR
                     </IconButton>
-                    {pauseModal &&
+                    {OCRLoading &&
                         <div style={{ width: '3.5em' }}>
                             <Progress.Circle percent={OCRProgress} strokeColor="#3385ff" status='active' />
                         </div>
@@ -136,28 +157,6 @@ const SongModal = (props: SongModalProps) => {
                 </Stack>
             </Modal.Header>
             <Modal.Body>
-                {/* <InputGroup style={{marginBottom:'0.5em'}}>
-                    <InputGroup.Addon>
-                        <MdTitle />
-                    </InputGroup.Addon>
-                    {(props.editSong && data) &&
-                        <Input disabled={pauseModal} defaultValue={data.title} ref={titleInputRef} placeholder="Title of the song" />
-                    }
-                    {(!props.editSong || !data) &&
-                        <Input disabled={pauseModal} onChange={} placeholder="Title of the song" />
-                    }
-                </InputGroup>
-                <InputGroup>
-                    <InputGroup.Addon>
-                        <BsFillPersonFill />
-                    </InputGroup.Addon>
-                    {(props.editSong && data) &&
-                        <Input disabled={pauseModal} defaultValue={data.artist} ref={artistInputRef} placeholder="Artist" />
-                    }
-                    {(!props.editSong || !data) &&
-                        <Input disabled={pauseModal} ref={artistInputRef} placeholder="Artist" />
-                    }
-                </InputGroup> */}
                 <Form fluid
                     onChange={setFormData} formValue={formData} style={{marginBottom:'1em'}} >
                     <Form.Group controlId="title">
@@ -170,6 +169,7 @@ const SongModal = (props: SongModalProps) => {
                                 placeholder="Song Title"
                                 errorMessage={formData?.title ? '' : 'This field is required'}
                                 errorPlacement='bottomStart'
+                                readOnly={pauseModal}
                             />
                         </InputGroup>
                     </Form.Group>
@@ -181,6 +181,7 @@ const SongModal = (props: SongModalProps) => {
                             <Form.Control
                                 name="artist"
                                 placeholder="Artist"
+                                readOnly={pauseModal}
                             />
                         </InputGroup>
                     </Form.Group>
@@ -191,7 +192,7 @@ const SongModal = (props: SongModalProps) => {
                 <Button disabled={pauseModal || !formData?.title} onClick={props.editSong ? updateSong : addSong} color="green" appearance="primary">
                     Confirm
                 </Button>
-                <Button onClick={props.handleClose} appearance="subtle">
+                <Button onClick={closeModal} appearance="subtle">
                     Cancel
                 </Button>
             </Modal.Footer>

@@ -1,37 +1,49 @@
 import React from 'react'
-import Link from 'next/link'
-//import { Nav } from 'rsuite';
-import { Stack, Divider, Popover, Whisper, Button, IconButton } from 'rsuite'
-import { FcNext } from 'react-icons/fc'
+import { Stack, Divider, Popover, Whisper, Button, IconButton, List } from 'rsuite'
+//import { PickerInstance } from 'rsuite/Picker'
+import useSWR from 'swr'
 import { SessionProps } from './types'
+import { json_fetcher } from '../lib/utils'
+//import { FcNext } from 'react-icons/fc'
+import { RiDeleteBin2Fill } from 'react-icons/ri'
 import hoverStyles from '../styles/hover.module.css'
 
 interface SessionCardProps extends SessionProps {
-    dummy_member?: null
+    onClick?: (event: React.MouseEvent<Element, MouseEvent>) => void,
+    deleteOnClick?: (event: React.MouseEvent<Element, MouseEvent>) => void
+}
+
+const song_fetcher = json_fetcher('GET');
+
+const SongItem = ({song_id, index} : {song_id: number, index: number}) => {
+    const { data, isValidating, error } = useSWR(`/api/get_song/${song_id}`, song_fetcher);
+    return (
+        <h6 style={{wordWrap: 'break-word'}} >
+            {index + 1}. {data ? `${data.title} - ${data.artist}` : 'Loading...'}
+        </h6>
+    );
 }
 
 // eslint-disable-next-line react/display-name
-const SongList = React.forwardRef(({songs, ...rest}: {songs: string[]}, ref) => {
+const SongList = React.forwardRef(({song_ids, ...rest}: {song_ids: number[]}, ref) => {
     return (
         <Popover ref={ref as React.RefObject<HTMLDivElement>} {...rest}  >
-            <ul>
+            <List bordered hover>
             {
-                songs.map((song, index) => 
-                    <li key={index} >
-                        <h5>
-                            {song}
-                        </h5>
-                    </li>
+                song_ids.map((id: number, index: number) => 
+                    <List.Item key={index} index={index} >
+                        <SongItem song_id={id} index={index} />
+                    </List.Item>
                 )
             }
-            </ul>
+            </List>
         </Popover>
     )
 });
 
 const SessionCard = (props: SessionCardProps) => {
     return (
-        <Link href="all_songs" passHref >
+        <div onClick={props.onClick} >
             <Stack justifyContent='space-between' direction='row'
                 className={hoverStyles.hover_grow}
                 style={{
@@ -50,14 +62,14 @@ const SessionCard = (props: SessionCardProps) => {
                     <h4> {props.worship_leader} </h4>
                         {
                             props.songs.length > 0 ?
-                            <Whisper placement="auto" trigger="click" controlId="control-id-click" speaker={<SongList songs={props.songs} />}>
+                            <Whisper preventOverflow placement="auto" trigger="click" controlId="control-id-click" speaker={<SongList song_ids={props.songs} />}>
                                 <Button onClick={(e) => {e.preventDefault()}} appearance="primary" block >{`${props.songs.length} songs`}</Button>
                             </Whisper>
                             :
-                            <h5 style={{color: 'red'}} ><i>Songs unavailable</i></h5>
+                            <h5 style={{color: 'red'}} ><i>No songs</i></h5>
                         }
                 </Stack>
-                <IconButton appearance='subtle' icon={<FcNext />}
+                <IconButton appearance='subtle' icon={<RiDeleteBin2Fill />} onClick={props.deleteOnClick}
                     style={{
                         position: 'absolute',
                         bottom: 0,
@@ -65,7 +77,7 @@ const SessionCard = (props: SessionCardProps) => {
                     }}
                 />
             </Stack>
-        </Link>
+        </div>
     )
 }
 

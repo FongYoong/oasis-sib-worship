@@ -1,22 +1,24 @@
-import { useState, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import useSWR from 'swr'
-import { Container, Steps, DatePicker, Modal, Form, Stack, Button, IconButton, Animation, InputGroup, AutoComplete, List, Progress } from 'rsuite'
+import { Steps, DatePicker, Modal, Form, Stack, Button, IconButton, Animation, InputGroup, AutoComplete, List, Loader } from 'rsuite'
+import { PickerInstance } from 'rsuite/Picker'
 import SongModal from './SongModal'
 import { json_fetcher } from '../lib/utils'
 import { AiFillSound } from 'react-icons/ai'
 import { GiGuitar } from 'react-icons/gi'
 import { BsFillPersonFill } from 'react-icons/bs'
-import { MdPiano } from 'react-icons/md'
+import { MdPiano, MdDragIndicator } from 'react-icons/md'
 import { FaDrumSteelpan, FaMusic } from 'react-icons/fa'
 import { IoPersonAdd } from 'react-icons/io5'
-import { Plus } from '@rsuite/icons'
+import { Plus, Trash  } from '@rsuite/icons'
 import { SongProps } from './types'
 //import hoverStyles from '../styles/hover.module.css'
 
 interface SessionModalProps {
     visibility: boolean,
     handleClose: () => void,
+    onSuccess?: () => void,
     editSession?: boolean,
     editSessionId?: number
 }
@@ -24,12 +26,13 @@ interface SessionModalProps {
 const songs_fetcher = json_fetcher('GET');
 
 const SongAutocomplete = ({ onSelect }:{ onSelect: (song_id: number)=>void }) => {
+    const autocompleteRef = useRef<PickerInstance>(null);
     const [searchText, setSearchText] = useState<string>('');
     const { data, isValidating, error } = useSWR(`/api/get_songs?searchText=${searchText}`, songs_fetcher);
     const songs = data ? data.map((song: SongProps) => `${song.title} - ${song.artist}___:${song.id}`) : [];
 
     return (
-        <AutoComplete value={searchText} data={songs} placeholder='Search song by title or artist'
+        <AutoComplete ref={autocompleteRef} value={searchText} data={songs} placeholder='Search song by title or artist'
             onChange={(value: unknown) => {
                 const splitted = (value as string).split('___:');
                 setSearchText(splitted[0])
@@ -40,7 +43,15 @@ const SongAutocomplete = ({ onSelect }:{ onSelect: (song_id: number)=>void }) =>
             onSelect={(value: unknown) => {
                 const splitted = (value as string).split('___:');
                 const song_id = parseInt(splitted[1]);
-                onSelect(song_id)
+                onSelect(song_id);
+                if (autocompleteRef.current) {
+                    setTimeout(() => {
+                        if (autocompleteRef.current?.root) { 
+                            (autocompleteRef.current.root.childNodes[0] as HTMLInputElement).value = '';
+                        }
+                        setSearchText('')
+                    }, 0);
+                }
             }}
             renderMenuItem={(value: unknown) => {
                 const splitted = (value as string).split('___:');
@@ -56,12 +67,20 @@ const SongAutocomplete = ({ onSelect }:{ onSelect: (song_id: number)=>void }) =>
 
 const song_list_fetcher = json_fetcher('GET');
 
-const SongListItem = ({ song_id, index } : { song_id: number, index: number }) => {
+const SongListItem = ({ song_id, index, deleteHandler } : { song_id: number, index: number, deleteHandler: ()=>void }) => {
     const { data, isValidating, error } = useSWR(`/api/get_song/${song_id}`, song_list_fetcher);
 
     return (
         <List.Item index={index} >
-          {data ? `${data.title}  ${data.artist}` : 'Loading...'}
+            <Stack direction='row' justifyContent='space-between' >
+                <Stack spacing='1em' >
+                    <MdDragIndicator />
+                    <h5>
+                        {index+1}. {data ? `${data.title}  ${data.artist}` : 'Loading...'}
+                    </h5>
+                </Stack>
+                <IconButton appearance="primary" color="red" icon={<Trash />} onClick={deleteHandler} />
+            </Stack>
         </List.Item>
     )
 }
@@ -86,19 +105,34 @@ const SessionModal = (props: SessionModalProps) => {
         setSongList(newData);
     };
 
-    const { data, isValidating, error } = useSWR(props.editSession ? `/api/get_session/${props.editSessionId}` : null, session_fetcher);
-
+    const { data, isValidating, error, mutate } = useSWR(props.editSession ? `/api/get_session/${props.editSessionId}` : null, session_fetcher, {
+        revalidateIfStale: false,
+        revalidateOnFocus: false,
+        revalidateOnReconnect: false
+      });
+      
     useEffect(() => {
         if(data) {
-            setDutyFormData(data);
+            setDateValue(new Date(data.date))
+            setDutyFormData(data)
+            setSongList(data.songs)
         }
     }, [data]);
 
-    const pauseModal = props.editSession && !data;
+    const pauseModal = isValidating || (props.editSession && !data);
+
+    const onSuccess = () => {
+        if (props.onSuccess) {
+            props.onSuccess();
+        }
+        closeModal();
+    }
 
     const addSession = () => {
         const body = JSON.stringify({
-
+            ...dutyFormData,
+            date: dateValue ? dateValue : new Date(),
+            songs: songList.join(','),
         });
         fetch('/api/add_session', {
             method: 'POST',
@@ -108,7 +142,7 @@ const SessionModal = (props: SessionModalProps) => {
                 console.log("Added session");
                 console.log(res_data);
             });
-            props.handleClose();
+            onSuccess();
         }).catch((error) => {
             console.log(error);
         });
@@ -116,7 +150,10 @@ const SessionModal = (props: SessionModalProps) => {
 
     const updateSession = () => {
         const body = JSON.stringify({
+            ...dutyFormData,
             id: props.editSessionId,
+            date: dateValue ? dateValue : new Date(),
+            songs: songList.join(','),
         });
         fetch('/api/update_session', {
             method: 'POST',
@@ -126,14 +163,28 @@ const SessionModal = (props: SessionModalProps) => {
                 console.log("Updated session");
                 console.log(res_data);
             });
-            props.handleClose();
+            mutate();
+            onSuccess();
         }).catch((error) => {
             console.log(error);
         });
     };
 
+    const closeModal = () => {
+        if (props.editSession) {
+            setDutyFormData(undefined)
+            setFormIndex(0)
+        }
+        props.handleClose();
+    }
+
     return (
-        <Modal overflow={false} backdrop='static' open={props.visibility} onClose={props.handleClose}>
+        <Modal overflow={false} backdrop='static' open={props.visibility}
+            onClose={closeModal}
+        >
+            {isValidating &&
+                <Loader style={{zIndex: 1000}} backdrop center content="Fetching session..." />
+            }
             <Modal.Header>
                 <h4>{props.editSession ? "Edit":"Add"} Session</h4>
                 <Steps current={formIndex}>
@@ -152,6 +203,7 @@ const SessionModal = (props: SessionModalProps) => {
                                 block oneTap size="md" value={dateValue} onChange={(value: Date|null)=>setDateValue(value)}
                                 errorMessage={dutyFormData?.date ? '' : 'This field is required'}
                                 errorPlacement='bottomStart'
+                                readOnly={pauseModal}
                             />
                         </Form.Group>
                         <Form.Group controlId="worship_leader">
@@ -164,6 +216,7 @@ const SessionModal = (props: SessionModalProps) => {
                                     placeholder="Worship Leader"
                                     errorMessage={dutyFormData?.worship_leader ? '' : 'This field is required'}
                                     errorPlacement='bottomStart'
+                                    readOnly={pauseModal}
                                 />
                             </InputGroup>
                         </Form.Group>
@@ -175,6 +228,7 @@ const SessionModal = (props: SessionModalProps) => {
                                 <Form.Control
                                     name="vocalist"
                                     placeholder="Vocalist"
+                                    readOnly={pauseModal}
                                 />
                             </InputGroup>
                         </Form.Group>
@@ -186,6 +240,7 @@ const SessionModal = (props: SessionModalProps) => {
                                 <Form.Control
                                     name="keyboard"
                                     placeholder="Keyboard"
+                                    readOnly={pauseModal}
                                 />
                             </InputGroup>
                         </Form.Group>
@@ -197,6 +252,7 @@ const SessionModal = (props: SessionModalProps) => {
                                 <Form.Control
                                     name="guitar"
                                     placeholder="Guitar"
+                                    readOnly={pauseModal}
                                 />
                             </InputGroup>
                         </Form.Group>
@@ -208,6 +264,7 @@ const SessionModal = (props: SessionModalProps) => {
                                 <Form.Control
                                     name="drums"
                                     placeholder="Drums"
+                                    readOnly={pauseModal}
                                 />
                             </InputGroup>
                         </Form.Group>
@@ -219,6 +276,7 @@ const SessionModal = (props: SessionModalProps) => {
                                 <Form.Control
                                     name="sound_personnel"
                                     placeholder="Sound_personnel"
+                                    readOnly={pauseModal}
                                 />
                             </InputGroup>
                         </Form.Group>
@@ -227,7 +285,7 @@ const SessionModal = (props: SessionModalProps) => {
                 <Animation.Collapse unmountOnExit in={formIndex == 1} >
                     <Form fluid >
                         <Form.Group>
-                            <IconButton block appearance="primary" color="green" icon={<Plus />} onClick={() => setAddSongShow(true)} >
+                            <IconButton disabled={pauseModal} block appearance="primary" color="green" icon={<Plus />} onClick={() => setAddSongShow(true)} >
                                 Add Song
                             </IconButton>
                         </Form.Group>
@@ -243,7 +301,11 @@ const SessionModal = (props: SessionModalProps) => {
                         <Form.Group>
                             <List sortable onSort={handleSongSort}>
                                 {songList.map((song_id, index) => (
-                                    <SongListItem key={index} index={index} song_id={song_id} />
+                                    <SongListItem key={index} index={index} song_id={song_id}
+                                        deleteHandler={() => {
+                                            setSongList([...songList.slice(0,index), ...songList.slice(index+1)])                                            
+                                        }}
+                                    />
                                 ))}
                             </List>
                         </Form.Group>
@@ -266,7 +328,7 @@ const SessionModal = (props: SessionModalProps) => {
                         </Button>
                     </>
                 }
-                <Button onClick={props.handleClose} appearance="subtle">
+                <Button onClick={closeModal} appearance="subtle">
                     Cancel
                 </Button>
             </Modal.Footer>

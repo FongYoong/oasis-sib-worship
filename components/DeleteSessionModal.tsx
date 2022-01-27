@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { Modal, Stack, Button, Tag } from 'rsuite'
+import { Modal, Stack, Button, Tag, InputGroup, Input } from 'rsuite'
 import { SessionProps } from './types'
 import { BsFillPersonFill } from 'react-icons/bs'
-import { Image as ImageIcon } from '@rsuite/icons'
 
 interface DeleteSessionModalProps {
     visibility: boolean,
@@ -44,7 +43,19 @@ const DeleteSessionModal = (props: DeleteSessionModalProps) => {
                 <Modal.Title>Delete Session</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <p>Delete <Tag size="lg">{props.sessionData?.date}</Tag>?</p>
+                <Stack direction='column' spacing='1em' >
+                    <p>Delete <Tag size="lg">{props.sessionData?.date.toLocaleDateString()}</Tag>?</p>
+                    <InputGroup>
+                        <InputGroup.Addon>
+                            <BsFillPersonFill />
+                        </InputGroup.Addon>
+                        <Input
+                            placeholder={props.sessionData?.worship_leader}
+                            readOnly={true}
+                        />
+                    </InputGroup>
+                </Stack>
+                
             </Modal.Body>
             <Modal.Footer>
                 <Button disabled={!props.sessionData} onClick={deleteSession} color="red" appearance="primary">

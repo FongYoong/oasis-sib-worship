@@ -87,7 +87,6 @@ const AllSongsPage: NextPage = () => {
         }
     }) : [];
     console.log(error);
-    console.log(processed_data)
 
     return (
         <Container className='page' >

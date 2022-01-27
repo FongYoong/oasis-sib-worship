@@ -15,7 +15,6 @@ generator client {
 model Session {
   id              Int      @id @default(autoincrement())
   date            DateTime @unique
-  //songs           Song[]   @relation(fields: [id], references: [id])
   songs           String
   worship_leader  String
   vocalist        String?
@@ -32,20 +31,4 @@ model Song {
   lyrics    String   @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  //sessions  Session[]
 }
-
-// model SessionSong {
-//   sessionId  Int  @id
-//   sequenceId Int
-//   songId     Int
-
-// }
-
-//model Star {
-//  id              Int       @default(autoincrement()) @id
-//  createdAt       DateTime  @default(now())
-//  updatedAt       DateTime  @updatedAt
-//  name            String    @db.VarChar(255)
-//  constellation   String    @db.VarChar(255)
-//}
