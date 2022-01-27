@@ -13,17 +13,25 @@ async function add_song({title, artist, lyrics}:{title: string, artist: string, 
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    return new Promise<void>((resolve, reject) => {
-        console.log("\n--ADD SONG---");
-        console.log("Request body: ");
-        console.log(req.body);
-        add_song(JSON.parse(req.body)).then(() => {
-            console.log('success');
-            res.status(201).json({ message: 'Added song successfully!' });
-            resolve();
-        }).catch((error) => {
-            console.log(error);
-            res.status(405).json({ message: 'Failed to add song!' });
-        });
-    });
+    const { method } = req;
+    switch (method) {
+        case "POST":
+            try {   
+                console.log("\n---ADD SONG---");
+                console.log("Request body: ");
+                console.log(req.body);
+                const response = await add_song(JSON.parse(req.body));
+                console.log('Success"');
+                console.log(response);
+                res.status(201).json({ message: 'Added song successfully!' });
+            } catch(e) {
+                console.error("Request error", e);
+                res.status(500).json({ message: 'Failed to add song!' });
+            }
+            break;
+        default:
+            res.setHeader("Allow", ["POST"]);
+            res.status(405).end(`Method ${method} Not Allowed`);
+            break;
+    }
 }

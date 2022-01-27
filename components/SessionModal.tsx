@@ -21,26 +21,11 @@ interface SessionModalProps {
     editSessionId?: number
 }
 
+const songs_fetcher = json_fetcher('GET');
+
 const SongAutocomplete = ({ onSelect }:{ onSelect: (song_id: number)=>void }) => {
     const [searchText, setSearchText] = useState<string>('');
-    const song_fetcher = json_fetcher({
-        take: 5,
-        where: {
-            OR: [
-                {
-                  title: {
-                    contains: searchText,
-                  },
-                },
-                {
-                  artist: {
-                    contains: searchText,
-                  },
-                }
-            ],
-        }
-    });
-    const { data, error } = useSWR(`/api/get_songs`, song_fetcher, { refreshInterval: 1000 });
+    const { data, isValidating, error } = useSWR(`/api/get_songs?searchText=${searchText}`, songs_fetcher);
     const songs = data ? data.map((song: SongProps) => `${song.title} - ${song.artist}___:${song.id}`) : [];
 
     return (
@@ -69,10 +54,10 @@ const SongAutocomplete = ({ onSelect }:{ onSelect: (song_id: number)=>void }) =>
     )
 }
 
-const song_list_fetcher = json_fetcher();
+const song_list_fetcher = json_fetcher('GET');
 
 const SongListItem = ({ song_id, index } : { song_id: number, index: number }) => {
-    const { data, error } = useSWR(`/api/get_song/${song_id}`, song_list_fetcher);
+    const { data, isValidating, error } = useSWR(`/api/get_song/${song_id}`, song_list_fetcher);
 
     return (
         <List.Item index={index} >
@@ -81,7 +66,7 @@ const SongListItem = ({ song_id, index } : { song_id: number, index: number }) =
     )
 }
 
-const session_fetcher = json_fetcher();
+const session_fetcher = json_fetcher('GET');
 
 const SessionModal = (props: SessionModalProps) => {
     const [formIndex, setFormIndex] = useState<number>(0);
@@ -101,7 +86,7 @@ const SessionModal = (props: SessionModalProps) => {
         setSongList(newData);
     };
 
-    const { data, error } = useSWR(props.editSession ? `/api/get_session/${props.editSessionId}` : null, session_fetcher);
+    const { data, isValidating, error } = useSWR(props.editSession ? `/api/get_session/${props.editSessionId}` : null, session_fetcher);
 
     useEffect(() => {
         if(data) {

@@ -34,33 +34,16 @@ const renderRowMenu = (row_data: SongProps, handleRowMenuSelect: (eventKey?: str
 
 type SortType = 'asc' | 'desc' | undefined;
 
+const songs_fetcher = json_fetcher('GET');
+
 const AllSongsPage: NextPage = () => {
     const [searchText, setSearchText] = useState<string>('');
     const [sortColumn, setSortColumn] = useState<string>('id');
     const [sortType, setSortType] =useState<SortType>('desc');
 
     const [lastSongId, setLastSongId] = useState<number>(0);
-    const fetcher = json_fetcher({
-        lastSongId,
-        orderBy: {
-           [sortColumn] : sortType
-        },
-        where: {
-            OR: [
-                {
-                  title: {
-                    contains: searchText,
-                  },
-                },
-                {
-                  artist: {
-                    contains: searchText,
-                  },
-                }
-            ],
-        }
-    });
-    const { data, isValidating, error } = useSWR(`/api/get_songs`, fetcher, { refreshInterval: 4000 });
+    const { data, isValidating, error, mutate } = useSWR(`/api/get_songs?lastSongId=${lastSongId}&searchText=${searchText}&sortType=${sortType}&sortColumn=${sortColumn}`
+    , songs_fetcher);
 
     const [addSongShow, setAddSongShow] = useState<boolean>(false);
     const [editSongShow, setEditSongShow] = useState<boolean>(false);
@@ -108,9 +91,9 @@ const AllSongsPage: NextPage = () => {
 
     return (
         <Container className='page' >
-            <SongModal visibility={addSongShow} handleClose={handleAddSongClose} />
-            <SongModal editSong={editSongShow} editSongId={editSongId} visibility={editSongShow} handleClose={handleEditSongClose} />
-            <DeleteSongModal songData={deleteSongData} visibility={deleteSongShow} handleClose={handleDeleteSongClose} />
+            <SongModal visibility={addSongShow} handleClose={handleAddSongClose} onSuccess={mutate} />
+            <SongModal editSong={editSongShow} editSongId={editSongId} visibility={editSongShow} handleClose={handleEditSongClose} onSuccess={mutate} />
+            <DeleteSongModal songData={deleteSongData} visibility={deleteSongShow} handleClose={handleDeleteSongClose} onSuccess={mutate} />
             <Head title={PageName.AllSongs} description="All songs page" />
             <main>
                 <Stack wrap direction='row' justifyContent='center' spacing="1em" >
@@ -135,8 +118,10 @@ const AllSongsPage: NextPage = () => {
                     sortColumn={sortColumn}
                     sortType={sortType}
                     onSortColumn={handleSortColumn}
-                    onRowClick={row_data => {
-                        return;
+                    onRowClick={(row_data: unknown, event: React.MouseEvent<Element, MouseEvent>) => {
+                        if ((event.target as Element).nodeName == 'DIV') {
+                            handleRowMenuSelect('edit', row_data as SongProps)
+                        }
                     }}
                     >
                     <Table.Column width={120} align="center" fixed sortable flexGrow={1} >

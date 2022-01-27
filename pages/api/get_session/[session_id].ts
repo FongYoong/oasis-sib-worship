@@ -1,10 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '../../../lib/prisma'
 
-async function get_song(song_id: number) {
-    const song = await prisma.song.findFirst({
+async function get_session(session_id: number) {
+    const song = await prisma.session.findFirst({
         where: {
-            id: song_id,
+            id: session_id,
         }
     });
     return song;
@@ -12,20 +12,20 @@ async function get_song(song_id: number) {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const { method } = req;
-    const { song_id } = req.query;
+    const { session_id } = req.query;
     switch (method) {
         case "GET":
             try {   
-                console.log("\n---GET SONG---");
+                console.log("\n---GET SESSION---");
                 console.log("Request query: ");
                 console.log(req.query);
-                const song = await get_song(parseInt(song_id as string));
+                const session = await get_session(parseInt(session_id as string));
                 console.log('Success"');
-                console.log(song);
-                res.status(200).json(JSON.stringify(song))
+                console.log(session);
+                res.status(200).json(JSON.stringify(session))
             } catch(e) {
                 console.error("Request error", e);
-                res.status(500).json({ message: 'Failed to get song!' });
+                res.status(500).json({ message: 'Failed to get session!' });
             }
             break;
         default:

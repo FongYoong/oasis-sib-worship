@@ -15,13 +15,14 @@ import { SessionProps } from './types'
 interface SongModalProps {
     visibility: boolean,
     handleClose: () => void,
+    onSuccess?: () => void,
     editSong?: boolean,
     editSongId?: number
 }
 
 const initialLyrics = "<h2>Verse 1</h2><p>Type something here</p><h2>Verse 2</h2><p>Type something here</p><h2>Pre-Chorus</h2><p>Type something here</p><h2>Chorus</h2><p>Type something here</p><h2>Bridge</h2><p>Type something here</p>";
 
-const fetcher = json_fetcher();
+const song_fetcher = json_fetcher('GET');
 
 const SongModal = (props: SongModalProps) => {
     const [formData, setFormData] = useState<Record<string, string>|undefined>(undefined);
@@ -32,7 +33,7 @@ const SongModal = (props: SongModalProps) => {
     const OCRProgressRef = useRef<number>(0);
     OCRProgressRef.current = OCRProgress
 
-    const { data, error } = useSWR(props.editSong ? `/api/get_song/${props.editSongId}` : null, fetcher);
+    const { data, error } = useSWR(props.editSong ? `/api/get_song/${props.editSongId}` : null, song_fetcher);
 
     useEffect(() => {
         if(data) {
@@ -51,6 +52,13 @@ const SongModal = (props: SongModalProps) => {
         maxFileSize: 50,
     });
 
+    const onSuccess = () => {
+        if (props.onSuccess) {
+            props.onSuccess();
+        }
+        props.handleClose();
+    }
+
     const addSong = () => {
         const body = JSON.stringify({
             title: formData?.title,
@@ -65,7 +73,7 @@ const SongModal = (props: SongModalProps) => {
                 console.log("Added song");
                 console.log(res_data);
             });
-            props.handleClose();
+            onSuccess();
         }).catch((error) => {
             console.log(error);
         });
@@ -86,7 +94,7 @@ const SongModal = (props: SongModalProps) => {
                 console.log("Updated song");
                 console.log(res_data);
             });
-            props.handleClose();
+            onSuccess();
         }).catch((error) => {
             console.log(error);
         });

@@ -1,8 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '../../lib/prisma'
 
-async function delete_song({id}:{id: number}) {
-    const result = await prisma.song.delete({
+async function delete_session({id}:{id: number}) {
+    const result = await prisma.session.delete({
         where: {
             id: id,
         },
@@ -15,16 +15,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     switch (method) {
         case "POST":
             try {   
-                console.log("\n---DELETE SONG---");
+                console.log("\n---DELETE SESSION---");
                 console.log("Request body: ");
                 console.log(req.body);
-                const response = await delete_song(JSON.parse(req.body));
+                const response = await delete_session(JSON.parse(req.body));
                 console.log('Success"');
                 console.log(response);
-                res.status(201).json({ message: 'Deleted song successfully!' });
+                res.status(201).json({ message: 'Deleted session successfully!' });
             } catch(e) {
                 console.error("Request error", e);
-                res.status(500).json({ message: 'Failed to delete song!' });
+                res.status(500).json({ message: 'Failed to delete session!' });
             }
             break;
         default:

@@ -1,17 +1,17 @@
 import { useState } from 'react'
 import { Modal, Stack, Button, Tag } from 'rsuite'
-import { SongProps } from './types'
+import { SessionProps } from './types'
 import { BsFillPersonFill } from 'react-icons/bs'
 import { Image as ImageIcon } from '@rsuite/icons'
 
-interface DeleteSongModalProps {
+interface DeleteSessionModalProps {
     visibility: boolean,
     handleClose: () => void,
     onSuccess?: () => void,
-    songData?: SongProps
+    sessionData?: SessionProps
 }
 
-const DeleteSongModal = (props: DeleteSongModalProps) => {
+const DeleteSessionModal = (props: DeleteSessionModalProps) => {
 
     const onSuccess = () => {
         if (props.onSuccess) {
@@ -20,16 +20,16 @@ const DeleteSongModal = (props: DeleteSongModalProps) => {
         props.handleClose();
     }
 
-    const deleteSong = () => {
+    const deleteSession = () => {
         const body = JSON.stringify({
-            id: props.songData?.id,
+            id: props.sessionData?.id,
         });
-        fetch('/api/delete_song', {
+        fetch('/api/delete_session', {
             method: 'POST',
             body: body,
         }).then((res) => {
             res.json().then((res_data) => {
-                console.log("Deleted song");
+                console.log("Deleted session");
                 console.log(res_data);
             });
             onSuccess();
@@ -41,13 +41,13 @@ const DeleteSongModal = (props: DeleteSongModalProps) => {
     return (
         <Modal overflow={true} open={props.visibility} onClose={props.handleClose}>
             <Modal.Header>
-                <Modal.Title>Delete Song</Modal.Title>
+                <Modal.Title>Delete Session</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <p>Delete <Tag size="lg">{props.songData?.title}</Tag>?</p>
+                <p>Delete <Tag size="lg">{props.sessionData?.date}</Tag>?</p>
             </Modal.Body>
             <Modal.Footer>
-                <Button disabled={!props.songData} onClick={deleteSong} color="red" appearance="primary">
+                <Button disabled={!props.sessionData} onClick={deleteSession} color="red" appearance="primary">
                     Confirm
                 </Button>
                 <Button onClick={props.handleClose} appearance="subtle">
@@ -58,4 +58,4 @@ const DeleteSongModal = (props: DeleteSongModalProps) => {
     )
 }
 
-export default DeleteSongModal;
+export default DeleteSessionModal;

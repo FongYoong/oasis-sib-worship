@@ -3,7 +3,7 @@
 //   url = "mysql://${PLANETSCALE_DB_USERNAME}:${PLANETSCALE_DB_PASSWORD}@${PLANETSCALE_DB_HOST}/${PLANETSCALE_DB}?sslaccept=strict"
 datasource db {
   provider             = "mysql"
-  url                  = "${PLANETSCALE_PRISMA_DATABASE_URL}"
+  url                  = env("PLANETSCALE_PRISMA_DATABASE_URL")
   referentialIntegrity = "prisma"
 }
 
@@ -15,7 +15,8 @@ generator client {
 model Session {
   id              Int      @id @default(autoincrement())
   date            DateTime @unique
-  songs           Song[]   @relation(fields: [id], references: [id])
+  //songs           Song[]   @relation(fields: [id], references: [id])
+  songs           String
   worship_leader  String
   vocalist        String?
   keyboard        String?
@@ -25,13 +26,13 @@ model Session {
 }
 
 model Song {
-  id        Int       @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   title     String
   artist    String?
-  lyrics    String    @db.Text
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  sessions  Session[]
+  lyrics    String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  //sessions  Session[]
 }
 
 // model SessionSong {
