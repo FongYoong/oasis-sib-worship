@@ -60,7 +60,7 @@ const AllSongsPage: NextPage = () => {
             ],
         }
     });
-    const { data, error } = useSWR(`/api/get_songs`, fetcher, { refreshInterval: 1000 });
+    const { data, isValidating, error } = useSWR(`/api/get_songs`, fetcher, { refreshInterval: 4000 });
 
     const [addSongShow, setAddSongShow] = useState<boolean>(false);
     const [editSongShow, setEditSongShow] = useState<boolean>(false);
@@ -103,6 +103,8 @@ const AllSongsPage: NextPage = () => {
             updatedAt: new Date(song.updatedAt).toLocaleString()
         }
     }) : [];
+    console.log(error);
+    console.log(processed_data)
 
     return (
         <Container className='page' >
@@ -129,7 +131,7 @@ const AllSongsPage: NextPage = () => {
                     style={{marginTop: '2em'}}
                     height={400}
                     data={processed_data}
-                    loading={!data}
+                    loading={!data || isValidating}
                     sortColumn={sortColumn}
                     sortType={sortType}
                     onSortColumn={handleSortColumn}
