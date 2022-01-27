@@ -3,7 +3,7 @@
 
 datasource db {
   provider             = "mysql"
-  url                  = env("DATABASE_URL")
+  url                  = "mysql://${PLANETSCALE_DB_USERNAME}:${PLANETSCALE_DB_PASSWORD}@${PLANETSCALE_DB_HOST}/${PLANETSCALE_DB}?sslaccept=strict"
   referentialIntegrity = "prisma"
 }
 
