@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { NextPage } from 'next'
+import { useRouter } from 'next/router'
 import useSWR from 'swr'
 import { Container, Stack, Divider, IconButton, Loader, Animation } from 'rsuite';
 import Head from '../components/Head'
@@ -8,11 +9,9 @@ import SessionCard from '../components/SessionCard'
 import SessionModal from '../components/SessionModal'
 import DeleteSessionModal from '../components/DeleteSessionModal'
 import { SessionProps, PageName } from '../components/types'
-import { json_fetcher, isPresentOrFutureDate } from '../lib/utils'
+import { getDomainUrl, copyToClipboard, json_fetcher, isPresentOrFutureDate } from '../lib/utils'
 import { Plus } from '@rsuite/icons'
-
-//import Image from 'next/image'
-
+const domain_url = getDomainUrl();
 const sessions_fetcher = json_fetcher('GET');
 
 const HomePage: NextPage = () => {
@@ -37,20 +36,46 @@ const HomePage: NextPage = () => {
     setDeleteSessionShow(false);
   }
 
+  const handleSessionMenuSelect = (eventKey?: string, session_data?: SessionProps) => {
+    if (session_data) {
+        if (eventKey == 'edit') {
+            setEditSessionShow(true)
+            setEditSessionId(session_data?.id)
+        }
+        else if (eventKey == 'share') {
+            const url = `${domain_url}/view_session/${session_data.id}`;
+            copyToClipboard(url, 'Copied URL to clipboard');
+        }
+        else if (eventKey == 'export') {
+            // Export modal
+        }
+        else if (eventKey == 'delete') {
+            setDeleteSessionShow(true)
+            setDeleteSessionData(session_data)
+        }
+    }
+  };
+
   const GenerateSessionCard = ({session}: {session: SessionProps}) => {
+    const router = useRouter();
     return (
       <SessionCard {...session}
+        handleSessionMenuSelect={handleSessionMenuSelect}
         onClick={(event: React.MouseEvent<Element, MouseEvent>) => {
-          if ((event.target as Element).nodeName != 'BUTTON') {
-            setEditSessionShow(true)
-            setEditSessionId(session.id)
+          if (!['BUTTON', 'svg', 'LI'].includes((event.target as Element).nodeName)) {
+            //setEditSessionShow(true)
+            //setEditSessionId(session.id)
+            router.push(`/view_session/${session.id}`);
+          }
+          else {
+            event.stopPropagation();
           }
         }}
-        deleteOnClick={(event: React.MouseEvent<Element, MouseEvent>) => {
+/*         deleteOnClick={(event: React.MouseEvent<Element, MouseEvent>) => {
           event.stopPropagation();
           setDeleteSessionShow(true)
           setDeleteSessionData(session)
-        }}
+        }} */
       />
     )
   };

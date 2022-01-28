@@ -1,20 +1,22 @@
 import React from 'react'
 import { useState } from 'react'
 import { NextPage } from 'next'
+import { useRouter } from 'next/router'
 import useSWR from 'swr'
-import { Container, IconButton, Input, InputGroup, Stack, Divider, Table, Whisper, Popover, Dropdown, toaster, Message, Tag } from 'rsuite';
+import { Container, IconButton, Input, InputGroup, Stack, Divider, Table, Whisper, Popover, Dropdown, Tag } from 'rsuite';
 import Head from '../../components/Head'
 import Footer from '../../components/Footer'
 import SongModal from '../../components/SongModal'
+import ExportSongModal from '../../components/ExportSongModal'
 import DeleteSongModal from '../../components/DeleteSongModal'
 import { PageName, SongProps } from '../../components/types'
-import { json_fetcher } from '../../lib/utils'
+import { getDomainUrl, copyToClipboard, json_fetcher } from '../../lib/utils'
 import { Plus, Search, More } from '@rsuite/icons'
 import { AiOutlineLink } from 'react-icons/ai'
 import { FiEdit } from 'react-icons/fi'
 import { BiExport } from 'react-icons/bi'
 import { RiDeleteBin2Fill } from 'react-icons/ri'
-//import Image from 'next/image'
+const domain_url = getDomainUrl();
 
 // eslint-disable-next-line react/display-name
 const renderRowMenu = (row_data: SongProps, handleRowMenuSelect: (eventKey?: string, row_data?: SongProps)=>void) => ({ onClose, className }: {onClose: ()=>void, className: string}, ref: React.RefObject<HTMLDivElement>) => {
@@ -39,6 +41,7 @@ type SortType = 'asc' | 'desc' | undefined;
 const songs_fetcher = json_fetcher('GET');
 
 const AllSongsPage: NextPage = () => {
+    const router = useRouter();
     const [searchText, setSearchText] = useState<string>('');
     const [sortColumn, setSortColumn] = useState<string>('updatedAt');
     const [sortType, setSortType] =useState<SortType>('desc');
@@ -50,6 +53,8 @@ const AllSongsPage: NextPage = () => {
     const [addSongShow, setAddSongShow] = useState<boolean>(false);
     const [editSongShow, setEditSongShow] = useState<boolean>(false);
     const [editSongId, setEditSongId] = useState<number|undefined>(undefined);
+    const [exportSongShow, setExportSongShow] = useState<boolean>(false);
+    const [exportSongData, setExportSongData] = useState<SongProps|undefined>(undefined);
     const [deleteSongShow, setDeleteSongShow] = useState<boolean>(false);
     const [deleteSongData, setDeleteSongData] = useState<SongProps|undefined>(undefined);
 
@@ -58,6 +63,9 @@ const AllSongsPage: NextPage = () => {
     }
     const handleEditSongClose = () => {
         setEditSongShow(false);
+    }
+    const handleExportSongClose = () => {
+        setExportSongShow(false);
     }
     const handleDeleteSongClose = () => {
         setDeleteSongShow(false);
@@ -70,17 +78,13 @@ const AllSongsPage: NextPage = () => {
                 setEditSongId(song_data?.id)
             }
             else if (eventKey == 'share') {
-                const url = `/api/?${song_data.id}`;
-                navigator.clipboard.writeText(url);
-                toaster.push(
-                    <Message showIcon closable duration={7000} type='info' >
-                        URL: <Tag>{url} </Tag> <br />
-                        Copied URL to clipboard.
-                    </Message>
-                , {placement: 'topCenter'});
+                const url = `${domain_url}/view_song/${song_data.id}`;
+                copyToClipboard(url, 'Copied URL to clipboard');
             }
             else if (eventKey == 'export') {
                 // Export modal
+                setExportSongShow(true)
+                setExportSongData(song_data)
             }
             else if (eventKey == 'delete') {
                 setDeleteSongShow(true)
@@ -106,6 +110,7 @@ const AllSongsPage: NextPage = () => {
         <Container className='page' >
             <SongModal visibility={addSongShow} handleClose={handleAddSongClose} onSuccess={mutate} />
             <SongModal editSong={editSongShow} editSongId={editSongId} visibility={editSongShow} handleClose={handleEditSongClose} onSuccess={mutate} />
+            <ExportSongModal songData={exportSongData} visibility={exportSongShow} handleClose={handleExportSongClose} />
             <DeleteSongModal songData={deleteSongData} visibility={deleteSongShow} handleClose={handleDeleteSongClose} onSuccess={mutate} />
             <Head title={PageName.AllSongs} description="All songs page" />
             <main>
@@ -133,7 +138,8 @@ const AllSongsPage: NextPage = () => {
                     onSortColumn={handleSortColumn}
                     onRowClick={(row_data: unknown, event: React.MouseEvent<Element, MouseEvent>) => {
                         if ((event.target as Element).nodeName == 'DIV') {
-                            handleRowMenuSelect('edit', row_data as SongProps)
+                            //handleRowMenuSelect('edit', row_data as SongProps)
+                            router.push(`/view_song/${(row_data as SongProps).id}`);
                         }
                     }}
                     >
@@ -156,7 +162,7 @@ const AllSongsPage: NextPage = () => {
                                 return (
                                     <>
                                     <Whisper placement="auto" trigger="click" speaker={renderRowMenu(rowData, handleRowMenuSelect)}>
-                                        <IconButton appearance="subtle" icon={<More />} />
+                                        <IconButton appearance="ghost" icon={<More />} />
                                     </Whisper>
                                     </>
                                 );

@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import CSS from 'csstype';
+import { DragDropContext, DropResult, Droppable, Draggable } from "react-beautiful-dnd";
 import useSWR from 'swr'
-import { Steps, DatePicker, Modal, Form, Stack, Button, IconButton, Animation, InputGroup, AutoComplete, List, Loader } from 'rsuite'
+import { Steps, DatePicker, Modal, Form, Stack, Button, IconButton, Animation, InputGroup, AutoComplete, Divider, Loader } from 'rsuite'
 import { PickerInstance } from 'rsuite/Picker'
 import SongModal from './SongModal'
 import { json_fetcher } from '../lib/utils'
@@ -69,19 +71,68 @@ const song_list_fetcher = json_fetcher('GET');
 
 const SongListItem = ({ song_id, index, deleteHandler } : { song_id: number, index: number, deleteHandler: ()=>void }) => {
     const { data, isValidating, error } = useSWR(`/api/get_song/${song_id}`, song_list_fetcher);
+    
+    const getItemStyle = (isDragging: boolean, isDropAnimating: boolean, draggableStyle: CSS.Properties) => {
+        if (!isDropAnimating) {
+            return draggableStyle;
+        }
+        return {
+            ...draggableStyle,
+            background: isDragging ? "lightgreen" : "white",
+            transitionDuration: `0.001s`,
+        };
+    };
 
     return (
-        <List.Item index={index} >
-            <Stack direction='row' justifyContent='space-between' >
-                <Stack spacing='1em' >
-                    <MdDragIndicator />
-                    <h5>
-                        {index+1}. {data ? `${data.title}  ${data.artist}` : 'Loading...'}
-                    </h5>
-                </Stack>
-                <IconButton appearance="primary" color="red" icon={<Trash />} onClick={deleteHandler} />
-            </Stack>
-        </List.Item>
+        <Draggable key={song_id} draggableId={song_id.toString()} index={index}>
+            {(provided, snapshot) => {
+                if (snapshot.isDragging) {
+                    //const offset = { x: 0, y: 35 } //  fixed container left/top position
+                    //const x = provided.draggableProps.style.left - offset.x;
+                    //const y = provided.draggableProps.style.top - offset.y;
+                    (provided.draggableProps.style as CSS.Properties).left = undefined;
+                    (provided.draggableProps.style as CSS.Properties).top = undefined;
+                }
+                return (
+                    <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        style={getItemStyle(
+                            snapshot.isDragging,
+                            snapshot.isDropAnimating,
+                            provided.draggableProps.style as CSS.Properties
+                        )}
+                    >
+                        <Stack direction='row' justifyContent='space-between' style={{
+                                paddingTop: '1em', paddingBottom: '1em',
+                                borderTop:'2px solid #002cb0',
+                                borderBottom:'2px solid #002cb0',
+                                borderRadius:'0.5em'
+                            }} >
+                            <Stack spacing='1em' >
+                                <MdDragIndicator />
+                                <h4>
+                                    {index+1}
+                                </h4>
+                                <Divider vertical />
+                                <Stack spacing='1em' >
+                                    { data && <>
+                                        <h5>
+                                            {data.title}
+                                        </h5>
+                                        <p>
+                                            {data.artist}
+                                        </p>
+                                    </> }
+                                    { !data && <Loader /> }
+                                </Stack>
+                            </Stack>
+                            <IconButton appearance="primary" color="red" icon={<Trash />} onClick={deleteHandler} />
+                        </Stack>
+                    </div>
+            )}}
+        </Draggable>
     )
 }
 
@@ -97,13 +148,25 @@ const SessionModal = (props: SessionModalProps) => {
     }
     
     const [songList, setSongList] = useState<number[]>([]);
-    interface MovedItemInfo {oldIndex: number, newIndex: number}
-    const handleSongSort = (props: MovedItemInfo | undefined) => {
-        const moveData = songList.splice(props?.oldIndex as number, 1);
+
+    // interface MovedItemInfo {oldIndex: number, newIndex: number}
+    // const handleSongSort = (props: MovedItemInfo | undefined) => {
+    //     const moveData = songList.splice(props?.oldIndex as number, 1);
+    //     const newData = [...songList];
+    //     newData.splice(props?.newIndex as number, 0, moveData[0]);
+    //     setSongList(newData);
+    // };
+
+    const onDragEnd = (result: DropResult) => {
+        if (!result.destination) {
+            // dropped outside the list
+            return;
+        }
+        const moveData = songList.splice(result.source.index, 1);
         const newData = [...songList];
-        newData.splice(props?.newIndex as number, 0, moveData[0]);
+        newData.splice(result.destination.index, 0, moveData[0]);
         setSongList(newData);
-    };
+    }
 
     const { data, isValidating, error, mutate } = useSWR(props.editSession ? `/api/get_session/${props.editSessionId}` : null, session_fetcher, {
         revalidateIfStale: false,
@@ -299,7 +362,7 @@ const SessionModal = (props: SessionModalProps) => {
                             </InputGroup>
                         </Form.Group>
                         <Form.Group>
-                            <List sortable onSort={handleSongSort}>
+                            {/* <List sortable onSort={handleSongSort}>
                                 {songList.map((song_id, index) => (
                                     <SongListItem key={index} index={index} song_id={song_id}
                                         deleteHandler={() => {
@@ -307,7 +370,29 @@ const SessionModal = (props: SessionModalProps) => {
                                         }}
                                     />
                                 ))}
-                            </List>
+                            </List> */}
+                            <DragDropContext onDragEnd={onDragEnd}>
+                                <Droppable droppableId="droppable">
+                                    {(provided, snapshot) => (
+                                        <div
+                                            {...provided.droppableProps}
+                                            ref={provided.innerRef}
+                                            style={{
+                                                background: snapshot.isDraggingOver ? "lightblue" : "white",
+                                            }}
+                                        >
+                                        {songList.map((song_id: number, index: number) => (
+                                            <SongListItem key={index} song_id={song_id} index={index} 
+                                                deleteHandler={() => {
+                                                    setSongList([...songList.slice(0,index), ...songList.slice(index+1)])                                            
+                                                }}
+                                            />
+                                        ))}
+                                        {provided.placeholder}
+                                        </div>
+                                    )}
+                                </Droppable>
+                            </DragDropContext>
                         </Form.Group>
                     </Form>
                 </Animation.Collapse>
@@ -337,3 +422,22 @@ const SessionModal = (props: SessionModalProps) => {
 }
 
 export default SessionModal;
+
+/* const SongListItem = ({ song_id, index, deleteHandler } : { song_id: number, index: number, deleteHandler: ()=>void }) => {
+    const { data, isValidating, error } = useSWR(`/api/get_song/${song_id}`, song_list_fetcher);
+
+    return (
+        <List.Item index={index} >
+            <Stack direction='row' justifyContent='space-between' >
+                <Stack spacing='1em' >
+                    <MdDragIndicator />
+                    <h5>
+                        {index+1}. {data ? `${data.title}  ${data.artist}` : 'Loading...'}
+                    </h5>
+                </Stack>
+                <IconButton appearance="primary" color="red" icon={<Trash />} onClick={deleteHandler} />
+            </Stack>
+        </List.Item>
+    )
+}
+ */

@@ -1,14 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../lib/prisma'
-
-async function get_song(song_id: number) {
-    const song = await prisma.song.findFirst({
-        where: {
-            id: song_id,
-        }
-    });
-    return song;
-}
+import { get_song } from '../../../lib/db'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const { method } = req;

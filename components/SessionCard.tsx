@@ -1,16 +1,20 @@
 import React from 'react'
-import { Stack, Divider, Popover, Whisper, Button, IconButton, List } from 'rsuite'
-//import { PickerInstance } from 'rsuite/Picker'
+import { useRouter } from 'next/router'
+import { Stack, Divider, Whisper, Popover, Dropdown, Button, IconButton, List, Loader } from 'rsuite'
 import useSWR from 'swr'
 import { SessionProps } from './types'
 import { json_fetcher } from '../lib/utils'
 //import { FcNext } from 'react-icons/fc'
+import { More } from '@rsuite/icons'
+import { AiOutlineLink } from 'react-icons/ai'
+import { FiEdit } from 'react-icons/fi'
+import { BiExport } from 'react-icons/bi'
 import { RiDeleteBin2Fill } from 'react-icons/ri'
 import hoverStyles from '../styles/hover.module.css'
 
 interface SessionCardProps extends SessionProps {
     onClick?: (event: React.MouseEvent<Element, MouseEvent>) => void,
-    deleteOnClick?: (event: React.MouseEvent<Element, MouseEvent>) => void
+    handleSessionMenuSelect: (eventKey?: string, session_data?: SessionProps)=>void
 }
 
 const song_fetcher = json_fetcher('GET');
@@ -18,20 +22,35 @@ const song_fetcher = json_fetcher('GET');
 const SongItem = ({song_id, index} : {song_id: number, index: number}) => {
     const { data, isValidating, error } = useSWR(`/api/get_song/${song_id}`, song_fetcher);
     return (
-        <h6 style={{wordWrap: 'break-word'}} >
-            {index + 1}. {data ? `${data.title} - ${data.artist}` : 'Loading...'}
-        </h6>
+        <div>
+            <Stack spacing='1em' >
+                <h6 style={{wordWrap: 'break-word'}} >
+                    {index + 1}.&nbsp;  {data ? `${data.title} - ${data.artist}` : ''}
+                </h6>
+                {!data && <Loader />}
+            </Stack>
+        </div>
     );
 }
 
 // eslint-disable-next-line react/display-name
 const SongList = React.forwardRef(({song_ids, ...rest}: {song_ids: number[]}, ref) => {
+    const router = useRouter();
     return (
-        <Popover ref={ref as React.RefObject<HTMLDivElement>} {...rest}  >
+        <Popover  ref={ref as React.RefObject<HTMLDivElement>} {...rest}
+            onClick={(event: React.MouseEvent<Element, MouseEvent>) => {
+                event.stopPropagation();
+            }}
+        >
             <List bordered hover>
             {
                 song_ids.map((id: number, index: number) => 
-                    <List.Item key={index} index={index} >
+                    <List.Item key={index} index={index}
+                        onClick={(event: React.MouseEvent<Element, MouseEvent>) => {
+                            event.stopPropagation();
+                            router.push(`/view_song/${id}`);
+                        }}
+                    >
                         <SongItem song_id={id} index={index} />
                     </List.Item>
                 )
@@ -41,7 +60,26 @@ const SongList = React.forwardRef(({song_ids, ...rest}: {song_ids: number[]}, re
     )
 });
 
+// eslint-disable-next-line react/display-name
+const renderSessionMenu = (props: SessionCardProps) => ({ onClose, className }: {onClose: ()=>void, className: string}, ref: React.RefObject<HTMLDivElement>) => {
+    const onSelect = (eventKey?: string) => {
+        props.handleSessionMenuSelect(eventKey, props);
+        onClose();
+    }
+    return (
+      <Popover ref={ref} className={className} full>
+        <Dropdown.Menu onSelect={onSelect} >
+          <Dropdown.Item icon={<FiEdit style={{marginRight: '0.4em'}} />} eventKey='edit'>Edit</Dropdown.Item>
+          <Dropdown.Item icon={<AiOutlineLink style={{marginRight: '0.4em'}} />} eventKey='share'>Share</Dropdown.Item>
+          <Dropdown.Item icon={<BiExport style={{marginRight: '0.4em'}} />} eventKey='export'>Export</Dropdown.Item>
+          <Dropdown.Item icon={<RiDeleteBin2Fill style={{marginRight: '0.4em'}} />} eventKey='delete'>Delete</Dropdown.Item>
+        </Dropdown.Menu>
+      </Popover>
+    );
+  };
+
 const SessionCard = (props: SessionCardProps) => {
+
     return (
         <div onClick={props.onClick} >
             <Stack justifyContent='space-between' direction='row'
@@ -69,13 +107,13 @@ const SessionCard = (props: SessionCardProps) => {
                             <h5 style={{color: 'red'}} ><i>No songs</i></h5>
                         }
                 </Stack>
-                <IconButton appearance='subtle' icon={<RiDeleteBin2Fill />} onClick={props.deleteOnClick}
-                    style={{
+                <Whisper placement="auto" trigger="click" speaker={renderSessionMenu(props)}>
+                    <IconButton appearance="ghost" icon={<More />} style={{
                         position: 'absolute',
                         bottom: 0,
                         right: 0
-                    }}
-                />
+                    }} />
+                </Whisper>
             </Stack>
         </div>
     )

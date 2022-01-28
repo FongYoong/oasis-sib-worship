@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '../../lib/prisma'
 import { convertStringToIds } from '../../lib/utils'
 
-async function get_all_sessions({lastSessionId='0', searchText='', sortColumn='id', sortType='desc'}: {lastSessionId?: string, searchText?: string, sortColumn?: string, sortType?: string}) {
+async function get_all_sessions({lastSessionId='0', searchText='', sortColumn='date', sortType='desc'}: {lastSessionId?: string, searchText?: string, sortColumn?: string, sortType?: string}) {
     const last_session_id_int = parseInt(lastSessionId);
     console.log("Last session id: " + last_session_id_int);
     const orderBy = sortColumn && sortType ? {
