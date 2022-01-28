@@ -14,7 +14,7 @@ async function export_song({exportType, id}:{exportType: string, id: number}) {
     if (song?.lyrics) {
         let fileBuffer: Buffer;
         if (exportType == 'ppt') {
-            fileBuffer = await convertSongToPPTX(song.title, song.artist ? song.artist: '', song.lyrics);
+            fileBuffer = (await convertSongToPPTX(song.title, song.artist ? song.artist: '', song.lyrics)) as Buffer;
         }
         else if (exportType == 'word') {
             fileBuffer = await convertHTMLToWord(song.lyrics);
