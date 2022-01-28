@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Avatar, Stack, Nav } from 'rsuite'
 import { NavItemProps } from 'rsuite'
 import Link from 'next/link'
@@ -24,6 +24,13 @@ const NavLink = React.forwardRef((props: NavItemProps, ref: React.LegacyRef<HTML
 });
 
 const Head = (props: HeadProps) => {
+
+    const [avatarUrl, setAvatarUrl] = useState<string>('');
+
+    useEffect(() => {
+      setAvatarUrl(`http://${window.location.host}/images/oasis_sib_logo.jpg`)
+    }, []);
+
     return (
       <>
         <NextHead>
@@ -32,22 +39,21 @@ const Head = (props: HeadProps) => {
           <link rel="icon" href="/favicon.ico" />
         </NextHead>
         <Stack direction='row' alignItems='center' spacing='1em' style={{marginBottom: '0em'}} >
-          <Avatar src="images/oasis_sib_logo.jpg" alt="oasis_sib_logo"
-            className={hoverStyles.hover_glow}
-            style={{
-              cursor: 'pointer',
-              margin: "1em",
-              outlineStyle: 'solid',
-              outlineWidth: '1px',
-              outlineColor: "#9e9e9e"
+          <Avatar src={avatarUrl} alt="oasis_sib_logo"
+              className={hoverStyles.hover_glow}
+              style={{
+                cursor: 'pointer',
+                margin: "1em",
+                outlineStyle: 'solid',
+                outlineWidth: '1px',
+                outlineColor: "#9e9e9e"
+              }}
+              onClick={() => {
+                const w = window.open('https://www.facebook.com/theoasissibs2/', '_blank');
+                if(w) {
+                  w.focus()
+                }
             }}
-            onClick={() => {
-              const w = window.open('https://www.facebook.com/theoasissibs2/', '_blank');
-              if(w) {
-                w.focus()
-              }
-          }}
-          
           />
           <Nav activeKey={props.title} appearance='tabs' style={{marginBottom: '1em'}} >
             <Nav.Item as={NavLink} href="/" eventKey={PageName.Home} >Home</Nav.Item>

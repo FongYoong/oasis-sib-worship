@@ -24,7 +24,7 @@ export interface SongProps {
 export enum PageName {
     Home = "Home",
     AllSongs = "All Songs",
-    AddSession = "Add Session",
-    EditSession = "Edit Session",
+    ViewSong = "View Song",
+    ViewSession = "View Session",
     About = "About",
   }

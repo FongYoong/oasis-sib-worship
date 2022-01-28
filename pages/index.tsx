@@ -63,19 +63,12 @@ const HomePage: NextPage = () => {
         handleSessionMenuSelect={handleSessionMenuSelect}
         onClick={(event: React.MouseEvent<Element, MouseEvent>) => {
           if (!['BUTTON', 'svg', 'LI'].includes((event.target as Element).nodeName)) {
-            //setEditSessionShow(true)
-            //setEditSessionId(session.id)
             router.push(`/view_session/${session.id}`);
           }
           else {
             event.stopPropagation();
           }
         }}
-/*         deleteOnClick={(event: React.MouseEvent<Element, MouseEvent>) => {
-          event.stopPropagation();
-          setDeleteSessionShow(true)
-          setDeleteSessionData(session)
-        }} */
       />
     )
   };
