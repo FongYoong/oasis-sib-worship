@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { get_song, convertHTMLToWord } from '../../lib/db'
+import { convertSongToPPTX } from '../../lib/powerpoint'
 
 async function export_song({exportType, id}:{exportType: string, id: number}) {
     // const result = await prisma.song.create({
@@ -12,8 +13,8 @@ async function export_song({exportType, id}:{exportType: string, id: number}) {
     const song = await get_song(id);
     if (song?.lyrics) {
         let fileBuffer: Buffer;
-        if (exportType == 'pptx') {
-            fileBuffer = await convertHTMLToWord(song.lyrics);
+        if (exportType == 'ppt') {
+            fileBuffer = await convertSongToPPTX(song.title, song.artist ? song.artist: '', song.lyrics);
         }
         else if (exportType == 'word') {
             fileBuffer = await convertHTMLToWord(song.lyrics);

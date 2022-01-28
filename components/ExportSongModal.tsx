@@ -11,7 +11,6 @@ import { SongProps } from './types'
 import { SiMicrosoftpowerpoint, SiMicrosoftword } from 'react-icons/si'
 import { GrDocumentPdf } from 'react-icons/gr'
 import { BsGlobe } from 'react-icons/bs'
-import { visibility } from 'html2canvas/dist/types/css/property-descriptors/visibility';
 
 interface ExportSongModalProps {
     visibility: boolean,
@@ -63,6 +62,7 @@ const ExportSongModal = (props: ExportSongModalProps) => {
     });
     const parseOptions = {
         replace: (domNode: DOMNode) => {
+            //console.log(domNode)
             if (domNode.constructor.name == 'Element') {
                 const node = domNode as ReactParserElement;
                 if (node.name == 'p') {
@@ -74,6 +74,8 @@ const ExportSongModal = (props: ExportSongModalProps) => {
                     return <p {...props} > {domToReact(node.children, parseOptions)} </p>;
                 }
                 return domNode
+            }
+            else {
             }
         }
     };
@@ -146,7 +148,7 @@ const ExportSongModal = (props: ExportSongModalProps) => {
         }).then((res) => {
             res.blob().then((binary_blob) => {
                 console.log("Successfully exported song");
-                FileSaver.saveAs(binary_blob, `${file_name}.docx`);
+                FileSaver.saveAs(binary_blob, `${file_name}.${exportType == 'ppt' ? '.pptx': '.docx'}`);
             });
             onSuccess();
         }).catch((error) => {
