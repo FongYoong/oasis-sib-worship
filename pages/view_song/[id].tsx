@@ -14,14 +14,14 @@ import SongModal from '../../components/SongModal'
 import ExportSongModal from '../../components/ExportSongModal'
 import DeleteSongModal from '../../components/DeleteSongModal'
 import { SongProps, PageName } from '../../components/types'
-import { copyToClipboard, json_fetcher } from '../../lib/utils'
+import { domainUrl, copyToClipboard, json_fetcher } from '../../lib/utils'
 import { AiOutlineLink } from 'react-icons/ai'
 import { FiEdit } from 'react-icons/fi'
 import { BiExport } from 'react-icons/bi'
 import { RiDeleteBin2Fill } from 'react-icons/ri'
 const song_fetcher = json_fetcher('GET');
 
-const ViewSongPage: NextPage<{domainUrl: string}> = ({ domainUrl }) => {
+const ViewSongPage: NextPage = () => {
     const router = useRouter()
     const { id } = router.query;
     const song_id = typeof id == 'string' ? parseInt(id) : -1;
@@ -52,7 +52,7 @@ const ViewSongPage: NextPage<{domainUrl: string}> = ({ domainUrl }) => {
         <SongModal editSong={editSongShow} editSongId={song_id} visibility={editSongShow} handleClose={handleEditSongClose} onSuccess={mutate} />
         <ExportSongModal songData={song_data} visibility={exportSongShow} handleClose={handleExportSongClose} />
         <DeleteSongModal songData={song_data} visibility={deleteSongShow} handleClose={handleDeleteSongClose} onSuccess={mutate} />
-        <Head domainUrl={domainUrl} title={PageName.ViewSong} description="Page for a specified song" />
+        <Head title={PageName.ViewSong} description="Page for a specified song" />
         <main>
             <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' >
                 { song_data &&

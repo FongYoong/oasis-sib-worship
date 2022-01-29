@@ -10,11 +10,11 @@ import SessionModal from '../components/SessionModal'
 import ExportSessionModal from '../components/ExportSessionModal'
 import DeleteSessionModal from '../components/DeleteSessionModal'
 import { SessionProps, PageName } from '../components/types'
-import { copyToClipboard, json_fetcher, isPresentOrFutureDate } from '../lib/utils'
+import { domainUrl, copyToClipboard, json_fetcher, isPresentOrFutureDate } from '../lib/utils'
 import { Plus } from '@rsuite/icons'
 const sessions_fetcher = json_fetcher('GET');
 
-const HomePage: NextPage<{domainUrl: string}> = ({ domainUrl }) => {
+const HomePage: NextPage = () => {
   
   const [searchText, setSearchText] = useState<string>('');
   const [lastSessionId, setLastSessionId] = useState<number>(0);
@@ -98,7 +98,7 @@ const HomePage: NextPage<{domainUrl: string}> = ({ domainUrl }) => {
       <SessionModal editSession={editSessionShow} editSessionId={editSessionId} visibility={editSessionShow} handleClose={handleEditSessionClose} onSuccess={mutate} />
       {/* <ExportSessionModal sessionData={exportSessionData} visibility={exportSessionShow} handleClose={handleExportSessionClose} /> */}
       <DeleteSessionModal sessionData={deleteSessionData} visibility={deleteSessionShow} handleClose={handleDeleteSessionClose} onSuccess={mutate} />
-      <Head domainUrl={domainUrl} title={PageName.Home} description="Home page which displays all sessions" />
+      <Head title={PageName.Home} description="Home page which displays all sessions" />
       <main>
         <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' >
           <Animation.Bounce in={isValidating} >
@@ -133,15 +133,6 @@ const HomePage: NextPage<{domainUrl: string}> = ({ domainUrl }) => {
       <Footer />
     </Container>
   )
-}
-
-HomePage.getInitialProps = async (context) => {
-  const { req } = context;
-  let domainUrl = '';
-  if (req && req.headers.host) {
-    domainUrl = req.headers.host;
-  }
-  return { domainUrl }
 }
 
 export default HomePage

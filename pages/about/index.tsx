@@ -4,15 +4,15 @@ import Head from '../../components/Head'
 import Footer from '../../components/Footer'
 import SessionCard from '../../components/SessionCard'
 import { SessionProps, PageName } from '../../components/types'
-import { isPresentOrFutureDate } from '../../lib/utils'
+import { domainUrl } from '../../lib/utils'
 
 //import Image from 'next/image'
 
-const AboutPage: NextPage<{domainUrl: string}> = ({ domainUrl }) => {
+const AboutPage: NextPage = () => {
 
   return (
     <Container className='page' >
-      <Head domainUrl={domainUrl} title={PageName.About} description="About page" />
+      <Head title={PageName.About} description="About page" />
       <main>
         <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' >
           <Stack direction='column' spacing="1em" >
@@ -27,15 +27,6 @@ const AboutPage: NextPage<{domainUrl: string}> = ({ domainUrl }) => {
       <Footer />
     </Container>
   )
-}
-
-AboutPage.getInitialProps = async (context) => {
-  const { req } = context;
-  let domainUrl = '';
-  if (req && req.headers.host) {
-    domainUrl = req.headers.host;
-  }
-  return { domainUrl }
 }
 
 export default AboutPage

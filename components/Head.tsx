@@ -7,9 +7,9 @@ import Link from 'next/link'
 import NextHead from 'next/head'
 import hoverStyles from '../styles/hover.module.css'
 import { PageName } from './types'
+import { domainUrl } from '../lib/utils'
 
 interface HeadProps {
-  domainUrl: string,
   title: PageName,
   description: string
 }
@@ -25,7 +25,7 @@ const NavLink = React.forwardRef((props: NavItemProps, ref: React.LegacyRef<HTML
 });
 
 const Head = (props: HeadProps) => {
-  console.log(`http://${props.domainUrl}/images/oasis_sib_logo.jpg`)
+  console.log(`http://${domainUrl}/images/oasis_sib_logo.jpg`)
     //const [avatarUrl, setAvatarUrl] = useState<string>('');
     // useEffect(() => {
     //   setAvatarUrl(`http://${window.location.host}/images/oasis_sib_logo.jpg`)
@@ -39,7 +39,7 @@ const Head = (props: HeadProps) => {
           <link rel="icon" href="/favicon.ico" />
         </NextHead>
         <Stack direction='row' alignItems='center' spacing='1em' style={{marginBottom: '0em'}} >
-          <Avatar src={`http://${process.env.VERCEL_URL}/images/oasis_sib_logo.jpg`} alt="oasis_sib_logo"
+          <Avatar src={`http://${domainUrl}/images/oasis_sib_logo.jpg`} alt="oasis_sib_logo"
               className={hoverStyles.hover_glow}
               style={{
                 cursor: 'pointer',

@@ -106,7 +106,6 @@ const ExportSongModal = (props: ExportSongModalProps) => {
         setExportLoading(true);
         if(exportType == 'pdf') {
             if (lyricsDivRef.current) {
-                //jspdfInstance.setCharSpace(1)
                 jspdfInstance.html(lyricsDivRef.current, {
                     callback: function (doc: jsPDF) {
                         const blob = doc.output('blob');

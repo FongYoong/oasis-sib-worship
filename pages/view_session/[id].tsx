@@ -13,7 +13,7 @@ import { copyToClipboard, json_fetcher, isPresentOrFutureDate } from '../../lib/
 import { Plus } from '@rsuite/icons'
 const sessions_fetcher = json_fetcher('GET');
 
-const ViewSessionPage: NextPage<{domainUrl: string}> = ({ domainUrl }) => {
+const ViewSessionPage: NextPage = () => {
   
   const [searchText, setSearchText] = useState<string>('');
   const [lastSessionId, setLastSessionId] = useState<number>(0);
@@ -22,7 +22,7 @@ const ViewSessionPage: NextPage<{domainUrl: string}> = ({ domainUrl }) => {
 
   return (
     <Container className='page' >
-      <Head domainUrl={domainUrl} title={PageName.ViewSession} description="Home page which displays all sessions" />
+      <Head title={PageName.ViewSession} description="Home page which displays all sessions" />
       <main>
         <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' >
         </Stack>
@@ -30,15 +30,6 @@ const ViewSessionPage: NextPage<{domainUrl: string}> = ({ domainUrl }) => {
       <Footer />
     </Container>
   )
-}
-
-ViewSessionPage.getInitialProps = async (context) => {
-  const { req } = context;
-  let domainUrl = '';
-  if (req && req.headers.host) {
-    domainUrl = req.headers.host;
-  }
-  return { domainUrl }
 }
 
 export default ViewSessionPage

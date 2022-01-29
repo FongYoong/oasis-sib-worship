@@ -21,3 +21,5 @@ export const copyToClipboard = (value: string, message: string) => {
         </Message>
     , {placement: 'topCenter'});
 }
+
+export const domainUrl = process.env.NEXT_PUBLIC_VERCEL_URL ? process.env.NEXT_PUBLIC_VERCEL_URL : 'localhost:3000';
