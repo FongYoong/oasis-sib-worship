@@ -14,7 +14,7 @@ import { MdPiano, MdDragIndicator } from 'react-icons/md'
 import { FaDrumSteelpan, FaMusic } from 'react-icons/fa'
 import { IoPersonAdd } from 'react-icons/io5'
 import { Plus, Trash  } from '@rsuite/icons'
-import { SongProps } from './types'
+import { SongProps } from '../lib/types'
 //import hoverStyles from '../styles/hover.module.css'
 
 interface SessionModalProps {

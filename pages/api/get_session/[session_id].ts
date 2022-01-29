@@ -1,15 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '../../../lib/prisma'
+import { get_session } from '../../../lib/db'
 import { convertStringToIds } from '../../../lib/utils'
-
-async function get_session(session_id: number) {
-    const song = await prisma.session.findFirst({
-        where: {
-            id: session_id,
-        }
-    });
-    return song;
-}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const { method } = req;

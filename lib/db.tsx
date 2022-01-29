@@ -22,3 +22,20 @@ export async function get_song(song_id: number) {
     return song;
 }
 
+export async function get_multiple_songs(song_ids: number[]) {
+    const songs = await prisma.song.findMany({
+        where: {
+            id: { in: song_ids },
+        }
+    });
+    return songs;
+}
+
+export async function get_session(session_id: number) {
+    const song = await prisma.session.findFirst({
+        where: {
+            id: session_id,
+        }
+    });
+    return song;
+}

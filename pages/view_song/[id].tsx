@@ -13,7 +13,7 @@ import Footer from '../../components/Footer'
 import SongModal from '../../components/SongModal'
 import ExportSongModal from '../../components/ExportSongModal'
 import DeleteSongModal from '../../components/DeleteSongModal'
-import { SongProps, PageName } from '../../components/types'
+import { SongProps, PageName } from '../../lib/types'
 import { domainUrl, copyToClipboard, json_fetcher } from '../../lib/utils'
 import { AiOutlineLink } from 'react-icons/ai'
 import { FiEdit } from 'react-icons/fi'
@@ -40,11 +40,7 @@ const ViewSongPage: NextPage = () => {
         setDeleteSongShow(false);
     }
 
-    const song_data = data ? {
-        ...data,
-        updatedAt: new Date(data.updatedAt).toLocaleString()
-    } : undefined;
-    console.log(song_data)
+    const song_data = data;
     console.log(error);
 
     return (
@@ -104,15 +100,6 @@ const ViewSongPage: NextPage = () => {
         <Footer />
     </Container>
     )
-}
-
-ViewSongPage.getInitialProps = async (context) => {
-    const { req } = context;
-    let domainUrl = '';
-    if (req && req.headers.host) {
-        domainUrl = req.headers.host;
-    }
-    return { domainUrl }
 }
 
 export default ViewSongPage

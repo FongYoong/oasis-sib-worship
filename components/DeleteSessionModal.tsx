@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Modal, Stack, Button, Tag, InputGroup, Input } from 'rsuite'
-import { SessionProps } from './types'
+import { SessionProps } from '../lib/types'
 import { BsFillPersonFill } from 'react-icons/bs'
 
 interface DeleteSessionModalProps {

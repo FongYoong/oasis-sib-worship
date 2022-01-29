@@ -7,7 +7,7 @@ import {
 
 const fontFace = "Trebuchet MS"; // https://blog.hubspot.com/website/web-safe-html-css-fonts
 
-const TitleSlide = (title: string, artist: string) => {
+export const TitleSlide = (title: string, artist: string) => {
   return (
     <Slide style={{ backgroundColor: "#00FF00" }} >
     <Shape
@@ -39,7 +39,7 @@ const TitleSlide = (title: string, artist: string) => {
   )
 }
 
-const NormalSlide = (text: string) => {
+export const NormalSlide = (text: string) => {
   return (
     <Slide style={{ backgroundColor: "#00FF00" }} >
       <Shape
@@ -62,7 +62,7 @@ const NormalSlide = (text: string) => {
   )
 }
 
-const SectionSlide = (text: string) => {
+export const SectionSlide = (text: string) => {
   return (
     <Slide style={{ backgroundColor: "#FFC000" }} >
       <Shape
@@ -85,13 +85,10 @@ const SectionSlide = (text: string) => {
   )
 }
 
-const getTextFromNodes = (nodes: Node[]) => {
+export const getTextFromNodes = (nodes: Node[]) => {
   const concatString: string =  nodes.map((node) => {
     if (node.constructor.name == 'Text' && "nodeValue" in node) {
       return (node as ReactParserText).data;
-      //return (node as DataNode).nodeValue
-      //const text = node.children[0].type as string;
-      //slides.push(NormalSlide(text))
     }
     else {
       return getTextFromNodes((node as ReactParserElement).children);
@@ -145,29 +142,21 @@ export async function convertSongToPPTX(title: string, artist: string, lyrics: s
                 const text = getTextFromNodes(node.children);
                 slides.push(SectionSlide(text));
               }
-              //else if (node.name == 'p') {
-                  //const props = attributesToProps(node.attribs);
-                  //props.style = {
-                  //    ...props.style,
-                  //    wordSpacing: '0',
-                  //}
-                  //return <p {...props} > {domToReact(node.children, parseOptions)} </p>;
               else {
                 slideType = "Normal";
                 const text = getTextFromNodes(node.children);
                 normalTextTemp.push(text);
               }
           }
-          //else if (domNode.constructor.name == 'Text') {
-            //const node = domNode as ReactParserText;
-            //const text = node.children[0].type as string;
-            //slides.push(NormalSlide(text))
-          //}
         }
       }
   };
   parse(lyrics, parseOptions);
   processNormalText(); // Add normal slides for remaining text
+  return slides;
+}
+
+export async function convertPPTXtoFileBuffer(slides: JSX.Element[]) {
   const fileBuffer = await pptxRender(
     <Presentation>
       {slides.map((slide) => slide)}

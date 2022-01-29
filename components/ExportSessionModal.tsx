@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from 'react'
-import parse,{ Element as ReactParserElement, DOMNode, domToReact, attributesToProps  } from 'html-react-parser';
+import parse from 'html-react-parser';
 import slugify from 'slugify'
 import { jsPDF } from "jspdf"
 let jspdfInstance = new jsPDF();
 import FileSaver from 'file-saver'
 import useSWR from 'swr'
 import { Modal, Stack, Button, Dropdown, Tag, toaster, Message } from 'rsuite'
-import { json_fetcher } from '../lib/utils'
-import { SongProps } from './types'
+import { json_fetcher, exportPDFParseOptions, mergeSessiontoHTML } from '../lib/utils'
+import { SessionProps, SongProps } from '../lib/types'
 import { SiMicrosoftpowerpoint, SiMicrosoftword } from 'react-icons/si'
 import { GrDocumentPdf } from 'react-icons/gr'
 import { BsGlobe } from 'react-icons/bs'
@@ -16,7 +16,7 @@ interface ExportSessionModalProps {
     visibility: boolean,
     handleClose: () => void,
     onSuccess?: () => void,
-    songData?: SongProps // This data is incomplete as it does not contain lyrics
+    sessionData?: SessionProps
 }
 
 type ExportType = "ppt" | "pdf" | "word" | "html";
@@ -48,40 +48,26 @@ const getExportDetails = (exportType: ExportType) => {
     }
 }
 
-const song_fetcher = json_fetcher('GET');
+const songs_fetcher = json_fetcher('GET');
 
 const ExportSessionModal = (props: ExportSessionModalProps) => {
 
     useEffect(() => { import("jspdf/dist/polyfills.es") }, []);
 
     const lyricsDivRef = useRef<HTMLDivElement>(null);
-    const { data, isValidating, error } = useSWR(props.visibility ? `/api/get_song/${props.songData?.id}` : null, song_fetcher, {
-        revalidateIfStale: false,
-        revalidateOnFocus: false,
-        revalidateOnReconnect: false
-    });
-    const parseOptions = {
-        replace: (domNode: DOMNode) => {
-            //console.log(domNode)
-            if (domNode.constructor.name == 'Element') {
-                const node = domNode as ReactParserElement;
-                if (node.name == 'p') {
-                    const props = attributesToProps(node.attribs);
-                    props.style = {
-                        ...props.style,
-                        wordSpacing: '0',
-                    }
-                    return <p {...props} > {domToReact(node.children, parseOptions)} </p>;
-                }
-                return domNode
-            }
-            else {
-            }
-        }
-    };
-    const processedLyrics = data ? parse(data.lyrics, parseOptions) : <></>;
+    const { data, isValidating, error } = useSWR(props.visibility ? `/api/get_song/${props.sessionData?.songs}?multiple` : null, songs_fetcher);
 
-    const [exportType, setExportType] = useState<ExportType>('pdf');
+    //const songArray: SongProps[] = data ? data : [];
+    const songArray: SongProps[] = data ? data.map((session: { date: string }) => {
+        return {
+            ...session,
+            date: new Date(session.date),
+        }
+    }) : [];
+    const mergedLyrics = mergeSessiontoHTML(props.sessionData, songArray)
+    const parsedLyrics = data ? parse(mergedLyrics, exportPDFParseOptions) : <></>;
+
+    const [exportType, setExportType] = useState<ExportType>('ppt');
     const exportTypeDetails = getExportDetails(exportType);
     const [exportLoading, setExportLoading] = useState<boolean>(false);
 
@@ -101,8 +87,8 @@ const ExportSessionModal = (props: ExportSessionModalProps) => {
         , {placement: 'topCenter'});
     }
 
-    const exportSong = () => {
-        const file_name = slugify(`${data.title} - ${data.artist}`, '_');
+    const exportSession = () => {
+        const file_name = slugify(`${new Date(props.sessionData?.date as unknown as string).toDateString()} - ${props.sessionData?.worship_leader}`, '_');
         setExportLoading(true);
         if(exportType == 'pdf') {
             if (lyricsDivRef.current) {
@@ -128,26 +114,27 @@ const ExportSessionModal = (props: ExportSessionModalProps) => {
             }
         }
         else if (exportType == 'html') {
-            const blob = new Blob([data.lyrics], {type: "text/plain;charset=utf-8"});
+            const blob = new Blob([mergedLyrics], {type: "text/plain;charset=utf-8"});
             FileSaver.saveAs(blob, `${file_name}.html`);
             onSuccess();
         }
         else {
-            exportSongAPI(file_name);
+            exportSessionAPI(file_name);
         }
     }
 
-    const exportSongAPI = (file_name: string) => {
+    const exportSessionAPI = (file_name: string) => {
         const body = JSON.stringify({
             exportType,
-            id: props.songData?.id,
+            id: props.sessionData?.id,
+            song_ids: props.sessionData?.songs
         });
-        fetch('/api/export_song', {
+        fetch('/api/export_session', {
             method: 'POST',
             body: body,
         }).then((res) => {
             res.blob().then((binary_blob) => {
-                console.log("Successfully exported song");
+                console.log("Successfully exported session");
                 FileSaver.saveAs(binary_blob, `${file_name}.${exportType == 'ppt' ? '.pptx': '.docx'}`);
             });
             onSuccess();
@@ -163,7 +150,7 @@ const ExportSessionModal = (props: ExportSessionModalProps) => {
             { data &&
                 <div style={{ display: 'none'}} >
                     <div ref={lyricsDivRef} style={{ width: '100vw', height: '100vh', wordSpacing: 10 }} >
-                        {processedLyrics}
+                        {parsedLyrics}
                     </div>
                 </div>
             }
@@ -179,7 +166,7 @@ const ExportSessionModal = (props: ExportSessionModalProps) => {
                     }}
                 >
                     {
-                        ["pdf", "ppt", "word", "html"].map((type: string, index: number) => {
+                        ["ppt", "word", "pdf", "html"].map((type: string, index: number) => {
                             const detail = getExportDetails(type as ExportType);
                             if (detail) {
                                 return (
@@ -194,7 +181,7 @@ const ExportSessionModal = (props: ExportSessionModalProps) => {
                 </Stack>
             </Modal.Body>
             <Modal.Footer>
-                <Button loading={pauseModal} disabled={!props.songData} onClick={exportSong} color="blue" appearance="primary">
+                <Button loading={pauseModal} disabled={!props.sessionData} onClick={exportSession} color="blue" appearance="primary">
                     Download
                 </Button>
                 <Button onClick={props.handleClose} appearance="subtle">

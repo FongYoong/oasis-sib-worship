@@ -3,7 +3,7 @@ import { Container, Button, Stack, Divider, Sidebar } from 'rsuite';
 import Head from '../../components/Head'
 import Footer from '../../components/Footer'
 import SessionCard from '../../components/SessionCard'
-import { SessionProps, PageName } from '../../components/types'
+import { SessionProps, PageName } from '../../lib/types'
 import { domainUrl } from '../../lib/utils'
 
 //import Image from 'next/image'

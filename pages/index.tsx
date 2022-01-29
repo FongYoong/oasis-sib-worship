@@ -9,7 +9,7 @@ import SessionCard from '../components/SessionCard'
 import SessionModal from '../components/SessionModal'
 import ExportSessionModal from '../components/ExportSessionModal'
 import DeleteSessionModal from '../components/DeleteSessionModal'
-import { SessionProps, PageName } from '../components/types'
+import { SessionProps, PageName } from '../lib/types'
 import { domainUrl, copyToClipboard, json_fetcher, isPresentOrFutureDate } from '../lib/utils'
 import { Plus } from '@rsuite/icons'
 const sessions_fetcher = json_fetcher('GET');
@@ -96,7 +96,7 @@ const HomePage: NextPage = () => {
     <Container className='page' >
       <SessionModal visibility={addSessionShow} handleClose={handleAddSessionClose} onSuccess={mutate} />
       <SessionModal editSession={editSessionShow} editSessionId={editSessionId} visibility={editSessionShow} handleClose={handleEditSessionClose} onSuccess={mutate} />
-      {/* <ExportSessionModal sessionData={exportSessionData} visibility={exportSessionShow} handleClose={handleExportSessionClose} /> */}
+      <ExportSessionModal sessionData={exportSessionData} visibility={exportSessionShow} handleClose={handleExportSessionClose} />
       <DeleteSessionModal sessionData={deleteSessionData} visibility={deleteSessionShow} handleClose={handleDeleteSessionClose} onSuccess={mutate} />
       <Head title={PageName.Home} description="Home page which displays all sessions" />
       <main>

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Modal, Stack, Button, InputGroup, Input } from 'rsuite'
-import { SongProps } from './types'
+import { SongProps } from '../lib/types'
 import { MdTitle } from 'react-icons/md'
 import { BsFillPersonFill } from 'react-icons/bs'
 

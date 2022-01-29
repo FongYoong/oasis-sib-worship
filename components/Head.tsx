@@ -6,7 +6,7 @@ import { NavItemProps } from 'rsuite'
 import Link from 'next/link'
 import NextHead from 'next/head'
 import hoverStyles from '../styles/hover.module.css'
-import { PageName } from './types'
+import { PageName } from '../lib/types'
 import { domainUrl } from '../lib/utils'
 
 interface HeadProps {
@@ -25,12 +25,6 @@ const NavLink = React.forwardRef((props: NavItemProps, ref: React.LegacyRef<HTML
 });
 
 const Head = (props: HeadProps) => {
-  console.log(`http://${domainUrl}/images/oasis_sib_logo.jpg`)
-    //const [avatarUrl, setAvatarUrl] = useState<string>('');
-    // useEffect(() => {
-    //   setAvatarUrl(`http://${window.location.host}/images/oasis_sib_logo.jpg`)
-    // }, []);
-
     return (
       <>
         <NextHead>

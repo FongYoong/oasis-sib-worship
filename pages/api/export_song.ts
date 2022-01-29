@@ -1,20 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { get_song, convertHTMLToWord } from '../../lib/db'
-import { convertSongToPPTX } from '../../lib/powerpoint'
+import { convertSongToPPTX, convertPPTXtoFileBuffer } from '../../lib/powerpoint'
 
 async function export_song({exportType, id}:{exportType: string, id: number}) {
-    // const result = await prisma.song.create({
-    //     data: {
-    //         title,
-    //         artist,
-    //         lyrics
-    //     },
-    // });
     const song = await get_song(id);
     if (song?.lyrics) {
         let fileBuffer: Buffer;
         if (exportType == 'ppt') {
-            fileBuffer = (await convertSongToPPTX(song.title, song.artist ? song.artist: '', song.lyrics)) as Buffer;
+            const slides = await convertSongToPPTX(song.title, song.artist ? song.artist: '', song.lyrics);
+            fileBuffer = (await convertPPTXtoFileBuffer(slides)) as Buffer;
         }
         else if (exportType == 'word') {
             fileBuffer = await convertHTMLToWord(song.lyrics);
@@ -38,14 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 console.log(file_buffer);
                 res.write(file_buffer, 'binary');
                 res.end(null, 'binary');
-                // res.writeHead(200, {
-                //     'Content-Type': 'audio/mpeg',
-                //     'Content-Length': stat.size
-                // });
-                //const readStream = fileSystem.createReadStream(filePath);
-                //readStream.pipe(res);
                 console.log('Exported song successfully!');
-                //res.status(201).json({ message: 'Exported song successfully!' });
             } catch(e) {
                 console.error("Request error", e);
                 res.status(500).json({ message: 'Failed to export song!' });
