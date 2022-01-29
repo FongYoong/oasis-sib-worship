@@ -7,14 +7,14 @@ import Head from '../components/Head'
 import Footer from '../components/Footer'
 import SessionCard from '../components/SessionCard'
 import SessionModal from '../components/SessionModal'
+import ExportSessionModal from '../components/ExportSessionModal'
 import DeleteSessionModal from '../components/DeleteSessionModal'
 import { SessionProps, PageName } from '../components/types'
-import { getDomainUrl, copyToClipboard, json_fetcher, isPresentOrFutureDate } from '../lib/utils'
+import { copyToClipboard, json_fetcher, isPresentOrFutureDate } from '../lib/utils'
 import { Plus } from '@rsuite/icons'
-const domain_url = getDomainUrl();
 const sessions_fetcher = json_fetcher('GET');
 
-const HomePage: NextPage = () => {
+const HomePage: NextPage<{domainUrl: string}> = ({ domainUrl }) => {
   
   const [searchText, setSearchText] = useState<string>('');
   const [lastSessionId, setLastSessionId] = useState<number>(0);
@@ -23,6 +23,8 @@ const HomePage: NextPage = () => {
   const [addSessionShow, setAddSessionShow] = useState<boolean>(false);
   const [editSessionShow, setEditSessionShow] = useState<boolean>(false);
   const [editSessionId, setEditSessionId] = useState<number|undefined>(undefined);
+  const [exportSessionShow, setExportSessionShow] = useState<boolean>(false);
+  const [exportSessionData, setExportSessionData] = useState<SessionProps|undefined>(undefined);
   const [deleteSessionShow, setDeleteSessionShow] = useState<boolean>(false);
   const [deleteSessionData, setDeleteSessionData] = useState<SessionProps|undefined>(undefined);
 
@@ -31,6 +33,9 @@ const HomePage: NextPage = () => {
 }
   const handleEditSessionClose = () => {
     setEditSessionShow(false);
+  }
+  const handleExportSessionClose = () => {
+    setExportSessionShow(false);
   }
   const handleDeleteSessionClose = () => {
     setDeleteSessionShow(false);
@@ -43,11 +48,12 @@ const HomePage: NextPage = () => {
             setEditSessionId(session_data?.id)
         }
         else if (eventKey == 'share') {
-            const url = `${domain_url}/view_session/${session_data.id}`;
+            const url = `${domainUrl}/view_session/${session_data.id}`;
             copyToClipboard(url, 'Copied URL to clipboard');
         }
         else if (eventKey == 'export') {
-            // Export modal
+          setExportSessionShow(true)
+          setExportSessionData(session_data)
         }
         else if (eventKey == 'delete') {
             setDeleteSessionShow(true)
@@ -90,8 +96,9 @@ const HomePage: NextPage = () => {
     <Container className='page' >
       <SessionModal visibility={addSessionShow} handleClose={handleAddSessionClose} onSuccess={mutate} />
       <SessionModal editSession={editSessionShow} editSessionId={editSessionId} visibility={editSessionShow} handleClose={handleEditSessionClose} onSuccess={mutate} />
+      {/* <ExportSessionModal sessionData={exportSessionData} visibility={exportSessionShow} handleClose={handleExportSessionClose} /> */}
       <DeleteSessionModal sessionData={deleteSessionData} visibility={deleteSessionShow} handleClose={handleDeleteSessionClose} onSuccess={mutate} />
-      <Head title={PageName.Home} description="Home page which displays all sessions" />
+      <Head domainUrl={domainUrl} title={PageName.Home} description="Home page which displays all sessions" />
       <main>
         <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' >
           <Animation.Bounce in={isValidating} >
@@ -126,6 +133,15 @@ const HomePage: NextPage = () => {
       <Footer />
     </Container>
   )
+}
+
+HomePage.getInitialProps = async (context) => {
+  const { req } = context;
+  let domainUrl = '';
+  if (req && req.headers.host) {
+    domainUrl = req.headers.host;
+  }
+  return { domainUrl }
 }
 
 export default HomePage

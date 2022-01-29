@@ -12,7 +12,6 @@ import { json_fetcher } from '../lib/utils'
 import { BsFillPersonFill } from 'react-icons/bs'
 import { MdTitle } from 'react-icons/md'
 import { Image as ImageIcon } from '@rsuite/icons'
-import { SessionProps } from './types'
 //import hoverStyles from '../styles/hover.module.css'
 
 interface SongModalProps {

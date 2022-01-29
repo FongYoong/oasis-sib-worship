@@ -12,12 +12,6 @@ export const convertStringToIds = (data: string) => {
     return ids;
 };
 
-export const getDomainUrl = () => {
-    const vercel_given = process.env.VERCEL_URL;
-    const localhost = "localhost:3000";
-    return vercel_given ? vercel_given : localhost;
-};
-
 export const copyToClipboard = (value: string, message: string) => {
     navigator.clipboard.writeText(value);
     toaster.push(

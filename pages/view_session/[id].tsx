@@ -9,12 +9,11 @@ import SessionCard from '../../components/SessionCard'
 import SessionModal from '../../components/SessionModal'
 import DeleteSessionModal from '../../components/DeleteSessionModal'
 import { SessionProps, PageName } from '../../components/types'
-import { getDomainUrl, copyToClipboard, json_fetcher, isPresentOrFutureDate } from '../../lib/utils'
+import { copyToClipboard, json_fetcher, isPresentOrFutureDate } from '../../lib/utils'
 import { Plus } from '@rsuite/icons'
-const domain_url = getDomainUrl();
 const sessions_fetcher = json_fetcher('GET');
 
-const ViewSessionPage: NextPage = () => {
+const ViewSessionPage: NextPage<{domainUrl: string}> = ({ domainUrl }) => {
   
   const [searchText, setSearchText] = useState<string>('');
   const [lastSessionId, setLastSessionId] = useState<number>(0);
@@ -23,7 +22,7 @@ const ViewSessionPage: NextPage = () => {
 
   return (
     <Container className='page' >
-      <Head title={PageName.ViewSession} description="Home page which displays all sessions" />
+      <Head domainUrl={domainUrl} title={PageName.ViewSession} description="Home page which displays all sessions" />
       <main>
         <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' >
         </Stack>
@@ -31,6 +30,15 @@ const ViewSessionPage: NextPage = () => {
       <Footer />
     </Container>
   )
+}
+
+ViewSessionPage.getInitialProps = async (context) => {
+  const { req } = context;
+  let domainUrl = '';
+  if (req && req.headers.host) {
+    domainUrl = req.headers.host;
+  }
+  return { domainUrl }
 }
 
 export default ViewSessionPage

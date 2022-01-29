@@ -9,14 +9,13 @@ import Footer from '../../components/Footer'
 import SongModal from '../../components/SongModal'
 import ExportSongModal from '../../components/ExportSongModal'
 import DeleteSongModal from '../../components/DeleteSongModal'
-import { PageName, SongProps } from '../../components/types'
-import { getDomainUrl, copyToClipboard, json_fetcher } from '../../lib/utils'
+import { SongProps, PageName } from '../../components/types'
+import { copyToClipboard, json_fetcher } from '../../lib/utils'
 import { Plus, Search, More } from '@rsuite/icons'
 import { AiOutlineLink } from 'react-icons/ai'
 import { FiEdit } from 'react-icons/fi'
 import { BiExport } from 'react-icons/bi'
 import { RiDeleteBin2Fill } from 'react-icons/ri'
-const domain_url = getDomainUrl();
 
 // eslint-disable-next-line react/display-name
 const renderRowMenu = (row_data: SongProps, handleRowMenuSelect: (eventKey?: string, row_data?: SongProps)=>void) => ({ onClose, className }: {onClose: ()=>void, className: string}, ref: React.RefObject<HTMLDivElement>) => {
@@ -40,7 +39,7 @@ type SortType = 'asc' | 'desc' | undefined;
 
 const songs_fetcher = json_fetcher('GET');
 
-const AllSongsPage: NextPage = () => {
+const AllSongsPage: NextPage<{domainUrl: string}> = ({ domainUrl }) => {
     const router = useRouter();
     const [searchText, setSearchText] = useState<string>('');
     const [sortColumn, setSortColumn] = useState<string>('updatedAt');
@@ -78,11 +77,10 @@ const AllSongsPage: NextPage = () => {
                 setEditSongId(song_data?.id)
             }
             else if (eventKey == 'share') {
-                const url = `${domain_url}/view_song/${song_data.id}`;
+                const url = `${domainUrl}/view_song/${song_data.id}`;
                 copyToClipboard(url, 'Copied URL to clipboard');
             }
             else if (eventKey == 'export') {
-                // Export modal
                 setExportSongShow(true)
                 setExportSongData(song_data)
             }
@@ -112,7 +110,7 @@ const AllSongsPage: NextPage = () => {
             <SongModal editSong={editSongShow} editSongId={editSongId} visibility={editSongShow} handleClose={handleEditSongClose} onSuccess={mutate} />
             <ExportSongModal songData={exportSongData} visibility={exportSongShow} handleClose={handleExportSongClose} />
             <DeleteSongModal songData={deleteSongData} visibility={deleteSongShow} handleClose={handleDeleteSongClose} onSuccess={mutate} />
-            <Head title={PageName.AllSongs} description="All songs page" />
+            <Head domainUrl={domainUrl} title={PageName.AllSongs} description="All songs page" />
             <main>
                 <Stack wrap direction='row' justifyContent='center' spacing="1em" >
                     <IconButton appearance="primary" color="green" icon={<Plus />} onClick={() => setAddSongShow(true)} >
@@ -175,6 +173,15 @@ const AllSongsPage: NextPage = () => {
             <Footer />
         </Container>
     )
+}
+
+AllSongsPage.getInitialProps = async (context) => {
+    const { req } = context;
+    let domainUrl = '';
+    if (req && req.headers.host) {
+      domainUrl = req.headers.host;
+    }
+    return { domainUrl }
 }
 
 export default AllSongsPage

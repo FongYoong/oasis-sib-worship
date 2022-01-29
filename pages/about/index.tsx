@@ -8,12 +8,11 @@ import { isPresentOrFutureDate } from '../../lib/utils'
 
 //import Image from 'next/image'
 
-const AboutPage: NextPage = () => {
-
+const AboutPage: NextPage<{domainUrl: string}> = ({ domainUrl }) => {
 
   return (
     <Container className='page' >
-      <Head title={PageName.About} description="About page" />
+      <Head domainUrl={domainUrl} title={PageName.About} description="About page" />
       <main>
         <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' >
           <Stack direction='column' spacing="1em" >
@@ -28,6 +27,15 @@ const AboutPage: NextPage = () => {
       <Footer />
     </Container>
   )
+}
+
+AboutPage.getInitialProps = async (context) => {
+  const { req } = context;
+  let domainUrl = '';
+  if (req && req.headers.host) {
+    domainUrl = req.headers.host;
+  }
+  return { domainUrl }
 }
 
 export default AboutPage

@@ -1,3 +1,4 @@
+
 type Person = string;
 
 export interface SessionProps {
@@ -27,4 +28,4 @@ export enum PageName {
     ViewSong = "View Song",
     ViewSession = "View Session",
     About = "About",
-  }
+}

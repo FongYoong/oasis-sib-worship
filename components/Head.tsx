@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Avatar, Stack, Nav } from 'rsuite'
 import { NavItemProps } from 'rsuite'
 import Link from 'next/link'
@@ -9,6 +9,7 @@ import hoverStyles from '../styles/hover.module.css'
 import { PageName } from './types'
 
 interface HeadProps {
+  domainUrl: string,
   title: PageName,
   description: string
 }
@@ -24,12 +25,11 @@ const NavLink = React.forwardRef((props: NavItemProps, ref: React.LegacyRef<HTML
 });
 
 const Head = (props: HeadProps) => {
-
-    const [avatarUrl, setAvatarUrl] = useState<string>('');
-
-    useEffect(() => {
-      setAvatarUrl(`http://${window.location.host}/images/oasis_sib_logo.jpg`)
-    }, []);
+  console.log(`http://${props.domainUrl}/images/oasis_sib_logo.jpg`)
+    //const [avatarUrl, setAvatarUrl] = useState<string>('');
+    // useEffect(() => {
+    //   setAvatarUrl(`http://${window.location.host}/images/oasis_sib_logo.jpg`)
+    // }, []);
 
     return (
       <>
@@ -39,7 +39,7 @@ const Head = (props: HeadProps) => {
           <link rel="icon" href="/favicon.ico" />
         </NextHead>
         <Stack direction='row' alignItems='center' spacing='1em' style={{marginBottom: '0em'}} >
-          <Avatar src={avatarUrl} alt="oasis_sib_logo"
+          <Avatar src={`http://${process.env.VERCEL_URL}/images/oasis_sib_logo.jpg`} alt="oasis_sib_logo"
               className={hoverStyles.hover_glow}
               style={{
                 cursor: 'pointer',

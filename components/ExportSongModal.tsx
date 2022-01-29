@@ -171,26 +171,27 @@ const ExportSongModal = (props: ExportSongModalProps) => {
                 <Modal.Title>Export Song</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <Stack direction='column' spacing='1em' >
-                <Dropdown title={exportTypeDetails?.title} icon={exportTypeDetails?.icon}
-                    onSelect={(eventKey: string, event: unknown) => {
-                        const type = ((event as React.MouseEvent<Element, MouseEvent>).target as Element).getAttribute('export-type');
-                        setExportType(type as ExportType)
-                    }}
-                >
-                    {
-                        ["pdf", "ppt", "word", "html"].map((type: string, index: number) => {
-                            const detail = getExportDetails(type as ExportType);
-                            if (detail) {
-                                return (
-                                    <Dropdown.Item key={index} export-type={type} eventKey={detail.title} icon={detail.icon}>
-                                        &nbsp;&nbsp;{detail.title}
-                                    </Dropdown.Item>
-                                );
-                            }
-                        })
-                    }
-                </Dropdown>
+                <Stack direction='row' spacing='1em' alignItems='center' justifyContent='center' >
+                    <h5>Export Type: </h5>
+                    <Dropdown title={exportTypeDetails?.title} icon={exportTypeDetails?.icon}
+                        onSelect={(eventKey: string, event: unknown) => {
+                            const type = ((event as React.MouseEvent<Element, MouseEvent>).target as Element).getAttribute('export-type');
+                            setExportType(type as ExportType)
+                        }}
+                    >
+                        {
+                            ["ppt", "word", "pdf", "html"].map((type: string, index: number) => {
+                                const detail = getExportDetails(type as ExportType);
+                                if (detail) {
+                                    return (
+                                        <Dropdown.Item key={index} export-type={type} eventKey={detail.title} icon={detail.icon}>
+                                            &nbsp;&nbsp;{detail.title}
+                                        </Dropdown.Item>
+                                    );
+                                }
+                            })
+                        }
+                    </Dropdown>
                 </Stack>
             </Modal.Body>
             <Modal.Footer>
