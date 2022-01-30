@@ -32,7 +32,6 @@ const SongModal = (props: SongModalProps) => {
     const [formData, setFormData] = useState<Record<string, string>|undefined>(undefined);
     const [songLyrics, setSongLyrics] = useState<string>(props.editSong ? '' : initialLyrics);
 
-    const imageOCR = useRef<HTMLImageElement>();
     const canvasOCR = useRef<HTMLCanvasElement>(null);
     const [finalImageDataUrl, setFinalImageDataUrl] = useState<string>('');
     const [OCRLoading, setOCRLoading] = useState<boolean>(false);

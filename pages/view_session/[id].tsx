@@ -54,7 +54,7 @@ const ViewSessionPage: NextPage = () => {
     const [deleteSessionShow, setDeleteSessionShow] = useState<boolean>(false);
     const [currentSongIndex, setCurrentSongIndex] = useState<number>(0);
     const [showSongLyrics, setShowSongLyrics] = useState<boolean>(false);
-    const quillEditorRef = useRef<HTMLDivElement>();
+    const quillEditorRef = useRef<HTMLDivElement>(null);
     const currentSong = songArray[currentSongIndex];
 
     const handleEditSessionClose = () => {
