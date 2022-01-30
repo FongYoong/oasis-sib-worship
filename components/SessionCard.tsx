@@ -1,8 +1,8 @@
 import React from 'react'
 import { useRouter } from 'next/router'
-import { Stack, Divider, Whisper, Popover, Dropdown, Button, IconButton, List, Loader } from 'rsuite'
+import { Stack, Divider, Whisper, Popover, Dropdown, Button, IconButton, List, Loader, Animation } from 'rsuite'
 import useSWR from 'swr'
-import { SessionProps } from '../lib/types'
+import { SessionProps, SongProps } from '../lib/types'
 import { json_fetcher } from '../lib/utils'
 import { More } from '@rsuite/icons'
 import { AiOutlineLink } from 'react-icons/ai'
@@ -16,17 +16,17 @@ interface SessionCardProps extends SessionProps {
     handleSessionMenuSelect: (eventKey?: string, session_data?: SessionProps)=>void
 }
 
-const song_fetcher = json_fetcher('GET');
+const songs_fetcher = json_fetcher('GET');
 
-const SongItem = ({song_id, index} : {song_id: number, index: number}) => {
-    const { data, isValidating, error } = useSWR(`/api/get_song/${song_id}`, song_fetcher);
+const SongItem = ({songData, index} : {songData: SongProps, index: number}) => {
+    //const { data, isValidating, error } = useSWR(`/api/get_song/${song_id}`, song_fetcher);
     return (
         <div>
             <Stack spacing='1em' >
                 <h6 style={{wordWrap: 'break-word'}} >
-                    {index + 1}.&nbsp;  {data ? `${data.title} - ${data.artist}` : ''}
+                    {index + 1}.&nbsp;  {songData ? `${songData.title} - ${songData.artist}` : ''}
                 </h6>
-                {!data && <Loader />}
+                {!songData && <Loader />}
             </Stack>
         </div>
     );
@@ -35,6 +35,7 @@ const SongItem = ({song_id, index} : {song_id: number, index: number}) => {
 // eslint-disable-next-line react/display-name
 const SongList = React.forwardRef(({song_ids, ...rest}: {song_ids: number[]}, ref) => {
     const router = useRouter();
+    const { data: songsData, isValidating, error } = useSWR(song_ids ? `/api/get_song/${song_ids.join(',')}}?multiple` : null, songs_fetcher);
     return (
         <Popover  ref={ref as React.RefObject<HTMLDivElement>} {...rest}
             onClick={(event: React.MouseEvent<Element, MouseEvent>) => {
@@ -43,14 +44,14 @@ const SongList = React.forwardRef(({song_ids, ...rest}: {song_ids: number[]}, re
         >
             <List bordered hover>
             {
-                song_ids.map((id: number, index: number) => 
+                songsData && songsData.map((songData: SongProps, index: number) => 
                     <List.Item key={index} index={index}
                         onClick={(event: React.MouseEvent<Element, MouseEvent>) => {
                             event.stopPropagation();
-                            router.push(`/view_song/${id}`);
+                            router.push(`/view_song/${songData.id}`);
                         }}
                     >
-                        <SongItem song_id={id} index={index} />
+                        <SongItem songData={songData} index={index} />
                     </List.Item>
                 )
             }
@@ -78,7 +79,6 @@ const renderSessionMenu = (props: SessionCardProps) => ({ onClose, className }: 
   };
 
 const SessionCard = (props: SessionCardProps) => {
-
     return (
         <div onClick={props.onClick} >
             <Stack justifyContent='space-between' direction='row'

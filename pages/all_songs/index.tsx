@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
-import { Container, IconButton, Input, InputGroup, Stack, Divider, Table, Whisper, Popover, Dropdown, Tag } from 'rsuite';
+import { Container, IconButton, Input, InputGroup, Stack, Divider, Table, Whisper, Popover, Dropdown, Pagination } from 'rsuite';
 import Head from '../../components/Head'
 import Footer from '../../components/Footer'
 import SongModal from '../../components/SongModal'
@@ -45,8 +45,8 @@ const AllSongsPage: NextPage = () => {
     const [sortColumn, setSortColumn] = useState<string>('updatedAt');
     const [sortType, setSortType] =useState<SortType>('desc');
 
-    const [lastSongId, setLastSongId] = useState<number>(0);
-    const { data, isValidating, error, mutate } = useSWR(`/api/get_songs?lastSongId=${lastSongId}&searchText=${searchText}&sortType=${sortType}&sortColumn=${sortColumn}`
+    const [pageIndex, setPageIndex] = useState<number>(1);
+    const { data, isValidating, error, mutate } = useSWR(`/api/get_songs?page=${pageIndex}&searchText=${searchText}&sortType=${sortType}&sortColumn=${sortColumn}`
     , songs_fetcher);
 
     const [addSongShow, setAddSongShow] = useState<boolean>(false);
@@ -96,7 +96,9 @@ const AllSongsPage: NextPage = () => {
         setSortType(sortType);
     };
 
-    const processed_data = data ? data.map((song: SongProps) => {
+    const maxItemsPerPage: number = data ? data.maxItemsPerPage : 0;
+    const totalPages: number = data ? data.totalPages : 0;
+    const processed_data = data ? data.songs.map((song: SongProps) => {
         return {
             ...song,
             updatedAt: new Date(song.updatedAt).toLocaleString()
@@ -128,7 +130,8 @@ const AllSongsPage: NextPage = () => {
                     wordWrap
                     bordered
                     style={{marginTop: '2em'}}
-                    height={400}
+                    autoHeight
+                    //height={500}
                     data={processed_data}
                     loading={!data || isValidating}
                     sortColumn={sortColumn}
@@ -136,7 +139,6 @@ const AllSongsPage: NextPage = () => {
                     onSortColumn={handleSortColumn}
                     onRowClick={(row_data: unknown, event: React.MouseEvent<Element, MouseEvent>) => {
                         if ((event.target as Element).nodeName == 'DIV') {
-                            //handleRowMenuSelect('edit', row_data as SongProps)
                             router.push(`/view_song/${(row_data as SongProps).id}`);
                         }
                     }}
@@ -168,6 +170,8 @@ const AllSongsPage: NextPage = () => {
                         </Table.Cell>
                     </Table.Column>
                 </Table>
+                <Pagination style={{padding: '0.5em', border: '5px double rgba(47,116,169,0.5)', borderRadius: '0.5em'}} prev next last first size="lg"
+                    total={totalPages * maxItemsPerPage} limit={maxItemsPerPage} activePage={pageIndex} onChangePage={(newIndex: number) => setPageIndex(newIndex)} />
                 <Divider style={{height: '0.2em', width: '90vw'}} />
             </main>
             <Footer />

@@ -16,9 +16,9 @@ import ExportSessionModal from '../../components/ExportSessionModal'
 import DeleteSessionModal from '../../components/DeleteSessionModal'
 import { SessionProps, SongProps, PageName } from '../../lib/types'
 import { domainUrl, copyToClipboard, json_fetcher } from '../../lib/utils'
-import { BsFillInfoCircleFill } from 'react-icons/bs'
+import { BsArrowDownCircle, BsArrowUpCircle } from 'react-icons/bs'
 import { GrAddCircle, GrSubtractCircle, GrFormNext, GrFormView, GrFormViewHide } from 'react-icons/gr'
-import { AiOutlineLink } from 'react-icons/ai'
+import { AiOutlineLink, AiOutlineDownCircle, AiOutlineUpCircle } from 'react-icons/ai'
 import { FiEdit } from 'react-icons/fi'
 import { BiExport } from 'react-icons/bi'
 import { RiDeleteBin2Fill } from 'react-icons/ri'
@@ -102,11 +102,11 @@ const ViewSessionPage: NextPage = () => {
                                 <h3 style={{textAlign: 'center'}} >{session_data.date.toDateString()}</h3>
                                 <Divider style={{height: '0.2em', width: '50vw', marginTop:'0.3em', marginBottom:'0.3em'}} />
                                 {/*  */}
-                                <Panel header={
+                                <Panel onClick={() => setSessionInfoShow(!sessionInfoShow)} header={
                                     <Stack spacing='0.5em' direction='row' alignItems='center' justifyContent='center' >
                                         <SessionDetailItem placeholder="Worship Leader" value={session_data.worship_leader} />
-                                        <Button appearance="primary" color="cyan" onClick={() => setSessionInfoShow(true)} >
-                                            <BsFillInfoCircleFill />
+                                        <Button appearance="subtle" color="cyan" onClick={() => setSessionInfoShow(!sessionInfoShow)} >
+                                            {sessionInfoShow ? <AiOutlineDownCircle /> : <AiOutlineUpCircle />}
                                         </Button>
                                     </Stack>
                                 } collapsible bordered >
@@ -139,7 +139,8 @@ const ViewSessionPage: NextPage = () => {
                             <Divider style={{height: '0.2em', width: '50vw', marginTop:'0em', marginBottom:'0em'}} />
                             <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' >
                                 <Stack direction='row' alignItems='center' justifyContent='center' >
-                                    <Button appearance="subtle" onClick={() => setCurrentSongIndex(currentSongIndex <= 0 ? currentSongIndex : currentSongIndex - 1)} >
+                                    <Button appearance="subtle" disabled={currentSongIndex <= 0}
+                                        onClick={() => setCurrentSongIndex(currentSongIndex <= 0 ? currentSongIndex : currentSongIndex - 1)} >
                                             <GrSubtractCircle />
                                     </Button>
                                     <Dropdown activeKey={currentSong} title={`Song ${currentSongIndex + 1}`} onSelect={(eventKey: number) => setCurrentSongIndex(eventKey)} >
@@ -147,7 +148,8 @@ const ViewSessionPage: NextPage = () => {
                                             <Dropdown.Item key={index} eventKey={index}>{song.title} - {song.artist}</Dropdown.Item>
                                         ))}
                                     </Dropdown>
-                                    <Button appearance="subtle" onClick={() => setCurrentSongIndex((currentSongIndex + 1 >= songArray.length) ? currentSongIndex : currentSongIndex + 1)} >
+                                    <Button appearance="subtle" disabled={currentSongIndex + 1 >= songArray.length}
+                                        onClick={() => setCurrentSongIndex((currentSongIndex + 1 >= songArray.length) ? currentSongIndex : currentSongIndex + 1)} >
                                             <GrAddCircle />
                                     </Button>
                                 </Stack>

@@ -18,6 +18,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 console.log("\n---DELETE SONG---");
                 console.log("Request body: ");
                 console.log(req.body);
+                if (req.body.password != process.env.ADMIN_PASSWORD) {
+                    res.status(403).json({ message: 'Incorrect password!' });
+                }
                 const response = await delete_song(JSON.parse(req.body));
                 console.log('Success"');
                 console.log(response);

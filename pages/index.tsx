@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
-import { Container, Stack, Divider, IconButton, Loader, Animation } from 'rsuite';
+import { Container, Stack, Divider, IconButton, Loader, Animation, Button } from 'rsuite';
 import Head from '../components/Head'
 import Footer from '../components/Footer'
 import SessionCard from '../components/SessionCard'
@@ -12,13 +12,15 @@ import DeleteSessionModal from '../components/DeleteSessionModal'
 import { SessionProps, PageName } from '../lib/types'
 import { domainUrl, copyToClipboard, json_fetcher, isPresentOrFutureDate } from '../lib/utils'
 import { Plus } from '@rsuite/icons'
+import { MdExpandMore } from 'react-icons/md'
 const sessions_fetcher = json_fetcher('GET');
 
 const HomePage: NextPage = () => {
   
   const [searchText, setSearchText] = useState<string>('');
-  const [lastSessionId, setLastSessionId] = useState<number>(0);
-  const { data, isValidating, error, mutate } = useSWR(`/api/get_sessions?lastSessionId=${lastSessionId}&searchText=${searchText}`, sessions_fetcher);
+  const [pageIndex, setPageIndex] = useState<number>(1);
+
+  const { data, isValidating, error, mutate } = useSWR(`/api/get_sessions?page=1&searchText=${searchText}`, sessions_fetcher);
 
   const [addSessionShow, setAddSessionShow] = useState<boolean>(false);
   const [editSessionShow, setEditSessionShow] = useState<boolean>(false);
@@ -78,8 +80,32 @@ const HomePage: NextPage = () => {
       />
     )
   };
+
+  const PreviousSessions = ({index}: {index: number}) => {
+    const { data, isValidating, error, mutate } = useSWR(`/api/get_sessions?page=${index}`, sessions_fetcher);
+    const sessions = data ? data.sessions.map((session: { date: string, songs: string, id: string }) => {
+      return {
+          ...session,
+          date: new Date(session.date),
+          songs: session.songs
+      }
+    }) : [];
+    console.log(sessions)
+    return (
+        data ? sessions.map((session_data: SessionProps) => <GenerateSessionCard key={index} session={session_data} />): <></>
+    )
+  }
+
+  const previousSessionPages = [];
+  for (let i = 2; i <= pageIndex; i++) {
+    previousSessionPages.push(<PreviousSessions index={i} key={i} />)
+  }
   
-  const processed_data = data ? data.map((session: { date: string, songs: string, id: string }) => {
+  //const maxItemsPerPage: number = data ? data.maxItemsPerPage : 0;
+  const totalPages: number = data ? data.totalPages : 0;
+  console.log(pageIndex)
+  console.log(totalPages)
+  const processed_data = data ? data.sessions.map((session: { date: string, songs: string, id: string }) => {
       return {
           ...session,
           date: new Date(session.date),
@@ -88,9 +114,6 @@ const HomePage: NextPage = () => {
   }) : [];
   const upcoming_sessions = processed_data.filter((session: SessionProps) => isPresentOrFutureDate(session.date));
   const past_sessions = processed_data.filter((session: SessionProps) => !isPresentOrFutureDate(session.date));
-  //console.log(upcoming_sessions)
-  //console.log(past_sessions)
-  //console.log(processed_data);
 
   return (
     <Container className='page' >
@@ -111,8 +134,8 @@ const HomePage: NextPage = () => {
             <h2>Upcoming sessions</h2>
             <Animation.Bounce in={processed_data} >
               <Stack wrap direction='row' justifyContent='center' spacing="2em" >
-                  {upcoming_sessions && upcoming_sessions.map((session: SessionProps, index: number) => 
-                    <GenerateSessionCard key={index} session={session} />
+                  {upcoming_sessions && upcoming_sessions.map((session: SessionProps) => 
+                    <GenerateSessionCard key={session.id} session={session} />
                   )}
               </Stack>
             </Animation.Bounce>
@@ -120,11 +143,17 @@ const HomePage: NextPage = () => {
             <h2>Previous sessions</h2>
             <Animation.Bounce in={processed_data} >
               <Stack wrap direction='row' justifyContent='center' spacing="2em" >
-                  {past_sessions && past_sessions.map((session: SessionProps, index: number) => 
-                    <GenerateSessionCard key={index} session={session} />
+                  {past_sessions && past_sessions.map((session: SessionProps) => 
+                    <GenerateSessionCard key={session.id} session={session} />
                   )}
+                  {previousSessionPages}
               </Stack>
             </Animation.Bounce>
+            { (pageIndex < totalPages) && 
+              <Button appearance="primary" color="violet" onClick={() => {setPageIndex(pageIndex + 1)}} >
+                    <MdExpandMore style={{marginRight: '1em'}} />More
+              </Button>
+            }
           </Stack>
         </Stack>
       </main>

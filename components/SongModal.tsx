@@ -192,6 +192,7 @@ const SongModal = (props: SongModalProps) => {
     const closeModal = () => {
         if (props.editSong) {
             setFormData(undefined);
+            setSongLyrics(initialLyrics);
         }
         props.handleClose();
     }
