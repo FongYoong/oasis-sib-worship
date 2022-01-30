@@ -115,7 +115,6 @@ const SongModal = (props: SongModalProps) => {
 
     useEffect(() => {
         if (errors.length <= 0 && filesContent.length > 0) {
-            //const inputFile = new File([dataURLtoBlob(filesContent[0].content)], "original_image");
             fetch(filesContent[0].content).then(it => it.blob().then((blob) => {
                 console.log(blob)
                 new Compressor(blob, {

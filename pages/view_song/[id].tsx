@@ -21,6 +21,30 @@ import { BiExport } from 'react-icons/bi'
 import { RiDeleteBin2Fill } from 'react-icons/ri'
 const song_fetcher = json_fetcher('GET');
 
+const YouTubeSong = ({keyword}: {keyword: string}) => {
+    const { data, isValidating, error } = useSWR(`/api/search_youtube/?keyword=${keyword}`, song_fetcher);
+    const embedId = data;
+    return (
+        <>
+        { data ? 
+            <div style={{width: '100vw', height: '100vh', padding: '2em'}} >
+                <div className="video-responsive"  >
+                    <iframe
+                        src={`https://www.youtube.com/embed/${embedId}`}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                        title="Embedded YouTube"
+                    />
+                </div>
+            </div>
+            :
+            <Loader size='md' content="Searching YouTube..." />
+        }
+        </>
+    )
+}
+
 const ViewSongPage: NextPage = () => {
     const router = useRouter()
     const { id } = router.query;
@@ -77,6 +101,7 @@ const ViewSongPage: NextPage = () => {
                                 </Button>
                             </Stack>
                             <ReactQuill style={{border: '5px solid rgba(28,110,164,0.12)'}} readOnly={true} theme="bubble" value={song_data.lyrics} />
+                            <YouTubeSong keyword={`${song_data.title} - ${song_data.artist}`} />
                         </Stack>
                     </Animation.Bounce>
                 }
