@@ -4,13 +4,14 @@ const ReactQuill = dynamic(() => import('react-quill'), {
     ssr: false,
     loading: () => <Loader content="Loading lyrics..." />
 });
+import Compressor from 'compressorjs';
 import ImageFilters from 'canvas-filters'
 import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider'
 import Tesseract from 'tesseract.js'
 import useSWR from 'swr'
 import { useFilePicker } from 'use-file-picker'
 import { Modal, Stack, Button, IconButton, Form, Loader, InputGroup, Progress, Animation } from 'rsuite'
-import { json_fetcher } from '../lib/utils'
+import { json_fetcher, dataURLtoBlob } from '../lib/utils'
 import { BsFillPersonFill } from 'react-icons/bs'
 import { MdTitle } from 'react-icons/md'
 import { Image as ImageIcon } from '@rsuite/icons'
@@ -33,7 +34,6 @@ const SongModal = (props: SongModalProps) => {
     const [songLyrics, setSongLyrics] = useState<string>(props.editSong ? '' : initialLyrics);
 
     const canvasOCR = useRef<HTMLCanvasElement>(null);
-    const [finalImageDataUrl, setFinalImageDataUrl] = useState<string>('');
     const [OCRLoading, setOCRLoading] = useState<boolean>(false);
     const [OCRProgress, setOCRProgress] = useState<number>(0);
     const OCRProgressRef = useRef<number>(0);
@@ -54,6 +54,8 @@ const SongModal = (props: SongModalProps) => {
 
     const pauseModal = isValidating || OCRLoading || (props.editSong && !data);
 
+    const [originalImageDataUrl, setOriginalImageDataUrl] = useState<string>('');
+    const [finalImageDataUrl, setFinalImageDataUrl] = useState<string>('');
     const [openFileSelector, { filesContent, loading : fileLoading, errors }] = useFilePicker({
         readAs: 'DataURL',
         accept: 'image/*',
@@ -113,38 +115,35 @@ const SongModal = (props: SongModalProps) => {
 
     useEffect(() => {
         if (errors.length <= 0 && filesContent.length > 0) {
+            //const inputFile = new File([dataURLtoBlob(filesContent[0].content)], "original_image");
+            fetch(filesContent[0].content).then(it => it.blob().then((blob) => {
+                console.log(blob)
+                new Compressor(blob, {
+                    quality: 0.6,
+                    convertSize: 1000000,
+                    success(compressedFile) {
+                        console.log(compressedFile)
+                        const reader = new FileReader();
+                        reader.onloadend  =  function(){
+                            if (typeof reader.result == 'string') {
+                                setOriginalImageDataUrl(reader.result);
+                            }
+                        };
+                        reader.readAsDataURL(compressedFile);
+                    },
+                    error(err) {
+                      console.log(err.message);
+                    },
+                });
+            }))
+            
+        }
+    }, [filesContent])
+
+    useEffect(() => {
+        if (originalImageDataUrl) {
             setOCRLoading(true);
             setFinalImageDataUrl('');
-            // const body = {
-            //     image: filesContent[0].content
-            // };
-            // fetch('/api/ocr', {
-            //     method: 'POST',
-            //     body,
-            // }).then((res) => {
-            //     res.json().then((text) => {
-            //         console.log("OCR successful");
-            //         setSongLyrics(songLyrics + `<p>${text}</p>`)
-            //         setOCRLoading(false);
-            //         setOCRProgress(0);
-            //     });
-            // }).catch((error) => {
-            //     console.log(error);
-            // });
-            // axios.request({
-            //     method: "post", 
-            //     url: "/api/ocr", 
-            //     data: body, 
-            //     onUploadProgress: (p) => {
-            //         console.log(p.loaded / p.total);
-            //         setOCRProgress(p.loaded / p.total);
-            //     }
-            // }).then (text => {
-            //     console.log("OCR successful");
-            //     setSongLyrics(songLyrics + `<p>${text}</p>`)
-            //     setOCRLoading(false);
-            //     setOCRProgress(0);
-            // })
             if (canvasOCR.current) {
                 const context = canvasOCR.current.getContext('2d');
                 const imageObj = new Image();
@@ -176,18 +175,10 @@ const SongModal = (props: SongModalProps) => {
                         });
                     }
                 };
-                imageObj.src = filesContent[0].content;
+                imageObj.src = originalImageDataUrl;
             }
         }
-    }, [filesContent])
-
-    const canvasOCROnLoad = () => {
-        //filesContent.length > 0 ? filesContent[0].content :''
-        if (OCRLoading) {
-            return
-
-        }
-    }
+    }, [originalImageDataUrl])
 
     const closeModal = () => {
         if (props.editSong) {
@@ -206,7 +197,7 @@ const SongModal = (props: SongModalProps) => {
                 <Loader style={{zIndex: 1000}} backdrop center content="Fetching song..." />
             }
             <Modal.Header>
-                <canvas ref={canvasOCR} style={{display: 'none'}} onLoad={canvasOCROnLoad} />
+                <canvas ref={canvasOCR} style={{display: 'none'}} />
                 <Stack wrap direction='row' spacing='2em' >
                     <h4>{props.editSong ? "Edit":"Add"} Song</h4>
                     <IconButton disabled={OCRLoading} appearance="primary" icon={<ImageIcon />} onClick={() => {openFileSelector()}} >
@@ -277,3 +268,34 @@ const SongModal = (props: SongModalProps) => {
 }
 
 export default SongModal;
+
+            // const body = {
+            //     image: filesContent[0].content
+            // };
+            // fetch('/api/ocr', {
+            //     method: 'POST',
+            //     body,
+            // }).then((res) => {
+            //     res.json().then((text) => {
+            //         console.log("OCR successful");
+            //         setSongLyrics(songLyrics + `<p>${text}</p>`)
+            //         setOCRLoading(false);
+            //         setOCRProgress(0);
+            //     });
+            // }).catch((error) => {
+            //     console.log(error);
+            // });
+            // axios.request({
+            //     method: "post", 
+            //     url: "/api/ocr", 
+            //     data: body, 
+            //     onUploadProgress: (p) => {
+            //         console.log(p.loaded / p.total);
+            //         setOCRProgress(p.loaded / p.total);
+            //     }
+            // }).then (text => {
+            //     console.log("OCR successful");
+            //     setSongLyrics(songLyrics + `<p>${text}</p>`)
+            //     setOCRLoading(false);
+            //     setOCRProgress(0);
+            // })

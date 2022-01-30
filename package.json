@@ -14,6 +14,7 @@
     "@types/react-beautiful-dnd": "^13.1.2",
     "axios": "^0.25.0",
     "canvas-filters": "^1.0.1",
+    "compressorjs": "^1.1.1",
     "csstype": "^3.0.10",
     "dompurify": "^2.3.5",
     "file-saver": "^2.0.5",

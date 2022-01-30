@@ -49,3 +49,20 @@ export const mergeSessiontoHTML = (session: SessionProps | undefined, songs: Son
     return `<h1>Worship Session:<br /> ${session?.date.toDateString()}</h1><hr />\n`
     + songs.map((songData) => `<h1><strong>${songData.title} - ${songData.artist}</strong></h1>\n` + songData.lyrics + "\n<hr />").join('\n')
 }
+
+export function dataURLtoBlob(dataURI: string) {
+    // convert base64 to raw binary data held in a string
+    // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
+    const byteString = atob(dataURI.split(',')[1]);
+
+    // separate out the mime component
+    const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+    // write the bytes of the string to an ArrayBuffer
+    const ab = new ArrayBuffer(byteString.length);
+    const ia = new Uint8Array(ab);
+    for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+    return new Blob([ab], {type: mimeString});
+}
