@@ -57,13 +57,7 @@ const ExportSessionModal = (props: ExportSessionModalProps) => {
     const lyricsDivRef = useRef<HTMLDivElement>(null);
     const { data, isValidating, error } = useSWR(props.visibility ? `/api/get_song/${props.sessionData?.songs}?multiple` : null, songs_fetcher);
 
-    //const songArray: SongProps[] = data ? data : [];
-    const songArray: SongProps[] = data ? data.map((session: { date: string }) => {
-        return {
-            ...session,
-            date: new Date(session.date),
-        }
-    }) : [];
+    const songArray: SongProps[] = data ? data : [];
     const mergedLyrics = mergeSessiontoHTML(props.sessionData, songArray)
     const parsedLyrics = data ? parse(mergedLyrics, exportPDFParseOptions) : <></>;
 
@@ -92,7 +86,6 @@ const ExportSessionModal = (props: ExportSessionModalProps) => {
         setExportLoading(true);
         if(exportType == 'pdf') {
             if (lyricsDivRef.current) {
-                //jspdfInstance.setCharSpace(1)
                 jspdfInstance.html(lyricsDivRef.current, {
                     callback: function (doc: jsPDF) {
                         const blob = doc.output('blob');

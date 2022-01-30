@@ -109,9 +109,8 @@ const HomePage: NextPage = () => {
                 Add Session
             </IconButton>
             <h2>Upcoming sessions</h2>
-            {/* {latestSession && isPresentOrFutureDate(latestSession.date) && <GenerateSessionCard session={latestSession} /> } */}
             <Animation.Bounce in={processed_data} >
-              <Stack wrap direction='row' justifyContent='center' spacing="1em" >
+              <Stack wrap direction='row' justifyContent='center' spacing="2em" >
                   {upcoming_sessions && upcoming_sessions.map((session: SessionProps, index: number) => 
                     <GenerateSessionCard key={index} session={session} />
                   )}
@@ -119,9 +118,8 @@ const HomePage: NextPage = () => {
             </Animation.Bounce>
             <Divider style={{height: '0.2em', width: '90vw'}} />
             <h2>Previous sessions</h2>
-            {/* {latestSession && !isPresentOrFutureDate(latestSession.date) && <GenerateSessionCard session={latestSession} /> } */}
             <Animation.Bounce in={processed_data} >
-              <Stack wrap direction='row' justifyContent='center' spacing="1em" >
+              <Stack wrap direction='row' justifyContent='center' spacing="2em" >
                   {past_sessions && past_sessions.map((session: SessionProps, index: number) => 
                     <GenerateSessionCard key={index} session={session} />
                   )}

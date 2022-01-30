@@ -4,10 +4,12 @@ const ReactQuill = dynamic(() => import('react-quill'), {
     ssr: false,
     loading: () => <Loader content="Loading lyrics..." />
 });
+import ImageFilters from 'canvas-filters'
+import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider'
+import Tesseract from 'tesseract.js'
 import useSWR from 'swr'
 import { useFilePicker } from 'use-file-picker'
-import Tesseract from 'tesseract.js'
-import { Modal, Stack, Button, IconButton, Form, Loader, InputGroup, Progress } from 'rsuite'
+import { Modal, Stack, Button, IconButton, Form, Loader, InputGroup, Progress, Animation } from 'rsuite'
 import { json_fetcher } from '../lib/utils'
 import { BsFillPersonFill } from 'react-icons/bs'
 import { MdTitle } from 'react-icons/md'
@@ -30,6 +32,9 @@ const SongModal = (props: SongModalProps) => {
     const [formData, setFormData] = useState<Record<string, string>|undefined>(undefined);
     const [songLyrics, setSongLyrics] = useState<string>(props.editSong ? '' : initialLyrics);
 
+    const imageOCR = useRef<HTMLImageElement>();
+    const canvasOCR = useRef<HTMLCanvasElement>(null);
+    const [finalImageDataUrl, setFinalImageDataUrl] = useState<string>('');
     const [OCRLoading, setOCRLoading] = useState<boolean>(false);
     const [OCRProgress, setOCRProgress] = useState<number>(0);
     const OCRProgressRef = useRef<number>(0);
@@ -110,22 +115,80 @@ const SongModal = (props: SongModalProps) => {
     useEffect(() => {
         if (errors.length <= 0 && filesContent.length > 0) {
             setOCRLoading(true);
-            Tesseract.recognize(
-                filesContent[0].content,
-                'eng',
-                { logger: m => {
-                        if (m.status == 'recognizing text' && (m.progress * 100 - OCRProgressRef.current) > 1) {
-                            setOCRProgress(Math.round(m.progress * 100))
-                        }
+            setFinalImageDataUrl('');
+            // const body = {
+            //     image: filesContent[0].content
+            // };
+            // fetch('/api/ocr', {
+            //     method: 'POST',
+            //     body,
+            // }).then((res) => {
+            //     res.json().then((text) => {
+            //         console.log("OCR successful");
+            //         setSongLyrics(songLyrics + `<p>${text}</p>`)
+            //         setOCRLoading(false);
+            //         setOCRProgress(0);
+            //     });
+            // }).catch((error) => {
+            //     console.log(error);
+            // });
+            // axios.request({
+            //     method: "post", 
+            //     url: "/api/ocr", 
+            //     data: body, 
+            //     onUploadProgress: (p) => {
+            //         console.log(p.loaded / p.total);
+            //         setOCRProgress(p.loaded / p.total);
+            //     }
+            // }).then (text => {
+            //     console.log("OCR successful");
+            //     setSongLyrics(songLyrics + `<p>${text}</p>`)
+            //     setOCRLoading(false);
+            //     setOCRProgress(0);
+            // })
+            if (canvasOCR.current) {
+                const context = canvasOCR.current.getContext('2d');
+                const imageObj = new Image();
+                imageObj.onload = function() {
+                    if (context && canvasOCR.current) {
+                        canvasOCR.current.width = imageObj.width;
+                        canvasOCR.current.height = imageObj.height;
+                        context.drawImage(imageObj, 0,0, imageObj.width, imageObj.height);
+                        const originalImageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
+                        const filteredData = ImageFilters.BrightnessContrastGimp(ImageFilters.Gamma(ImageFilters.Sharpen(ImageFilters.GrayScale(ImageFilters.Desaturate(originalImageData)), 0), 5), 5, 50);
+                        // ImageFilters.Gamma(ImageFilters.Sharpen(ImageFilters.GrayScale(ImageFilters.Desaturate(originalImageData)), 5), 5);
+                        // ImageFilters.Binarize(originalImageData, 1);
+                        context.putImageData(filteredData, 0, 0);
+                        const dataUrl = context.canvas.toDataURL("image/jpeg");
+                        setFinalImageDataUrl(dataUrl);
+                        Tesseract.recognize(
+                            dataUrl,
+                            'eng',
+                            { logger: m => {
+                                    if (m.status == 'recognizing text' && (m.progress * 100 - OCRProgressRef.current) > 1) {
+                                        setOCRProgress(Math.round(m.progress * 100))
+                                    }
+                                }
+                            }
+                        ).then(({ data: { text } }) => {
+                            setSongLyrics(songLyrics + `<p>${text}</p>`)
+                            setOCRLoading(false);
+                            setOCRProgress(0);
+                        });
                     }
-                }
-            ).then(({ data: { text } }) => {
-                setSongLyrics(songLyrics + `<p>${text}</p>`)
-                setOCRLoading(false);
-                setOCRProgress(0);
-            })
+                };
+                imageObj.src = filesContent[0].content;
+            }
         }
-    }, [filesContent, errors])
+    }, [filesContent])
+
+    const canvasOCROnLoad = () => {
+        //filesContent.length > 0 ? filesContent[0].content :''
+        if (OCRLoading) {
+            return
+
+        }
+    }
 
     const closeModal = () => {
         if (props.editSong) {
@@ -143,6 +206,7 @@ const SongModal = (props: SongModalProps) => {
                 <Loader style={{zIndex: 1000}} backdrop center content="Fetching song..." />
             }
             <Modal.Header>
+                <canvas ref={canvasOCR} style={{display: 'none'}} onLoad={canvasOCROnLoad} />
                 <Stack wrap direction='row' spacing='2em' >
                     <h4>{props.editSong ? "Edit":"Add"} Song</h4>
                     <IconButton disabled={OCRLoading} appearance="primary" icon={<ImageIcon />} onClick={() => {openFileSelector()}} >
@@ -188,12 +252,25 @@ const SongModal = (props: SongModalProps) => {
                 <ReactQuill readOnly={pauseModal} theme="snow" value={songLyrics} onChange={setSongLyrics}/>
             </Modal.Body>
             <Modal.Footer>
-                <Button disabled={pauseModal || !formData?.title} onClick={props.editSong ? updateSong : addSong} color="green" appearance="primary">
-                    Confirm
-                </Button>
-                <Button onClick={closeModal} appearance="subtle">
-                    Cancel
-                </Button>
+                <Stack direction='row' justifyContent='flex-end' style={{marginBottom: '1em'}} >
+                    <Button disabled={pauseModal || !formData?.title} onClick={props.editSong ? updateSong : addSong} color="green" appearance="primary">
+                        Confirm
+                    </Button>
+                    <Button onClick={closeModal} appearance="subtle">
+                        Cancel
+                    </Button>
+                </Stack>
+                {filesContent.length > 0 && finalImageDataUrl &&
+                    <Animation.Collapse>
+                        <Stack spacing='1em' direction='column' justifyContent='center' >
+                            <h2>OCR Preview</h2>
+                            <ReactCompareSlider
+                                itemOne={<ReactCompareSliderImage src={filesContent[0].content} alt="Original Image" />}
+                                itemTwo={<ReactCompareSliderImage src={finalImageDataUrl} alt="Filtered Image" />}
+                            />
+                        </Stack>
+                    </Animation.Collapse>
+                }
             </Modal.Footer>
         </Modal>
     )

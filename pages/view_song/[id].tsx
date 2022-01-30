@@ -76,19 +76,7 @@ const ViewSongPage: NextPage = () => {
                                     <RiDeleteBin2Fill style={{marginRight: '1em'}} />Delete Song
                                 </Button>
                             </Stack>
-                            <Stack direction='column' alignItems='center' justifyContent='center' >
-                                <ReactQuill style={{border: '5px solid rgba(28,110,164,0.12)'}} readOnly={true} theme="bubble" value={song_data.lyrics} />
-                                {/* <InputGroup>
-                                    <InputGroup.Addon>
-                                        Worship Leader
-                                    </InputGroup.Addon>
-                                    <Input
-                                        name="worship_leader"
-                                        placeholder="Worship Leader"
-                                        readOnly={true}
-                                    />
-                                </InputGroup> */}
-                            </Stack>
+                            <ReactQuill style={{border: '5px solid rgba(28,110,164,0.12)'}} readOnly={true} theme="bubble" value={song_data.lyrics} />
                         </Stack>
                     </Animation.Bounce>
                 }

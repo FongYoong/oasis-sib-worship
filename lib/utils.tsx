@@ -46,6 +46,6 @@ export const exportPDFParseOptions = {
 };
 
 export const mergeSessiontoHTML = (session: SessionProps | undefined, songs: SongProps[]) => {
-    return `<h1>Worship Session: ${session?.date.toLocaleDateString()}</h1><hr />\n`
+    return `<h1>Worship Session:<br /> ${session?.date.toDateString()}</h1><hr />\n`
     + songs.map((songData) => `<h1><strong>${songData.title} - ${songData.artist}</strong></h1>\n` + songData.lyrics + "\n<hr />").join('\n')
 }

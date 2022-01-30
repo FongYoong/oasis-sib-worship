@@ -381,14 +381,14 @@ const SessionModal = (props: SessionModalProps) => {
                                                 background: snapshot.isDraggingOver ? "lightblue" : "white",
                                             }}
                                         >
-                                        {songList.map((song_id: number, index: number) => (
-                                            <SongListItem key={index} song_id={song_id} index={index} 
-                                                deleteHandler={() => {
-                                                    setSongList([...songList.slice(0,index), ...songList.slice(index+1)])                                            
-                                                }}
-                                            />
-                                        ))}
-                                        {provided.placeholder}
+                                            {songList.map((song_id: number, index: number) => (
+                                                <SongListItem key={index} song_id={song_id} index={index} 
+                                                    deleteHandler={() => {
+                                                        setSongList([...songList.slice(0,index), ...songList.slice(index+1)])                                            
+                                                    }}
+                                                />
+                                            ))}
+                                            {provided.placeholder}
                                         </div>
                                     )}
                                 </Droppable>

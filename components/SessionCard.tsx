@@ -4,7 +4,6 @@ import { Stack, Divider, Whisper, Popover, Dropdown, Button, IconButton, List, L
 import useSWR from 'swr'
 import { SessionProps } from '../lib/types'
 import { json_fetcher } from '../lib/utils'
-//import { FcNext } from 'react-icons/fc'
 import { More } from '@rsuite/icons'
 import { AiOutlineLink } from 'react-icons/ai'
 import { FiEdit } from 'react-icons/fi'
@@ -85,6 +84,7 @@ const SessionCard = (props: SessionCardProps) => {
             <Stack justifyContent='space-between' direction='row'
                 className={hoverStyles.hover_grow}
                 style={{
+                    backgroundColor: 'white',
                     boxShadow: "rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px",
                     borderRadius: "0.5em",
                     padding: "1em"
