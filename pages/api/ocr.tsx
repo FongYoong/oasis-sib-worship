@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import axios from 'axios'
+//import axios from 'axios'
 import { SUCCESS_CODE, INTERNAL_SERVER_ERROR_ERROR_CODE, NOT_ALLOWED_ERROR_CODE } from '../../lib/status_codes'
 
 // import { createWorker } from 'tesseract.js';
@@ -27,12 +27,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 console.log("\n---OCR---");
                 console.log("Request body: ");
                 console.log(req.body)
-                const body = {
-                    something: '123',
-                    image: req.body.image
-                };
+                // const body = {
+                //     something: '123',
+                //     image: req.body.image
+                // };
                 //console.log(body);
-                const ocr_text = (await axios.post(`${process.env.AZURE_API_DOMAIN}/ocrHTTPTrigger?code=${process.env.AZURE_OCR_API_KEY}`, body)).data;
+                //const ocr_text = (await axios.post(`${process.env.AZURE_API_DOMAIN}/ocrHTTPTrigger?code=${process.env.AZURE_OCR_API_KEY}`, body)).data;
+                const ocr_text = 'Nothing to see here.'
                 console.log('Success:');
                 console.log(ocr_text);
                 res.status(SUCCESS_CODE).json(JSON.stringify(ocr_text));

@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { INTERNAL_SERVER_ERROR_ERROR_CODE, NOT_ALLOWED_ERROR_CODE } from '../../lib/status_codes'
 import { mergeSessiontoHTML } from '../../lib/utils';
-import { get_session, get_multiple_songs, convertHTMLToWord, convertHTMLToPDF } from '../../lib/db'
+import { get_session, get_multiple_songs, convertHTMLToWord } from '../../lib/db'
 import { SectionSlide, convertSongToPPTX, convertPPTXtoFileBuffer } from '../../lib/powerpoint'
 import { SessionProps, SongProps } from '../../lib/types';
 
@@ -27,11 +27,11 @@ async function export_session({exportType, id, song_ids}:{exportType: string, id
         const fileBuffer = await convertHTMLToWord(mergedHTML);
         return fileBuffer
     }
-    else if (exportType == 'pdf') {
-        const mergedHTML = mergeSessiontoHTML(session as unknown as SessionProps, songArray as unknown as SongProps[]);
-        const fileBuffer = await convertHTMLToPDF(mergedHTML);
-        return fileBuffer
-    }
+    // else if (exportType == 'pdf') {
+    //     const mergedHTML = mergeSessiontoHTML(session as unknown as SessionProps, songArray as unknown as SongProps[]);
+    //     const fileBuffer = await convertHTMLToPDF(mergedHTML);
+    //     return fileBuffer
+    // }
     else {
         throw Error("Unknown export type");
     }
@@ -46,7 +46,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 console.log("Request body: ");
                 console.log(req.body);
                 const file_buffer = await export_session(JSON.parse(req.body));
-                console.log(file_buffer);
+                //console.log("Buffer: ", file_buffer);
                 res.write(file_buffer, 'binary');
                 res.end(null, 'binary');
                 console.log('Exported song successfully!');

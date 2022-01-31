@@ -1,43 +1,25 @@
 /* eslint-disable jsx-a11y/alt-text */
 import { UNAUTHORISED_ERROR_CODE } from './status_codes'
 import prisma from './prisma'
-import HTMLtoPDF from 'pdf-puppeteer'
 import HTMLtoDOCX from 'html-to-docx'
 import type { NextApiResponse } from 'next'
-import chromium from 'chrome-aws-lambda'
-import playwright from "playwright-core";
 
-(async () => {
-    const browser = await playwright.chromium.launch({
-      args: chromium.args,
-      executablePath: await chromium.executablePath,
-      headless: chromium.headless,
-    });
-    await browser.close();
-})();
-
-export async function convertHTMLToPDF(htmlString: string) {
-    const margin = 40;
-    const executablePath = await chromium.executablePath;
-    const fileBuffer: Buffer = await new Promise(function(resolve, reject) {
-        HTMLtoPDF(htmlString, (pdf) => {
-            resolve(pdf)
-        },
-        {
-            margin: {
-                top: margin,
-                right: margin,
-                bottom: margin,
-                left: margin
-            }
-        },
-        {
-            executablePath: executablePath
-        }
-        );
-    });
-    return fileBuffer
-}
+// export async function convertHTMLToPDF(htmlString: string) {
+//     const body = {
+//         htmlCode: htmlString
+//     }
+//     //const data = (await axios.post(`${process.env.AZURE_API_DOMAIN}/htmlToPDFHTTPTrigger?code=${process.env.AZURE_HTML_TO_PDF_API_KEY}`, body)).data;
+//     const data = (await axios.post(`https://api.sejda.com/v2/html-pdf`,
+//         body, {
+//             headers: {
+//                 'Authorization': `Token: ${process.env.SEDJA_PDF_API_KEY}`
+//             },
+//         })).data;
+//     console.log(data)
+//     const fileBuffer: Buffer = Buffer.from(data);
+//     fs.writeFileSync('C:/Users/ACER NITRO5/Desktop/oasis-sib-worship/out2.pdf', fileBuffer);
+//     return fileBuffer
+// }
 
 export async function convertHTMLToWord(htmlString: string) {
     const fileBuffer: Buffer = await HTMLtoDOCX(htmlString, null, {
