@@ -4,9 +4,11 @@ import prisma from './prisma'
 import HTMLtoPDF from 'pdf-puppeteer'
 import HTMLtoDOCX from 'html-to-docx'
 import type { NextApiResponse } from 'next'
+import chromiumLambda from 'chrome-aws-lambda'
 
 export async function convertHTMLToPDF(htmlString: string) {
     const margin = 40;
+    const executablePath = await chromiumLambda.executablePath;
     const fileBuffer: Buffer = await new Promise(function(resolve, reject) {
         HTMLtoPDF(htmlString, (pdf) => {
             resolve(pdf)
@@ -18,6 +20,9 @@ export async function convertHTMLToPDF(htmlString: string) {
                 bottom: margin,
                 left: margin
             }
+        },
+        {
+            executablePath: executablePath
         }
         );
     });
