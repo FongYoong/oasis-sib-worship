@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '../../../lib/prisma'
+import { SUCCESS_CODE, INTERNAL_SERVER_ERROR_ERROR_CODE, NOT_ALLOWED_ERROR_CODE } from '../../../lib/status_codes'
 import { get_session } from '../../../lib/db'
 import { convertStringToIds } from '../../../lib/utils'
 
@@ -19,15 +19,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 } : null;
                 console.log('Success"');
                 console.log(sessionWithSongIDs);
-                res.status(200).json(JSON.stringify(sessionWithSongIDs))
+                res.status(SUCCESS_CODE).json(JSON.stringify(sessionWithSongIDs))
             } catch(e) {
                 console.error("Request error", e);
-                res.status(500).json({ message: 'Failed to get session!' });
+                res.status(INTERNAL_SERVER_ERROR_ERROR_CODE).json({ message: 'Failed to get session!' });
             }
             break;
         default:
             res.setHeader("Allow", ["GET"]);
-            res.status(405).end(`Method ${method} Not Allowed`);
+            res.status(NOT_ALLOWED_ERROR_CODE).end(`Method ${method} Not Allowed`);
             break;
     }
 }

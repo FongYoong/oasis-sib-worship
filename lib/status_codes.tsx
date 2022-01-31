@@ -1,0 +1,9 @@
+export const SUCCESS_CODE = 200
+export const CREATE_SUCCESS_CODE = 201
+
+export const BAD_REQUEST_ERROR_CODE = 400
+export const UNAUTHORISED_ERROR_CODE = 401
+export const NOT_FOUND_ERROR_CODE = 404
+export const NOT_ALLOWED_ERROR_CODE = 405
+
+export const INTERNAL_SERVER_ERROR_ERROR_CODE = 500

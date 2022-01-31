@@ -31,7 +31,7 @@ const SongAutocomplete = ({ onSelect }:{ onSelect: (song_id: number)=>void }) =>
     const autocompleteRef = useRef<PickerInstance>(null);
     const [searchText, setSearchText] = useState<string>('');
     const { data, isValidating, error } = useSWR(`/api/get_songs?searchText=${searchText}`, songs_fetcher);
-    const songs = data ? data.map((song: SongProps) => `${song.title} - ${song.artist}___:${song.id}`) : [];
+    const songs = data ? data.songs.map((song: SongProps) => `${song.title} - ${song.artist}___:${song.id}`) : [];
 
     return (
         <AutoComplete ref={autocompleteRef} value={searchText} data={songs} placeholder='Search song by title or artist'
@@ -87,9 +87,6 @@ const SongListItem = ({ song_id, index, deleteHandler } : { song_id: number, ind
         <Draggable key={song_id} draggableId={song_id.toString()} index={index}>
             {(provided, snapshot) => {
                 if (snapshot.isDragging) {
-                    //const offset = { x: 0, y: 35 } //  fixed container left/top position
-                    //const x = provided.draggableProps.style.left - offset.x;
-                    //const y = provided.draggableProps.style.top - offset.y;
                     (provided.draggableProps.style as CSS.Properties).left = undefined;
                     (provided.draggableProps.style as CSS.Properties).top = undefined;
                 }
@@ -184,10 +181,15 @@ const SessionModal = (props: SessionModalProps) => {
 
     const pauseModal = isValidating || (props.editSession && !data);
 
+    const resetModal = () => {
+        setDutyFormData(undefined)
+        setFormIndex(0);
+    }
     const onSuccess = () => {
         if (props.onSuccess) {
             props.onSuccess();
         }
+        resetModal();
         closeModal();
     }
 
@@ -235,8 +237,7 @@ const SessionModal = (props: SessionModalProps) => {
 
     const closeModal = () => {
         if (props.editSession) {
-            setDutyFormData(undefined)
-            setFormIndex(0)
+            resetModal();
         }
         props.handleClose();
     }

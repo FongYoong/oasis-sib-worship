@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import { Modal, Stack, Button, InputGroup, Input } from 'rsuite'
+import { Modal, Stack, Button, InputGroup, Input, Divider } from 'rsuite'
+import { SUCCESS_CODE } from '../lib/status_codes'
 import { SongProps } from '../lib/types'
+import PasswordInput from './PasswordInput'
 import { MdTitle } from 'react-icons/md'
 import { BsFillPersonFill } from 'react-icons/bs'
 
@@ -13,33 +15,48 @@ interface DeleteSongModalProps {
 
 const DeleteSongModal = (props: DeleteSongModalProps) => {
 
+    const [password, setPassword] = useState<string>('')
+    const [passwordError, setPasswordError] = useState<boolean>(false)
+    const [loading, setLoading] = useState<boolean>(false)
+
     const onSuccess = () => {
         if (props.onSuccess) {
             props.onSuccess();
         }
+        setPassword('');
+        setLoading(false);
         props.handleClose();
     }
 
     const deleteSong = () => {
+        setLoading(true);
         const body = JSON.stringify({
             id: props.songData?.id,
+            password
         });
         fetch('/api/delete_song', {
             method: 'POST',
             body: body,
         }).then((res) => {
-            res.json().then((res_data) => {
-                console.log("Deleted song");
-                console.log(res_data);
-            });
-            onSuccess();
+            if (res.status == SUCCESS_CODE) {
+                res.json().then((res_data) => {
+                    console.log("Deleted song");
+                    console.log(res_data);
+                });
+                onSuccess();
+            }
+            else {
+                throw new Error()
+            }
         }).catch((error) => {
             console.log(error);
+            setPasswordError(true);
+            setLoading(false);
         });
     };
 
     return (
-        <Modal overflow={true} open={props.visibility} onClose={props.handleClose}>
+        <Modal overflow={false} open={props.visibility} onClose={props.handleClose}>
             <Modal.Header>
                 <Modal.Title>Delete Song</Modal.Title>
             </Modal.Header>
@@ -64,10 +81,12 @@ const DeleteSongModal = (props: DeleteSongModalProps) => {
                             readOnly={true}
                         />
                     </InputGroup>
+                    <Divider style={{marginTop:'1em', marginBottom:'0', height: '0.2em', width: '30vw'}} />
+                    <PasswordInput setPassword={setPassword} passwordError={passwordError} setPasswordError={setPasswordError} />
                 </Stack>
             </Modal.Body>
             <Modal.Footer>
-                <Button disabled={!props.songData} onClick={deleteSong} color="red" appearance="primary">
+                <Button loading={loading} disabled={!props.songData || password.length < 1} onClick={deleteSong} color="red" appearance="primary">
                     Confirm
                 </Button>
                 <Button onClick={props.handleClose} appearance="subtle">

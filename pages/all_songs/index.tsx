@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
-import { Container, IconButton, Input, InputGroup, Stack, Divider, Table, Whisper, Popover, Dropdown, Pagination } from 'rsuite';
+import { Container, IconButton, Input, InputGroup, DateRangePicker, Stack, Divider, Table, Whisper, Popover, Dropdown, Pagination } from 'rsuite';
 import Head from '../../components/Head'
 import Footer from '../../components/Footer'
 import SongModal from '../../components/SongModal'
@@ -170,8 +170,10 @@ const AllSongsPage: NextPage = () => {
                         </Table.Cell>
                     </Table.Column>
                 </Table>
+                { !isValidating &&
                 <Pagination style={{padding: '0.5em', border: '5px double rgba(47,116,169,0.5)', borderRadius: '0.5em'}} prev next last first size="lg"
                     total={totalPages * maxItemsPerPage} limit={maxItemsPerPage} activePage={pageIndex} onChangePage={(newIndex: number) => setPageIndex(newIndex)} />
+                }
                 <Divider style={{height: '0.2em', width: '90vw'}} />
             </main>
             <Footer />

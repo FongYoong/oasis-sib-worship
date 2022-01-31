@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '../../lib/prisma'
+import { SUCCESS_CODE, INTERNAL_SERVER_ERROR_ERROR_CODE, NOT_ALLOWED_ERROR_CODE } from '../../lib/status_codes'
 
 async function update_session({id, date, songs, worship_leader, vocalist, keyboard, guitar, drums, sound_personnel}:
     {id: number, date: string, songs: string, worship_leader: string, vocalist?: string, keyboard?: string, guitar?: string, drums?: string, sound_personnel?: string}) {
@@ -32,15 +33,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 const response = await update_session(JSON.parse(req.body));
                 console.log('Success"');
                 console.log(response);
-                res.status(200).json({ message: 'Updated session successfully!' });
+                res.status(SUCCESS_CODE).json({ message: 'Updated session successfully!' });
             } catch(e) {
                 console.error("Request error", e);
-                res.status(500).json({ message: 'Failed to update session!' });
+                res.status(INTERNAL_SERVER_ERROR_ERROR_CODE).json({ message: 'Failed to update session!' });
             }
             break;
         default:
             res.setHeader("Allow", ["POST"]);
-            res.status(405).end(`Method ${method} Not Allowed`);
+            res.status(NOT_ALLOWED_ERROR_CODE).end(`Method ${method} Not Allowed`);
             break;
     }
 }

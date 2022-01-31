@@ -1,12 +1,9 @@
-import { useState, useRef, useEffect } from 'react'
-import parse from 'html-react-parser';
+import { useState, useEffect } from 'react'
 import slugify from 'slugify'
-import { jsPDF } from "jspdf"
-let jspdfInstance = new jsPDF();
 import FileSaver from 'file-saver'
 import useSWR from 'swr'
 import { Modal, Stack, Button, Dropdown, Tag, toaster, Message } from 'rsuite'
-import { json_fetcher, exportPDFParseOptions } from '../lib/utils'
+import { json_fetcher, getFileExtension } from '../lib/utils'
 import { SongProps } from '../lib/types'
 import { SiMicrosoftpowerpoint, SiMicrosoftword } from 'react-icons/si'
 import { GrDocumentPdf } from 'react-icons/gr'
@@ -51,12 +48,7 @@ const getExportDetails = (exportType: ExportType) => {
 const song_fetcher = json_fetcher('GET');
 
 const ExportSongModal = (props: ExportSongModalProps) => {
-
-    useEffect(() => { import("jspdf/dist/polyfills.es") }, []);
-
-    const lyricsDivRef = useRef<HTMLDivElement>(null);
     const { data, isValidating, error } = useSWR(props.visibility ? `/api/get_song/${props.songData?.id}` : null, song_fetcher);
-    const parsedLyrics = data ? parse(data.lyrics, exportPDFParseOptions) : <></>;
 
     const [exportType, setExportType] = useState<ExportType>('ppt');
     const exportTypeDetails = getExportDetails(exportType);
@@ -80,40 +72,19 @@ const ExportSongModal = (props: ExportSongModalProps) => {
 
     const exportSong = () => {
         const file_name = slugify(`${data.title} - ${data.artist}`, '_');
+        const file_extension = getFileExtension(exportType);
         setExportLoading(true);
-        if(exportType == 'pdf') {
-            if (lyricsDivRef.current) {
-                jspdfInstance.html(lyricsDivRef.current, {
-                    callback: function (doc: jsPDF) {
-                        const blob = doc.output('blob');
-                        FileSaver.saveAs(blob, `${file_name}.pdf`);
-                        jspdfInstance = new jsPDF();
-                        onSuccess();
-                    },
-                    filename: `${file_name}.pdf`,
-                    margin: 10,
-                    x: 0,
-                    y: 0,
-                    html2canvas: {
-                        scale: 0.3
-                    }
-                });
-            }
-            else {
-                onFailure();
-            }
-        }
-        else if (exportType == 'html') {
+        if (exportType == 'html') {
             const blob = new Blob([data.lyrics], {type: "text/plain;charset=utf-8"});
-            FileSaver.saveAs(blob, `${file_name}.html`);
+            FileSaver.saveAs(blob, `${file_name}.${file_extension}`);
             onSuccess();
         }
         else {
-            exportSongAPI(file_name);
+            exportSongAPI(file_name, file_extension);
         }
     }
 
-    const exportSongAPI = (file_name: string) => {
+    const exportSongAPI = (file_name: string, file_extension: string) => {
         const body = JSON.stringify({
             exportType,
             id: props.songData?.id,
@@ -124,11 +95,12 @@ const ExportSongModal = (props: ExportSongModalProps) => {
         }).then((res) => {
             res.blob().then((binary_blob) => {
                 console.log("Successfully exported song");
-                FileSaver.saveAs(binary_blob, `${file_name}.${exportType == 'ppt' ? '.pptx': '.docx'}`);
+                FileSaver.saveAs(binary_blob, `${file_name}.${file_extension}`);
             });
             onSuccess();
         }).catch((error) => {
             console.log(error);
+            onFailure();
         });
     };
 
@@ -136,13 +108,6 @@ const ExportSongModal = (props: ExportSongModalProps) => {
 
     return (
         <Modal overflow={false} open={props.visibility} onClose={props.handleClose}>
-            { data &&
-                <div style={{ display: 'none'}} >
-                    <div ref={lyricsDivRef} style={{ width: '100vw', height: '100vh', wordSpacing: 10 }} >
-                        {parsedLyrics}
-                    </div>
-                </div>
-            }
             <Modal.Header>
                 <Modal.Title>Export Song</Modal.Title>
             </Modal.Header>
@@ -183,3 +148,28 @@ const ExportSongModal = (props: ExportSongModalProps) => {
 }
 
 export default ExportSongModal;
+
+// useEffect(() => { import("jspdf/dist/polyfills.es") }, []);
+
+// if(exportType == 'pdf') {
+//     if (lyricsDivRef.current) {
+//         jspdfInstance.html(lyricsDivRef.current, {
+//             callback: function (doc: jsPDF) {
+//                 const blob = doc.output('blob');
+//                 FileSaver.saveAs(blob, `${file_name}.pdf`);
+//                 jspdfInstance = new jsPDF();
+//                 onSuccess();
+//             },
+//             filename: `${file_name}.pdf`,
+//             margin: 10,
+//             x: 0,
+//             y: 0,
+//             html2canvas: {
+//                 scale: 0.3
+//             }
+//         });
+//     }
+//     else {
+//         onFailure();
+//     }
+// }

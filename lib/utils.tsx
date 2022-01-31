@@ -26,6 +26,27 @@ export const copyToClipboard = (value: string, message: string) => {
 
 export const domainUrl = process.env.NEXT_PUBLIC_VERCEL_URL ? process.env.NEXT_PUBLIC_VERCEL_URL : 'localhost:3000';
 
+export const getFileExtension = (fileType: string) => {
+    let fileExtension = '';
+    switch(fileType) {
+        case 'pdf':
+            fileExtension = 'pdf'
+            break;
+        case 'ppt':
+            fileExtension = 'pptx'
+            break;
+        case 'word':
+            fileExtension = 'docx'
+            break;
+        case 'html':
+            fileExtension = 'html'
+            break;
+        default:
+            throw Error(`Unrecognised file type: ${fileType}`)
+    }
+    return fileExtension
+}
+
 export const exportPDFParseOptions = {
     replace: (domNode: DOMNode) => {
         if (domNode.constructor.name == 'Element') {
@@ -65,4 +86,16 @@ export function dataURLtoBlob(dataURI: string) {
         ia[i] = byteString.charCodeAt(i);
     }
     return new Blob([ab], {type: mimeString});
+}
+
+export function isInvalidDate(date: Date | undefined) {
+    return date == undefined || isNaN(date.getTime())
+}
+
+export function getStartOfMonthDate(date: Date) {
+    return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+export function getEndOfMonthDate(date: Date) {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0);
 }

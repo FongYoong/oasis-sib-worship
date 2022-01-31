@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { SUCCESS_CODE, INTERNAL_SERVER_ERROR_ERROR_CODE, NOT_ALLOWED_ERROR_CODE } from '../../../lib/status_codes'
 import { convertStringToIds } from '../../../lib/utils'
 import { get_song, get_multiple_songs } from '../../../lib/db'
 
@@ -21,15 +22,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 }
                 console.log('Success"');
                 console.log(result);
-                res.status(200).json(JSON.stringify(result))
+                res.status(SUCCESS_CODE).json(JSON.stringify(result))
             } catch(e) {
                 console.error("Request error", e);
-                res.status(500).json({ message: 'Failed to get song!' });
+                res.status(INTERNAL_SERVER_ERROR_ERROR_CODE).json({ message: 'Failed to get song!' });
             }
             break;
         default:
             res.setHeader("Allow", ["GET"]);
-            res.status(405).end(`Method ${method} Not Allowed`);
+            res.status(NOT_ALLOWED_ERROR_CODE).end(`Method ${method} Not Allowed`);
             break;
     }
 }

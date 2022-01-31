@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { get_song, convertHTMLToWord } from '../../lib/db'
+import { INTERNAL_SERVER_ERROR_ERROR_CODE, NOT_ALLOWED_ERROR_CODE } from '../../lib/status_codes'
+import { get_song, convertHTMLToWord, convertHTMLToPDF } from '../../lib/db'
 import { convertSongToPPTX, convertPPTXtoFileBuffer } from '../../lib/powerpoint'
 
 async function export_song({exportType, id}:{exportType: string, id: number}) {
@@ -12,6 +13,9 @@ async function export_song({exportType, id}:{exportType: string, id: number}) {
         }
         else if (exportType == 'word') {
             fileBuffer = await convertHTMLToWord(song.lyrics);
+        }
+        else if (exportType == 'pdf') {
+            fileBuffer = await convertHTMLToPDF(song.lyrics);
         }
         else {
             throw Error("Unknown export type");
@@ -35,12 +39,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 console.log('Exported song successfully!');
             } catch(e) {
                 console.error("Request error", e);
-                res.status(500).json({ message: 'Failed to export song!' });
+                res.status(INTERNAL_SERVER_ERROR_ERROR_CODE).json({ message: 'Failed to export song!' });
             }
             break;
         default:
             res.setHeader("Allow", ["POST"]);
-            res.status(405).end(`Method ${method} Not Allowed`);
+            res.status(NOT_ALLOWED_ERROR_CODE).end(`Method ${method} Not Allowed`);
             break;
     }
 }

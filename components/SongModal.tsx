@@ -64,10 +64,16 @@ const SongModal = (props: SongModalProps) => {
         maxFileSize: 50,
     });
 
+    const resetModal = () => {
+        setFormData(undefined);
+        setSongLyrics(initialLyrics);
+    }
+
     const onSuccess = () => {
         if (props.onSuccess) {
             props.onSuccess();
         }
+        resetModal();
         closeModal();
     }
 
@@ -181,8 +187,7 @@ const SongModal = (props: SongModalProps) => {
 
     const closeModal = () => {
         if (props.editSong) {
-            setFormData(undefined);
-            setSongLyrics(initialLyrics);
+            resetModal();
         }
         props.handleClose();
     }
