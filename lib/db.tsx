@@ -4,11 +4,21 @@ import prisma from './prisma'
 import HTMLtoPDF from 'pdf-puppeteer'
 import HTMLtoDOCX from 'html-to-docx'
 import type { NextApiResponse } from 'next'
-import chromiumLambda from 'chrome-aws-lambda'
+import chromium from 'chrome-aws-lambda'
+import playwright from "playwright-core";
+
+(async () => {
+    const browser = await playwright.chromium.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless,
+    });
+    await browser.close();
+})();
 
 export async function convertHTMLToPDF(htmlString: string) {
     const margin = 40;
-    const executablePath = await chromiumLambda.executablePath;
+    const executablePath = await chromium.executablePath;
     const fileBuffer: Buffer = await new Promise(function(resolve, reject) {
         HTMLtoPDF(htmlString, (pdf) => {
             resolve(pdf)
