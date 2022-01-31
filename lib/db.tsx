@@ -1,17 +1,25 @@
 /* eslint-disable jsx-a11y/alt-text */
 import { UNAUTHORISED_ERROR_CODE } from './status_codes'
 import prisma from './prisma'
-import HTMLtoPDF from 'html-pdf'
+import HTMLtoPDF from 'pdf-puppeteer'
 import HTMLtoDOCX from 'html-to-docx'
 import type { NextApiResponse } from 'next'
 
 export async function convertHTMLToPDF(htmlString: string) {
+    const margin = 40;
     const fileBuffer: Buffer = await new Promise(function(resolve, reject) {
-        HTMLtoPDF.create(htmlString).toBuffer((err, buffer) => {
-            console.log(buffer);
-            console.log(err);
-            resolve(buffer);
-        });
+        HTMLtoPDF(htmlString, (pdf) => {
+            resolve(pdf)
+        },
+        {
+            margin: {
+                top: margin,
+                right: margin,
+                bottom: margin,
+                left: margin
+            }
+        }
+        );
     });
     return fileBuffer
 }
