@@ -3,6 +3,7 @@ import { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
 import { Container, Stack, Divider, IconButton, Loader, Animation, Button, InputGroup, Input, DatePicker } from 'rsuite';
+import AnimateHeight from 'react-animate-height';
 import Head from '../components/Head'
 import Footer from '../components/Footer'
 import SessionCard from '../components/SessionCard'
@@ -10,19 +11,40 @@ import SessionModal from '../components/SessionModal'
 import ExportSessionModal from '../components/ExportSessionModal'
 import DeleteSessionModal from '../components/DeleteSessionModal'
 import { SessionProps, PageName } from '../lib/types'
-import { domainUrl, copyToClipboard, json_fetcher, isPresentOrFutureDate, isInvalidDate, getStartOfMonthDate, getEndOfMonthDate } from '../lib/utils'
+import { domainUrl, copyToClipboard, json_fetcher, isPresentOrFutureDate, dateToISOString, getStartOfMonthDate, getEndOfMonthDate } from '../lib/utils'
 import { Plus, Search } from '@rsuite/icons'
 import { MdExpandMore } from 'react-icons/md'
+
 const sessions_fetcher = json_fetcher('GET');
 
-const HomePage: NextPage = () => {
-  
-  const [searchText, setSearchText] = useState<string>('');
-  const [startDate, setStartDate] = useState<Date | undefined>(undefined);
-  const startDateText = isInvalidDate(startDate) ? '' : startDate?.toISOString();
-  const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const endDateText = isInvalidDate(endDate) ? '' : endDate?.toISOString();
-  const [pageIndex, setPageIndex] = useState<number>(1);
+interface HomePageProps {
+  initialSearchText: string,
+  initialPageIndex: number
+  initialStartDate: string,
+  initialEndDate: string,
+}
+
+const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate, initialEndDate, initialPageIndex}) => {
+  const router = useRouter();
+  const [searchText, setSearchText] = useState<string>(initialSearchText);
+  const [startDate, setStartDate] = useState<Date | undefined>(initialStartDate ? new Date(initialStartDate) : undefined);
+  const startDateText = dateToISOString(startDate);
+  const [endDate, setEndDate] = useState<Date | undefined>(initialEndDate ? new Date(initialEndDate) : undefined);
+  const endDateText = dateToISOString(endDate);
+  const [pageIndex, setPageIndex] = useState<number>(initialPageIndex);
+
+  const updateDateQuery = (start?: Date, end?: Date) => {
+    setStartDate(start);
+    setEndDate(end);
+    router.replace({
+      pathname: router.pathname,
+      query: {
+        ...router.query,
+        startDate: dateToISOString(start),
+        endDate: dateToISOString(end)
+      }
+    });
+  }
 
   const { data, isValidating, error, mutate } = useSWR(`/api/get_sessions?page=1&searchText=${searchText}&startDate=${startDateText}&endDate=${endDateText}`, sessions_fetcher);
 
@@ -69,18 +91,17 @@ const HomePage: NextPage = () => {
   };
 
   const GenerateSessionCard = ({session}: {session: SessionProps}) => {
-    const router = useRouter();
     return (
       <SessionCard {...session}
         handleSessionMenuSelect={handleSessionMenuSelect}
-        onClick={(event: React.MouseEvent<Element, MouseEvent>) => {
-          if (!['BUTTON', 'svg', 'LI'].includes((event.target as Element).nodeName)) {
-            router.push(`/view_session/${session.id}`);
-          }
-          else {
-            event.stopPropagation();
-          }
-        }}
+        // onClick={(event: React.MouseEvent<Element, MouseEvent>) => {
+        //   if (!['BUTTON', 'svg', 'LI'].includes((event.target as Element).nodeName)) {
+        //     router.push(`/view_session/${session.id}`);
+        //   }
+        //   else {
+        //     event.stopPropagation();
+        //   }
+        // }}
       />
     )
   };
@@ -129,67 +150,90 @@ const HomePage: NextPage = () => {
             <Loader size='md' content="Fetching sessions..." />
           </Animation.Bounce>
           <Stack direction='column' spacing="1em" alignItems='center' justifyContent='center' >
-            <Stack wrap direction='row' justifyContent='center' spacing="1em" >
-              <IconButton disabled={isValidating} appearance="primary" color="green" icon={<Plus />} onClick={() => setAddSessionShow(true)} >
-                  Add Session
-              </IconButton>
-              <InputGroup>
-                <InputGroup.Addon>
-                  <Search />
-                </InputGroup.Addon>
-                <Input onChange={(text)=>{setSearchText(text)}} placeholder="Search session" />
-              </InputGroup>
-              <Stack wrap direction='row' justifyContent='center' spacing="0em">
-                <DatePicker value={startDate} isoWeek format="yyyy-MM" placement='auto' ranges={[]}
-                  onOk={(date) => {
-                    if (date) {
-                      const processed = getStartOfMonthDate(date);
-                      if (endDate && processed > endDate) {
-                        setEndDate(getEndOfMonthDate(date));
-                      }
-                      setStartDate(processed);
-                    }
-                  }}
-                  onClean={() => {
-                    setStartDate(undefined);
-                    setEndDate(undefined);
-                  }}
-                />
-                <InputGroup.Addon style={{paddingTop: '1em', paddingBottom: '1em'}} >to</InputGroup.Addon>
-                <DatePicker value={endDate} isoWeek format="yyyy-MM" placement='auto' ranges={[]}
-                  onOk={(date) => {
-                    if (date) {
-                      const processed = getEndOfMonthDate(date);
-                      if (startDate && processed < startDate) {
-                        setStartDate(getStartOfMonthDate(date));
-                      }
-                      setEndDate(processed);
-                    }
-                  }}
-                  onClean={() => {
-                    setStartDate(undefined);
-                    setEndDate(undefined);
-                  }}
-                />
+            <Animation.Slide in placement='top' >
+              <Stack wrap direction='row' justifyContent='center' spacing="1em" >
+                  <IconButton disabled={isValidating} appearance="primary" color="green" icon={<Plus />} onClick={() => setAddSessionShow(true)} >
+                      Add Session
+                  </IconButton>
+                  <InputGroup>
+                    <InputGroup.Addon>
+                      <Search />
+                    </InputGroup.Addon>
+                    <Input value={searchText} onChange={(text)=>{
+                        setSearchText(text);
+                        router.replace({
+                          pathname: router.pathname,
+                          query: {
+                            ...router.query,
+                            searchText: text
+                          },
+                        });
+                      }} placeholder="Search session" />
+                  </InputGroup>
+                  <Stack wrap direction='row' justifyContent='center' spacing="0em" >
+                    <DatePicker value={startDate} isoWeek format="yyyy-MM" placement='auto' ranges={[]}
+                      onOk={(date) => {
+                        if (date) {
+                          let end = endDate;
+                          const processed = getStartOfMonthDate(date);
+                          if (endDate && processed > endDate) {
+                            end = getEndOfMonthDate(date);
+                          }
+                          updateDateQuery(processed, end);
+                        }
+                      }}
+                      onClean={() => {
+                        updateDateQuery(undefined, undefined);
+                      }}
+                    />
+                    <InputGroup.Addon style={{paddingTop: '1em', paddingBottom: '1em'}} >to</InputGroup.Addon>
+                    <DatePicker value={endDate} isoWeek format="yyyy-MM" placement='auto' ranges={[]}
+                      onOk={(date) => {
+                        if (date) {
+                          let start = startDate;
+                          const processed = getEndOfMonthDate(date);
+                          if (startDate && processed < startDate) {
+                            start = getStartOfMonthDate(date)
+                          }
+                          updateDateQuery(start, processed);
+                        }
+                      }}
+                      onClean={() => {
+                        updateDateQuery(undefined, undefined);
+                      }}
+                    />
+                  </Stack>
               </Stack>
-            </Stack>
+            </Animation.Slide>
             <h2>Upcoming sessions</h2>
             <Animation.Bounce in={processed_data != undefined} >
-              <Stack wrap direction='row' justifyContent='center' spacing="2em" >
-                  {upcoming_sessions && upcoming_sessions.map((session: SessionProps) => 
-                    <GenerateSessionCard key={session.id} session={session} />
-                  )}
-              </Stack>
+              <AnimateHeight
+                animateOpacity
+                duration={300}
+                height={upcoming_sessions && upcoming_sessions.length > 0 ? "auto" : 0}
+              >
+                <Stack wrap direction='row' justifyContent='center' spacing="2em" >
+                    {upcoming_sessions && upcoming_sessions.map((session: SessionProps) => 
+                      <GenerateSessionCard key={session.id} session={session} />
+                    )}
+                </Stack>
+              </AnimateHeight>
             </Animation.Bounce>
             <Divider style={{height: '0.2em', width: '90vw'}} />
             <h2>Previous sessions</h2>
             <Animation.Bounce in={processed_data != undefined} >
-              <Stack wrap direction='row' justifyContent='center' spacing="2em" >
-                  {past_sessions && past_sessions.map((session: SessionProps) => 
-                    <GenerateSessionCard key={session.id} session={session} />
-                  )}
-                  {previousSessionPages}
-              </Stack>
+              <AnimateHeight
+                animateOpacity
+                duration={300}
+                height={past_sessions && past_sessions.length > 0 ? "auto" : 0}
+              >
+                <Stack wrap direction='row' justifyContent='center' spacing="2em" >
+                    {past_sessions && past_sessions.map((session: SessionProps) => 
+                      <GenerateSessionCard key={session.id} session={session} />
+                    )}
+                    {previousSessionPages}
+                </Stack>
+              </AnimateHeight>
             </Animation.Bounce>
             { (pageIndex < totalPages) && 
               <Button appearance="primary" color="violet" onClick={() => {setPageIndex(pageIndex + 1)}} >
@@ -202,6 +246,20 @@ const HomePage: NextPage = () => {
       <Footer />
     </Container>
   )
+}
+
+HomePage.getInitialProps = async (ctx) => {
+  const searchText = ctx.query.searchText as string;
+  const startDate = ctx.query.startDate as string;
+  const endDate = ctx.query.endDate as string;
+  const pageIndex = parseInt(ctx.query.pageIndex as string);
+
+  return {
+    initialSearchText: searchText ? searchText : '',
+    initialStartDate: startDate ? startDate : '',
+    initialEndDate: endDate ? endDate : '',
+    initialPageIndex: isNaN(pageIndex) ? 1 : pageIndex
+  }
 }
 
 export default HomePage

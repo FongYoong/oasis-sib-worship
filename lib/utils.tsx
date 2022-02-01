@@ -1,6 +1,8 @@
-import { Tag, toaster, Message } from 'rsuite';
 import { Element as ReactParserElement, DOMNode, domToReact, attributesToProps  } from 'html-react-parser';
+import { CopyClipboardMessage } from './messages';
 import { SessionProps, SongProps } from './types';
+
+export const domainUrl = process.env.NEXT_PUBLIC_VERCEL_URL ? process.env.NEXT_PUBLIC_VERCEL_URL : 'localhost:3000';
 
 export const isPresentOrFutureDate = (date: Date) => {
     const today = new Date();
@@ -16,15 +18,8 @@ export const convertStringToIds = (data: string) => {
 
 export const copyToClipboard = (value: string, message: string) => {
     navigator.clipboard.writeText(value);
-    toaster.push(
-        <Message showIcon closable duration={5000} type='info' >
-            <Tag> {value} </Tag> <br />
-            {message}
-        </Message>
-    , {placement: 'topCenter'});
+    CopyClipboardMessage(value, message);
 }
-
-export const domainUrl = process.env.NEXT_PUBLIC_VERCEL_URL ? process.env.NEXT_PUBLIC_VERCEL_URL : 'localhost:3000';
 
 export const getFileExtension = (fileType: string) => {
     let fileExtension = '';
@@ -88,8 +83,12 @@ export function dataURLtoBlob(dataURI: string) {
     return new Blob([ab], {type: mimeString});
 }
 
-export function isInvalidDate(date: Date | undefined) {
+export function isInvalidDate(date?: Date) {
     return date == undefined || isNaN(date.getTime())
+}
+
+export function dateToISOString(date?: Date) {
+    return isInvalidDate(date) ? '' : date?.toISOString()
 }
 
 export function getStartOfMonthDate(date: Date) {

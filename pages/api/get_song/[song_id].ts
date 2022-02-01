@@ -21,7 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     result = await get_song(parseInt(song_id as string));
                 }
                 console.log('Success"');
-                console.log(result);
+                //console.log(result);
                 res.status(SUCCESS_CODE).json(JSON.stringify(result))
             } catch(e) {
                 console.error("Request error", e);

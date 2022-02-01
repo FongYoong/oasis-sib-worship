@@ -1,6 +1,6 @@
 import React from 'react'
-import { useRouter } from 'next/router'
-import { Stack, Divider, Whisper, Popover, Dropdown, Button, IconButton, List, Loader, Animation } from 'rsuite'
+import Link from 'next/link'
+import { Stack, Divider, Whisper, Popover, Dropdown, Button, IconButton, List, Loader } from 'rsuite'
 import useSWR from 'swr'
 import { SessionProps, SongProps } from '../lib/types'
 import { json_fetcher } from '../lib/utils'
@@ -12,7 +12,7 @@ import { RiDeleteBin2Fill } from 'react-icons/ri'
 import hoverStyles from '../styles/hover.module.css'
 
 interface SessionCardProps extends SessionProps {
-    onClick?: (event: React.MouseEvent<Element, MouseEvent>) => void,
+    //onClick?: (event: React.MouseEvent<Element, MouseEvent>) => void,
     handleSessionMenuSelect: (eventKey?: string, session_data?: SessionProps)=>void
 }
 
@@ -34,7 +34,6 @@ const SongItem = ({songData, index} : {songData: SongProps, index: number}) => {
 
 // eslint-disable-next-line react/display-name
 const SongList = React.forwardRef(({song_ids, ...rest}: {song_ids: number[]}, ref) => {
-    const router = useRouter();
     const { data: songsData, isValidating, error } = useSWR(song_ids ? `/api/get_song/${song_ids.join(',')}}?multiple` : null, songs_fetcher);
     return (
         <Popover  ref={ref as React.RefObject<HTMLDivElement>} {...rest}
@@ -45,14 +44,11 @@ const SongList = React.forwardRef(({song_ids, ...rest}: {song_ids: number[]}, re
             <List bordered hover>
             {
                 songsData && songsData.map((songData: SongProps, index: number) => 
-                    <List.Item key={index} index={index}
-                        onClick={(event: React.MouseEvent<Element, MouseEvent>) => {
-                            event.stopPropagation();
-                            router.push(`/view_song/${songData.id}`);
-                        }}
-                    >
-                        <SongItem songData={songData} index={index} />
-                    </List.Item>
+                    <Link key={index} passHref href={`/view_song/${songData.id}`}>
+                        <List.Item index={index}>
+                            <SongItem songData={songData} index={index} />
+                        </List.Item>
+                    </Link>
                 )
             }
             </List>
@@ -67,8 +63,8 @@ const renderSessionMenu = (props: SessionCardProps) => ({ onClose, className }: 
         onClose();
     }
     return (
-      <Popover ref={ref} className={className} full>
-        <Dropdown.Menu onSelect={onSelect} >
+      <Popover ref={ref} className={className} full >
+        <Dropdown.Menu onSelect={onSelect} onClick={(e) => {e.preventDefault()}} >
           <Dropdown.Item icon={<FiEdit style={{marginRight: '0.4em'}} />} eventKey='edit'>Edit</Dropdown.Item>
           <Dropdown.Item icon={<AiOutlineLink style={{marginRight: '0.4em'}} />} eventKey='share'>Share</Dropdown.Item>
           <Dropdown.Item icon={<BiExport style={{marginRight: '0.4em'}} />} eventKey='export'>Export</Dropdown.Item>
@@ -80,10 +76,11 @@ const renderSessionMenu = (props: SessionCardProps) => ({ onClose, className }: 
 
 const SessionCard = (props: SessionCardProps) => {
     return (
-        <div onClick={props.onClick} >
+        <Link passHref href={`/view_session/${props.id}`} >
             <Stack justifyContent='space-between' direction='row'
                 className={hoverStyles.hover_grow}
                 style={{
+                    cursor: 'pointer',
                     backgroundColor: 'white',
                     boxShadow: "rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px",
                     borderRadius: "0.5em",
@@ -108,14 +105,17 @@ const SessionCard = (props: SessionCardProps) => {
                         }
                 </Stack>
                 <Whisper placement="auto" trigger="click" speaker={renderSessionMenu(props)}>
-                    <IconButton appearance="ghost" icon={<More />} style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        right: 0
-                    }} />
+                    <IconButton appearance="ghost" icon={<More />}
+                        style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            right: 0
+                        }}
+                        onClick={(e) => {e.preventDefault()}}
+                    />
                 </Whisper>
             </Stack>
-        </div>
+        </Link>
     )
 }
 

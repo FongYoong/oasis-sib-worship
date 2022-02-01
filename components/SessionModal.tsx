@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react'
-import dynamic from 'next/dynamic'
 import CSS from 'csstype';
 import { DragDropContext, DropResult, Droppable, Draggable } from "react-beautiful-dnd";
 import useSWR from 'swr'
@@ -7,6 +6,7 @@ import { Steps, DatePicker, Modal, Form, Stack, Button, IconButton, Animation, I
 import { PickerInstance } from 'rsuite/Picker'
 import SongModal from './SongModal'
 import { json_fetcher } from '../lib/utils'
+import { SuccessMessage, ErrorMessage } from '../lib/messages'
 import { AiFillSound } from 'react-icons/ai'
 import { GiGuitar } from 'react-icons/gi'
 import { BsFillPersonFill } from 'react-icons/bs'
@@ -140,6 +140,7 @@ const SessionModal = (props: SessionModalProps) => {
     const [dateValue, setDateValue] = useState<Date|null>(null);
     const [dutyFormData, setDutyFormData] = useState<Record<string, string>|undefined>(undefined);
     const [addSongShow, setAddSongShow] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
     const handleAddSongClose = () => {
         setAddSongShow(false);
     }
@@ -179,21 +180,28 @@ const SessionModal = (props: SessionModalProps) => {
         }
     }, [data]);
 
-    const pauseModal = isValidating || (props.editSession && !data);
+    const pauseModal = loading || isValidating || (props.editSession && !data);
 
     const resetModal = () => {
         setDutyFormData(undefined)
         setFormIndex(0);
     }
-    const onSuccess = () => {
+    const onSuccess = (message: string) => {
         if (props.onSuccess) {
             props.onSuccess();
         }
+        SuccessMessage(message);
         resetModal();
+        setLoading(false);
         closeModal();
+    }
+    const onFailure = (message: string) => {
+        setLoading(false);
+        ErrorMessage(message)
     }
 
     const addSession = () => {
+        setLoading(true);
         const body = JSON.stringify({
             ...dutyFormData,
             date: dateValue ? dateValue : new Date(),
@@ -207,13 +215,15 @@ const SessionModal = (props: SessionModalProps) => {
                 console.log("Added session");
                 console.log(res_data);
             });
-            onSuccess();
+            onSuccess("Added session");
         }).catch((error) => {
             console.log(error);
+            onFailure("Failed to add session");
         });
     };
 
     const updateSession = () => {
+        setLoading(true);
         const body = JSON.stringify({
             ...dutyFormData,
             id: props.editSessionId,
@@ -229,9 +239,10 @@ const SessionModal = (props: SessionModalProps) => {
                 console.log(res_data);
             });
             mutate();
-            onSuccess();
+            onSuccess("Updated session");
         }).catch((error) => {
             console.log(error);
+            onFailure("Failed to update session");
         });
     };
 
@@ -406,10 +417,10 @@ const SessionModal = (props: SessionModalProps) => {
                 }
                 {formIndex == 1 &&
                     <>
-                        <Button onClick={() => setFormIndex(formIndex - 1)} color="blue" appearance="primary">
+                        <Button disabled={pauseModal} onClick={() => setFormIndex(formIndex - 1)} color="blue" appearance="primary">
                             Back
                         </Button>
-                        <Button disabled={pauseModal} onClick={props.editSession ? updateSession : addSession} color="green" appearance="primary">
+                        <Button loading={pauseModal} disabled={pauseModal} onClick={props.editSession ? updateSession : addSession} color="green" appearance="primary">
                             Confirm
                         </Button>
                     </>

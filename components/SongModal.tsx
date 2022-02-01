@@ -1,8 +1,23 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, createContext, useContext } from 'react'
 import dynamic from 'next/dynamic'
+
+const QuillLoadingContext = createContext<((value: boolean) => void) | undefined>(undefined);
+const QuillLoader = () => {
+    const setLoading = useContext(QuillLoadingContext);
+    useEffect(() => {
+        if (setLoading) {
+            setLoading(true);
+            return () => setLoading(false);
+        }
+    }, [setLoading]);
+
+    return (
+        <Loader content="Loading lyrics..." />
+    )
+}
 const ReactQuill = dynamic(() => import('react-quill'), {
     ssr: false,
-    loading: () => <Loader content="Loading lyrics..." />
+    loading: () => <QuillLoader />
 });
 import Compressor from 'compressorjs';
 import ImageFilters from 'canvas-filters'
@@ -11,7 +26,8 @@ import Tesseract from 'tesseract.js'
 import useSWR from 'swr'
 import { useFilePicker } from 'use-file-picker'
 import { Modal, Stack, Button, IconButton, Form, Loader, InputGroup, Progress, Animation } from 'rsuite'
-import { json_fetcher, dataURLtoBlob } from '../lib/utils'
+import { json_fetcher } from '../lib/utils'
+import { SuccessMessage, ErrorMessage } from '../lib/messages'
 import { BsFillPersonFill } from 'react-icons/bs'
 import { MdTitle } from 'react-icons/md'
 import { Image as ImageIcon } from '@rsuite/icons'
@@ -25,13 +41,34 @@ interface SongModalProps {
     editSongId?: number
 }
 
+const quillModules = {
+    toolbar: {
+        container: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline','strike'],
+            [{'list': 'ordered'}, {'list': 'bullet'}],
+            ['link'],
+            ['clean']
+        ]
+    },
+};
+
+const quillFormats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list', 'bullet',
+    'link', 'image'
+];
+
 const initialLyrics = "<h2>Verse 1</h2><p>Type something here</p><h2>Verse 2</h2><p>Type something here</p><h2>Pre-Chorus</h2><p>Type something here</p><h2>Chorus</h2><p>Type something here</p><h2>Bridge</h2><p>Type something here</p>";
 
 const song_fetcher = json_fetcher('GET');
 
 const SongModal = (props: SongModalProps) => {
+
     const [formData, setFormData] = useState<Record<string, string>|undefined>(undefined);
     const [songLyrics, setSongLyrics] = useState<string>(props.editSong ? '' : initialLyrics);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const canvasOCR = useRef<HTMLCanvasElement>(null);
     const [OCRLoading, setOCRLoading] = useState<boolean>(false);
@@ -52,7 +89,7 @@ const SongModal = (props: SongModalProps) => {
         }
     }, [data]);
 
-    const pauseModal = isValidating || OCRLoading || (props.editSong && !data);
+    const pauseModal = loading || isValidating || OCRLoading || (props.editSong && !data);
 
     const [originalImageDataUrl, setOriginalImageDataUrl] = useState<string>('');
     const [finalImageDataUrl, setFinalImageDataUrl] = useState<string>('');
@@ -69,15 +106,23 @@ const SongModal = (props: SongModalProps) => {
         setSongLyrics(initialLyrics);
     }
 
-    const onSuccess = () => {
+    const onSuccess = (messsage: string) => {
         if (props.onSuccess) {
             props.onSuccess();
         }
+        SuccessMessage(messsage);
         resetModal();
+        setLoading(false);
         closeModal();
     }
 
+    const onFailure = (message: string) => {
+        setLoading(false);
+        ErrorMessage(message)
+    }
+
     const addSong = () => {
+        setLoading(true);
         const body = JSON.stringify({
             title: formData?.title,
             artist: formData?.artist,
@@ -91,19 +136,22 @@ const SongModal = (props: SongModalProps) => {
                 console.log("Added song");
                 console.log(res_data);
             });
-            onSuccess();
+            onSuccess("Added song");
         }).catch((error) => {
             console.log(error);
+            onFailure("Failed to add song");
         });
     };
 
     const updateSong = () => {
+        setLoading(true);
         const body = JSON.stringify({
             id: props.editSongId,
             title: formData?.title,
             artist: formData?.artist,
             lyrics: songLyrics
         });
+        console.log(songLyrics)
         fetch('/api/update_song', {
             method: 'POST',
             body: body,
@@ -113,9 +161,10 @@ const SongModal = (props: SongModalProps) => {
                 console.log(res_data);
             });
             mutate();
-            onSuccess();
+            onSuccess("Updated song");
         }).catch((error) => {
             console.log(error);
+            onFailure("Failed to update song");
         });
     };
 
@@ -193,81 +242,85 @@ const SongModal = (props: SongModalProps) => {
     }
 
     return (
-        <Modal overflow={false} backdrop='static' open={props.visibility}
-            onClose={closeModal}
-        
-        >
-            {isValidating &&
-                <Loader style={{zIndex: 1000}} backdrop center content="Fetching song..." />
-            }
-            <Modal.Header>
-                <canvas ref={canvasOCR} style={{display: 'none'}} />
-                <Stack wrap direction='row' spacing='2em' >
-                    <h4>{props.editSong ? "Edit":"Add"} Song</h4>
-                    <IconButton disabled={OCRLoading} appearance="primary" icon={<ImageIcon />} onClick={() => {openFileSelector()}} >
-                        OCR
-                    </IconButton>
-                    {OCRLoading &&
-                        <div style={{ width: '3.5em' }}>
-                            <Progress.Circle percent={OCRProgress} strokeColor="#3385ff" status='active' />
-                        </div>
-                    }
-                </Stack>
-            </Modal.Header>
-            <Modal.Body>
-                <Form fluid
-                    onChange={setFormData} formValue={formData} style={{marginBottom:'1em'}} >
-                    <Form.Group controlId="title">
-                        <InputGroup>
-                            <InputGroup.Addon>
-                                <MdTitle />
-                            </InputGroup.Addon>
-                            <Form.Control
-                                name="title"
-                                placeholder="Song Title"
-                                errorMessage={formData?.title ? '' : 'This field is required'}
-                                errorPlacement='bottomStart'
-                                readOnly={pauseModal}
-                            />
-                        </InputGroup>
-                    </Form.Group>
-                    <Form.Group controlId="artist">
-                        <InputGroup>
-                            <InputGroup.Addon>
-                                <BsFillPersonFill />
-                            </InputGroup.Addon>
-                            <Form.Control
-                                name="artist"
-                                placeholder="Artist"
-                                readOnly={pauseModal}
-                            />
-                        </InputGroup>
-                    </Form.Group>
-                </Form>
-                <ReactQuill readOnly={pauseModal} theme="snow" value={songLyrics} onChange={setSongLyrics}/>
-            </Modal.Body>
-            <Modal.Footer>
-                <Stack direction='row' justifyContent='flex-end' style={{marginBottom: '1em'}} >
-                    <Button disabled={pauseModal || !formData?.title} onClick={props.editSong ? updateSong : addSong} color="green" appearance="primary">
-                        Confirm
-                    </Button>
-                    <Button onClick={closeModal} appearance="subtle">
-                        Cancel
-                    </Button>
-                </Stack>
-                {filesContent.length > 0 && finalImageDataUrl &&
-                    <Animation.Collapse>
-                        <Stack spacing='1em' direction='column' justifyContent='center' >
-                            <h2>OCR Preview</h2>
-                            <ReactCompareSlider
-                                itemOne={<ReactCompareSliderImage src={filesContent[0].content} alt="Original Image" />}
-                                itemTwo={<ReactCompareSliderImage src={finalImageDataUrl} alt="Filtered Image" />}
-                            />
-                        </Stack>
-                    </Animation.Collapse>
+        <QuillLoadingContext.Provider value={setLoading}>
+            <Modal overflow={false} backdrop='static' open={props.visibility}
+                onClose={closeModal}
+            
+            >
+                {isValidating &&
+                    <Loader style={{zIndex: 1000}} backdrop center content="Fetching song..." />
                 }
-            </Modal.Footer>
-        </Modal>
+                <Modal.Header>
+                    <canvas ref={canvasOCR} style={{display: 'none'}} />
+                    <Stack wrap direction='row' spacing='2em' >
+                        <h4>{props.editSong ? "Edit":"Add"} Song</h4>
+                        <IconButton disabled={OCRLoading} appearance="primary" icon={<ImageIcon />} onClick={() => {openFileSelector()}} >
+                            OCR
+                        </IconButton>
+                        {OCRLoading &&
+                            <div style={{ width: '3.5em' }}>
+                                <Progress.Circle percent={OCRProgress} strokeColor="#3385ff" status='active' />
+                            </div>
+                        }
+                    </Stack>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form fluid
+                        onChange={setFormData} formValue={formData} style={{marginBottom:'1em'}} >
+                        <Form.Group controlId="title">
+                            <InputGroup>
+                                <InputGroup.Addon>
+                                    <MdTitle />
+                                </InputGroup.Addon>
+                                <Form.Control
+                                    name="title"
+                                    placeholder="Song Title"
+                                    errorMessage={formData?.title ? '' : 'This field is required'}
+                                    errorPlacement='bottomStart'
+                                    readOnly={pauseModal}
+                                />
+                            </InputGroup>
+                        </Form.Group>
+                        <Form.Group controlId="artist">
+                            <InputGroup>
+                                <InputGroup.Addon>
+                                    <BsFillPersonFill />
+                                </InputGroup.Addon>
+                                <Form.Control
+                                    name="artist"
+                                    placeholder="Artist"
+                                    readOnly={pauseModal}
+                                />
+                            </InputGroup>
+                        </Form.Group>
+                    </Form>
+                    <ReactQuill readOnly={pauseModal} theme="snow" modules={quillModules} formats={quillFormats}
+                        value={songLyrics} onChange={setSongLyrics}
+                    />
+                </Modal.Body>
+                <Modal.Footer>
+                    <Stack direction='row' justifyContent='flex-end' style={{marginBottom: '1em'}} >
+                        <Button loading={pauseModal} disabled={pauseModal || !formData?.title} onClick={props.editSong ? updateSong : addSong} color="green" appearance="primary">
+                            Confirm
+                        </Button>
+                        <Button onClick={closeModal} appearance="subtle">
+                            Cancel
+                        </Button>
+                    </Stack>
+                    {filesContent.length > 0 && finalImageDataUrl &&
+                        <Animation.Collapse>
+                            <Stack spacing='1em' direction='column' justifyContent='center' >
+                                <h2>OCR Preview</h2>
+                                <ReactCompareSlider
+                                    itemOne={<ReactCompareSliderImage src={filesContent[0].content} alt="Original Image" />}
+                                    itemTwo={<ReactCompareSliderImage src={finalImageDataUrl} alt="Filtered Image" />}
+                                />
+                            </Stack>
+                        </Animation.Collapse>
+                    }
+                </Modal.Footer>
+            </Modal>
+        </QuillLoadingContext.Provider>
     )
 }
 

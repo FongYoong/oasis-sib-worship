@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
-import { Container, IconButton, Input, InputGroup, DateRangePicker, Stack, Divider, Table, Whisper, Popover, Dropdown, Pagination } from 'rsuite';
+import { Container, IconButton, Input, InputGroup, Stack, Divider, Table, Whisper, Popover, Dropdown, Pagination, Animation } from 'rsuite';
 import Head from '../../components/Head'
 import Footer from '../../components/Footer'
 import SongModal from '../../components/SongModal'
@@ -39,13 +39,21 @@ type SortType = 'asc' | 'desc' | undefined;
 
 const songs_fetcher = json_fetcher('GET');
 
-const AllSongsPage: NextPage = () => {
-    const router = useRouter();
-    const [searchText, setSearchText] = useState<string>('');
-    const [sortColumn, setSortColumn] = useState<string>('updatedAt');
-    const [sortType, setSortType] =useState<SortType>('desc');
+interface AllSongsProps {
+    initialSearchText: string,
+    initialSortColumn: string,
+    initialSortType: SortType,
+    initialPageIndex: number
+}
+  
 
-    const [pageIndex, setPageIndex] = useState<number>(1);
+const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortColumn, initialSortType, initialPageIndex}) => {
+    const router = useRouter();
+    const [searchText, setSearchText] = useState<string>(initialSearchText);
+    const [sortColumn, setSortColumn] = useState<string>(initialSortColumn);
+    const [sortType, setSortType] =useState<SortType>(initialSortType);
+    const [pageIndex, setPageIndex] = useState<number>(initialPageIndex);
+
     const { data, isValidating, error, mutate } = useSWR(`/api/get_songs?page=${pageIndex}&searchText=${searchText}&sortType=${sortType}&sortColumn=${sortColumn}`
     , songs_fetcher);
 
@@ -94,11 +102,19 @@ const AllSongsPage: NextPage = () => {
     const handleSortColumn = (sortColumn: string, sortType: SortType) => {
         setSortColumn(sortColumn);
         setSortType(sortType);
+        router.replace({
+            pathname: router.pathname,
+            query: {
+              ...router.query,
+              sortColumn,
+              sortType
+            },
+        });
     };
 
     const maxItemsPerPage: number = data ? data.maxItemsPerPage : 0;
     const totalPages: number = data ? data.totalPages : 0;
-    const processed_data = data ? data.songs.map((song: SongProps) => {
+    const processed_data = data && data.songs ? data.songs.map((song: SongProps) => {
         return {
             ...song,
             updatedAt: new Date(song.updatedAt).toLocaleString()
@@ -122,7 +138,16 @@ const AllSongsPage: NextPage = () => {
                         <InputGroup.Addon>
                             <Search />
                         </InputGroup.Addon>
-                        <Input onChange={(text)=>{setSearchText(text)}} placeholder="Search song" />
+                        <Input value={searchText} onChange={(text)=>{
+                            setSearchText(text);
+                            router.replace({
+                                pathname: router.pathname,
+                                query: {
+                                  ...router.query,
+                                  searchText: text
+                                },
+                            });
+                            }} placeholder="Search song" />
                     </InputGroup>
                 </Stack>
                 
@@ -170,9 +195,21 @@ const AllSongsPage: NextPage = () => {
                         </Table.Cell>
                     </Table.Column>
                 </Table>
-                { !isValidating &&
-                <Pagination style={{padding: '0.5em', border: '5px double rgba(47,116,169,0.5)', borderRadius: '0.5em'}} prev next last first size="lg"
-                    total={totalPages * maxItemsPerPage} limit={maxItemsPerPage} activePage={pageIndex} onChangePage={(newIndex: number) => setPageIndex(newIndex)} />
+                { data &&
+                    <Animation.Bounce in >
+                        <Pagination style={{padding: '0.5em', border: '5px double rgba(47,116,169,0.5)', borderRadius: '0.5em'}} prev next last first size="lg"
+                            total={totalPages * maxItemsPerPage} limit={maxItemsPerPage} activePage={pageIndex}
+                            onChangePage={(newIndex: number) => {
+                                setPageIndex(newIndex);
+                                router.replace({
+                                    pathname: router.pathname,
+                                    query: {
+                                        ...router.query,
+                                        pageIndex: newIndex
+                                    },
+                                });
+                            }} />
+                    </Animation.Bounce>
                 }
                 <Divider style={{height: '0.2em', width: '90vw'}} />
             </main>
@@ -182,3 +219,17 @@ const AllSongsPage: NextPage = () => {
 }
 
 export default AllSongsPage
+
+AllSongsPage.getInitialProps = async (ctx) => {
+    const searchText = ctx.query.searchText as string;
+    const sortColumn = ctx.query.sortColumn as string;
+    const sortType = ctx.query.sortType as SortType;
+    const pageIndex = parseInt(ctx.query.pageIndex as string);
+  
+    return {
+      initialSearchText: searchText ? searchText : '',
+      initialSortColumn: sortColumn ? sortColumn : 'updatedAt',
+      initialSortType: sortType ? sortType : 'desc',
+      initialPageIndex: isNaN(pageIndex) ? 1 : pageIndex,
+    }
+}

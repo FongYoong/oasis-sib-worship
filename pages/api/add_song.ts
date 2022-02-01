@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             try {   
                 console.log("\n---ADD SONG---");
                 console.log("Request body: ");
-                console.log(req.body);
+                //console.log(req.body);
                 const response = await add_song(JSON.parse(req.body));
                 console.log('Success"');
                 console.log(response);

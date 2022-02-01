@@ -106,7 +106,7 @@ const ViewSessionPage: NextPage = () => {
                                     <Stack spacing='0.5em' direction='row' alignItems='center' justifyContent='center' >
                                         <SessionDetailItem placeholder="Worship Leader" value={session_data.worship_leader} />
                                         <Button appearance="subtle" color="cyan" onClick={() => setSessionInfoShow(!sessionInfoShow)} >
-                                            {sessionInfoShow ? <AiOutlineDownCircle /> : <AiOutlineUpCircle />}
+                                            {sessionInfoShow ? <AiOutlineUpCircle /> : <AiOutlineDownCircle />}
                                         </Button>
                                     </Stack>
                                 } collapsible bordered >

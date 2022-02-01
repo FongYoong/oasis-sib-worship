@@ -5,9 +5,10 @@ import { jsPDF } from "jspdf"
 let jspdfInstance = new jsPDF();
 import FileSaver from 'file-saver'
 import useSWR from 'swr'
-import { Modal, Stack, Button, Dropdown, Tag, toaster, Message } from 'rsuite'
+import { Modal, Stack, Button, Dropdown } from 'rsuite'
 import { json_fetcher, exportPDFParseOptions, mergeSessiontoHTML, getFileExtension } from '../lib/utils'
 import { SessionProps, SongProps } from '../lib/types'
+import { SuccessMessage, ErrorMessage } from '../lib/messages';
 import { SiMicrosoftpowerpoint, SiMicrosoftword } from 'react-icons/si'
 import { GrDocumentPdf } from 'react-icons/gr'
 import { BsGlobe } from 'react-icons/bs'
@@ -69,16 +70,14 @@ const ExportSessionModal = (props: ExportSessionModalProps) => {
         if (props.onSuccess) {
             props.onSuccess();
         }
-        props.handleClose();
         setExportLoading(false);
+        SuccessMessage("Exported song")
+        props.handleClose();
     }
 
     const onFailure = () => {
-        toaster.push(
-            <Message showIcon closable duration={2500} type='error' >
-                Failed to export <Tag> {data.title} - {data.artist} </Tag> <br/> to {getExportDetails(exportType)?.title}
-            </Message>
-        , {placement: 'topCenter'});
+        setExportLoading(false);
+        ErrorMessage("Failed to export session")
     }
 
     const exportSession = () => {

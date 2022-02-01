@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 console.log("Request body: ");
                 console.log(req.body);
                 const file_buffer = await export_song(JSON.parse(req.body));
-                console.log(file_buffer);
+                //console.log("Buffer: ", file_buffer);
                 res.write(file_buffer, 'binary');
                 res.end(null, 'binary');
                 console.log('Exported song successfully!');
