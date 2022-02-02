@@ -1,16 +1,12 @@
 import { NextPage } from 'next'
 import Link from 'next/link'
-import { Container, Button, Stack, Divider, Sidebar } from 'rsuite';
-import Head from '../../components/Head'
-import Footer from '../../components/Footer'
-import { PageName } from '../../lib/types'
+import { Button, Stack, Divider } from 'rsuite';
 import { BsGithub } from 'react-icons/bs'
 
 const AboutPage: NextPage = () => {
 
   return (
-    <Container className='page' >
-      <Head title={PageName.About} description="About page" />
+    <>
       <main>
         <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' >
           <Stack direction='column' spacing="1em" >
@@ -31,8 +27,7 @@ const AboutPage: NextPage = () => {
           </Stack>
         </Stack>
       </main>
-      <Footer />
-    </Container>
+    </>
   )
 }
 

@@ -3,13 +3,11 @@ import { useState } from 'react'
 import { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
-import { Container, IconButton, Input, InputGroup, Stack, Divider, Table, Whisper, Popover, Dropdown, Pagination, Animation } from 'rsuite';
-import Head from '../../components/Head'
-import Footer from '../../components/Footer'
+import { IconButton, Input, InputGroup, Stack, Divider, Table, Whisper, Popover, Dropdown, Pagination, Animation } from 'rsuite';
 import SongModal from '../../components/SongModal'
 import ExportSongModal from '../../components/ExportSongModal'
 import DeleteSongModal from '../../components/DeleteSongModal'
-import { SongProps, PageName } from '../../lib/types'
+import { SongProps } from '../../lib/types'
 import { domainUrl, copyToClipboard, json_fetcher } from '../../lib/utils'
 import { Plus, Search, More } from '@rsuite/icons'
 import { AiOutlineLink } from 'react-icons/ai'
@@ -123,12 +121,11 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
     console.log(error);
 
     return (
-        <Container className='page' >
+        <>
             <SongModal visibility={addSongShow} handleClose={handleAddSongClose} onSuccess={mutate} />
             <SongModal editSong={editSongShow} editSongId={editSongId} visibility={editSongShow} handleClose={handleEditSongClose} onSuccess={mutate} />
             <ExportSongModal songData={exportSongData} visibility={exportSongShow} handleClose={handleExportSongClose} />
             <DeleteSongModal songData={deleteSongData} visibility={deleteSongShow} handleClose={handleDeleteSongClose} onSuccess={mutate} />
-            <Head title={PageName.AllSongs} description="All songs page" />
             <main>
                 <Stack wrap direction='row' justifyContent='center' spacing="1em" >
                     <IconButton appearance="primary" color="green" icon={<Plus />} onClick={() => setAddSongShow(true)} >
@@ -213,8 +210,7 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
                 }
                 <Divider style={{height: '0.2em', width: '90vw'}} />
             </main>
-            <Footer />
-        </Container>
+        </>
     )
 }
 

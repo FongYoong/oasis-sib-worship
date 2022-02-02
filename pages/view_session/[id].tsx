@@ -6,17 +6,13 @@ const ReactQuill = dynamic(() => import('react-quill'), {
     ssr: false,
     loading: () => <Loader content="Loading lyrics..." />
 });
-import { ReactQuillProps } from 'react-quill'
 import useSWR from 'swr'
-import { Container, Stack, Divider, Button, Panel, InputGroup, Input, Dropdown, Loader, Animation } from 'rsuite';
-import Head from '../../components/Head'
-import Footer from '../../components/Footer'
+import { Stack, Divider, Button, Panel, InputGroup, Input, Dropdown, Loader, Animation } from 'rsuite';
 import SessionModal from '../../components/SessionModal'
 import ExportSessionModal from '../../components/ExportSessionModal'
 import DeleteSessionModal from '../../components/DeleteSessionModal'
-import { SessionProps, SongProps, PageName } from '../../lib/types'
+import { SessionProps, SongProps } from '../../lib/types'
 import { domainUrl, copyToClipboard, json_fetcher } from '../../lib/utils'
-import { BsArrowDownCircle, BsArrowUpCircle } from 'react-icons/bs'
 import { GrAddCircle, GrSubtractCircle, GrFormNext, GrFormView, GrFormViewHide } from 'react-icons/gr'
 import { AiOutlineLink, AiOutlineDownCircle, AiOutlineUpCircle } from 'react-icons/ai'
 import { FiEdit } from 'react-icons/fi'
@@ -88,11 +84,10 @@ const ViewSessionPage: NextPage = () => {
     console.log(errorSongs);
 
     return (
-    <Container className='page' >
+    <>
         <SessionModal editSession={editSessionShow} editSessionId={session_id} visibility={editSessionShow} handleClose={handleEditSessionClose} onSuccess={mutate} />
         <ExportSessionModal sessionData={session_data} visibility={exportSessionShow} handleClose={handleExportSessionClose} />
         <DeleteSessionModal sessionData={session_data} visibility={deleteSessionShow} handleClose={handleDeleteSessionClose} onSuccess={mutate} />
-        <Head title={PageName.ViewSong} description="Page for a specified session" />
         <main>
             <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' >
                 { session_data &&
@@ -188,8 +183,7 @@ const ViewSessionPage: NextPage = () => {
                 }
             </Stack>
         </main>
-        <Footer />
-    </Container>
+    </>
     )
 }
 

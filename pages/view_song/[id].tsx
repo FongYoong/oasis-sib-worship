@@ -7,13 +7,10 @@ const ReactQuill = dynamic(() => import('react-quill'), {
     loading: () => <Loader content="Loading lyrics..." />
 });
 import useSWR from 'swr'
-import { Container, Stack, Divider, Button, InputGroup, Input, Loader, Animation } from 'rsuite';
-import Head from '../../components/Head'
-import Footer from '../../components/Footer'
+import { Stack, Divider, Button, Loader, Animation } from 'rsuite';
 import SongModal from '../../components/SongModal'
 import ExportSongModal from '../../components/ExportSongModal'
 import DeleteSongModal from '../../components/DeleteSongModal'
-import { SongProps, PageName } from '../../lib/types'
 import { domainUrl, copyToClipboard, json_fetcher } from '../../lib/utils'
 import { AiOutlineLink } from 'react-icons/ai'
 import { FiEdit } from 'react-icons/fi'
@@ -68,11 +65,10 @@ const ViewSongPage: NextPage = () => {
     console.log(error);
 
     return (
-    <Container className='page' >
+    <>
         <SongModal editSong={editSongShow} editSongId={song_id} visibility={editSongShow} handleClose={handleEditSongClose} onSuccess={mutate} />
         <ExportSongModal songData={song_data} visibility={exportSongShow} handleClose={handleExportSongClose} />
         <DeleteSongModal songData={song_data} visibility={deleteSongShow} handleClose={handleDeleteSongClose} onSuccess={mutate} />
-        <Head title={PageName.ViewSong} description="Page for a specified song" />
         <main>
             <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' >
                 { song_data &&
@@ -110,8 +106,7 @@ const ViewSongPage: NextPage = () => {
                 }
             </Stack>
         </main>
-        <Footer />
-    </Container>
+    </>
     )
 }
 

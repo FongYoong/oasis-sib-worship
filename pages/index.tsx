@@ -2,15 +2,13 @@ import { useState } from 'react'
 import { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
-import { Container, Stack, Divider, IconButton, Loader, Animation, Button, InputGroup, Input, DatePicker } from 'rsuite';
+import { Stack, Divider, IconButton, Loader, Animation, Button, InputGroup, Input, DatePicker } from 'rsuite';
 import AnimateHeight from 'react-animate-height';
-import Head from '../components/Head'
-import Footer from '../components/Footer'
 import SessionCard from '../components/SessionCard'
 import SessionModal from '../components/SessionModal'
 import ExportSessionModal from '../components/ExportSessionModal'
 import DeleteSessionModal from '../components/DeleteSessionModal'
-import { SessionProps, PageName } from '../lib/types'
+import { SessionProps } from '../lib/types'
 import { domainUrl, copyToClipboard, json_fetcher, isPresentOrFutureDate, dateToISOString, getStartOfMonthDate, getEndOfMonthDate } from '../lib/utils'
 import { Plus, Search } from '@rsuite/icons'
 import { MdExpandMore } from 'react-icons/md'
@@ -138,12 +136,11 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
   const past_sessions = processed_data.filter((session: SessionProps) => !isPresentOrFutureDate(session.date));
 
   return (
-    <Container className='page' >
+    <>
       <SessionModal visibility={addSessionShow} handleClose={handleAddSessionClose} onSuccess={mutate} />
       <SessionModal editSession={editSessionShow} editSessionId={editSessionId} visibility={editSessionShow} handleClose={handleEditSessionClose} onSuccess={mutate} />
       <ExportSessionModal sessionData={exportSessionData} visibility={exportSessionShow} handleClose={handleExportSessionClose} />
       <DeleteSessionModal sessionData={deleteSessionData} visibility={deleteSessionShow} handleClose={handleDeleteSessionClose} onSuccess={mutate} />
-      <Head title={PageName.Home} description="Home page which displays all sessions" />
       <main>
         <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' >
           <Animation.Bounce in={isValidating} >
@@ -243,8 +240,7 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
           </Stack>
         </Stack>
       </main>
-      <Footer />
-    </Container>
+    </>
   )
 }
 

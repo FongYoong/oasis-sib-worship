@@ -2,54 +2,61 @@ import 'rsuite/dist/rsuite.min.css'
 import 'react-quill/dist/quill.snow.css';
 import 'react-quill/dist/quill.bubble.css';
 import '../styles/global.css';
-import { useState, useEffect } from 'react'
 import { AppProps } from 'next/app'
 import { useRouter } from 'next/router'
-import { SpinnerRoundFilled } from 'spinners-react';
+import { Container } from 'rsuite'
+import NextNProgress from 'nextjs-progressbar'
+import { LazyMotion, AnimatePresence, domAnimation, m } from "framer-motion"
+import { fadeBack } from '../lib/animations'
+import { PageName } from '../lib/types'
+import Head from '../components/Head'
+import Footer from '../components/Footer'
 
-//import { Loader, Animation } from 'rsuite'
-
-const PageLoader = () => {
-  return (
-    <div style={{
-      zIndex: 1000,
-      opacity: 0.3,
-      background: 'black',
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100vw',
-      height: '100vh'
-    }}> 
-      <SpinnerRoundFilled size='25vw' thickness={100} speed={100} color="#36ad47" style={{
-        position: 'absolute',
-        top: '0vh',
-        left: '0vw'
-      }} />
-    </div>
-  )
-};
+const animation = fadeBack;
 
 function MyApp({ Component, pageProps }: AppProps) {
 
   const router = useRouter();
-  const [pageLoading, setPageLoading] = useState<boolean>(false);
-  useEffect(() => {
-    const handleStart = () => { setPageLoading(true); };
-    const handleComplete = () => { setPageLoading(false); };
+  // const [pageLoading, setPageLoading] = useState<boolean>(false);
+  // useEffect(() => {
+  //   const handleStart = () => { setPageLoading(true); };
+  //   const handleComplete = () => { setPageLoading(false); };
 
-    router.events.on('routeChangeStart', handleStart);
-    router.events.on('routeChangeComplete', handleComplete);
-    router.events.on('routeChangeError', handleComplete);
-  }, [router]);
+  //   router.events.on('routeChangeStart', handleStart);
+  //   router.events.on('routeChangeComplete', handleComplete);
+  //   router.events.on('routeChangeError', handleComplete);
+  // }, [router]);
+  console.log(router.pathname)
+  let title;
 
   return (
     <>
-      <Component {...pageProps} />
-      {pageLoading && <PageLoader />}
-      {/* {pageLoading && <Loader size='lg' content={<h2>Wait ah...</h2>} center backdrop />} */}
+      <NextNProgress />
+      <Container className='page' >
+        <Head title={PageName.AllSongs} description="All songs page" />
+        <LazyMotion features={domAnimation}>
+          <AnimatePresence exitBeforeEnter>
+            <m.div
+              key={router.route.concat(animation.name)}
+              style={{
+                display: "flex",
+                position: "relative",
+                height: "100%",
+                width: "100vw"
+              }}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              variants={animation.variants}
+              transition={animation.transition}
+            >
+              <Component {...pageProps} />
+            </m.div>
+          </AnimatePresence>
+        </LazyMotion>
+        <Footer />
+      </Container>
     </>
-
   )
 }
 export default MyApp
