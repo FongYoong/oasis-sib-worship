@@ -10,8 +10,8 @@ import { PageName } from '../lib/types'
 import { domainUrl } from '../lib/utils'
 
 interface HeadProps {
-  title: PageName,
-  description: string
+  title?: PageName,
+  description?: string
 }
 
 // eslint-disable-next-line react/display-name
@@ -32,7 +32,9 @@ const Head = (props: HeadProps) => {
           <meta name={props.title} content={props.description} />
           <link rel="icon" href="/favicon.ico" />
         </NextHead>
-        <Stack direction='row' alignItems='center' spacing='1em' style={{marginBottom: '0em'}} >
+        <Stack direction='row' alignItems='center' spacing='1em' style={{
+            marginBottom: '0em'
+          }} >
           <Avatar src={`http://${domainUrl}/images/oasis_sib_logo.jpg`} alt="oasis_sib_logo"
               className={hoverStyles.hover_glow}
               style={{

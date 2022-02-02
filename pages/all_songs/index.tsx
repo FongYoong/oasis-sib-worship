@@ -127,7 +127,9 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
             <ExportSongModal songData={exportSongData} visibility={exportSongShow} handleClose={handleExportSongClose} />
             <DeleteSongModal songData={deleteSongData} visibility={deleteSongShow} handleClose={handleDeleteSongClose} onSuccess={mutate} />
             <main>
-                <Stack wrap direction='row' justifyContent='center' spacing="1em" >
+                <Stack wrap direction='row' justifyContent='center' spacing="1em" style={{
+                    width: '100vw'
+                }} >
                     <IconButton appearance="primary" color="green" icon={<Plus />} onClick={() => setAddSongShow(true)} >
                         Add Song
                     </IconButton>
@@ -169,7 +171,7 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
                         <Table.HeaderCell>Updated</Table.HeaderCell>
                         <Table.Cell dataKey="updatedAt" />
                     </Table.Column>
-                    <Table.Column width={100} align="center" fixed sortable flexGrow={1} >
+                    <Table.Column width={100} align="center" fixed sortable flexGrow={2} >
                         <Table.HeaderCell>Title</Table.HeaderCell>
                         <Table.Cell dataKey="title" />
                     </Table.Column>

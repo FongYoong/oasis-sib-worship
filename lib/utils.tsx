@@ -1,8 +1,33 @@
 import { Element as ReactParserElement, DOMNode, domToReact, attributesToProps  } from 'html-react-parser';
 import { CopyClipboardMessage } from './messages';
-import { SessionProps, SongProps } from './types';
+import { SessionProps, SongProps, PageName } from './types';
 
-export const domainUrl = process.env.NEXT_PUBLIC_VERCEL_URL ? process.env.NEXT_PUBLIC_VERCEL_URL : 'localhost:3000';
+//export const domainUrl = process.env.NEXT_PUBLIC_VERCEL_URL ? process.env.NEXT_PUBLIC_VERCEL_URL : 'localhost:3000';
+export const domainUrl = process.env.NEXT_PUBLIC_VERCEL_URL ? "oasis-sib-worship.vercel.app" : 'localhost:3000';
+
+export const resolvePageRoute = (path: string) => {
+    if (path == '/') {
+        return PageName.Home
+    }
+    else if (path == '/all_songs') {
+        return PageName.AllSongs
+    }
+    else if (path == '/about') {
+        return PageName.About
+    }
+    else if (path.includes('/view_song')) {
+        return PageName.ViewSong
+    }
+    else if (path.includes('/view_session')) {
+        return PageName.ViewSession
+    }
+    else if (path == undefined) {
+        return PageName.None
+    }
+    else {
+        throw Error('Cannot resolve path to PageName')
+    }
+}
 
 export const isPresentOrFutureDate = (date: Date) => {
     const today = new Date();

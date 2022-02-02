@@ -2,6 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import { Stack, Divider, Whisper, Popover, Dropdown, Button, IconButton, List, Loader } from 'rsuite'
 import useSWR from 'swr'
+import { LazyMotion, AnimatePresence, domAnimation, m } from "framer-motion"
 import { SessionProps, SongProps } from '../lib/types'
 import { json_fetcher } from '../lib/utils'
 import { More } from '@rsuite/icons'
@@ -74,48 +75,56 @@ const renderSessionMenu = (props: SessionCardProps) => ({ onClose, className }: 
     );
   };
 
-const SessionCard = (props: SessionCardProps) => {
+const SessionCard = ({sessionProps, ...rest}: {sessionProps: SessionCardProps}) => {
     return (
-        <Link passHref href={`/view_session/${props.id}`} >
-            <Stack justifyContent='space-between' direction='row'
-                className={hoverStyles.hover_grow}
-                style={{
-                    cursor: 'pointer',
-                    backgroundColor: 'white',
-                    boxShadow: "rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px",
-                    borderRadius: "0.5em",
-                    padding: "1em"
-                }}
+        <LazyMotion features={domAnimation}>
+            <m.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5 }}
             >
-                <Stack direction='column'>
-                    <h2>{props.date.getDate()}</h2>
-                    <h2>{props.date.toDateString().split(' ')[1]}</h2>
-                    <h2>{props.date.getFullYear()}</h2>
-                </Stack>
-                <Divider vertical style={{height: '10em'}} />
-                <Stack spacing='1em' direction='column' justifyContent='space-between' >
-                    <h4> {props.worship_leader} </h4>
-                        {
-                            props.songs.length > 0 ?
-                            <Whisper preventOverflow placement="auto" trigger="click" controlId="control-id-click" speaker={<SongList song_ids={props.songs} />}>
-                                <Button onClick={(e) => {e.preventDefault()}} appearance="primary" block >{`${props.songs.length} songs`}</Button>
-                            </Whisper>
-                            :
-                            <h5 style={{color: 'red'}} ><i>No songs</i></h5>
-                        }
-                </Stack>
-                <Whisper placement="auto" trigger="click" speaker={renderSessionMenu(props)}>
-                    <IconButton appearance="ghost" icon={<More />}
+                <Link passHref href={`/view_session/${sessionProps.id}`} >
+                    <Stack justifyContent='space-between' direction='row'
+                        className={hoverStyles.hover_grow}
                         style={{
-                            position: 'absolute',
-                            bottom: 0,
-                            right: 0
+                            cursor: 'pointer',
+                            backgroundColor: 'white',
+                            boxShadow: "rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px",
+                            borderRadius: "0.5em",
+                            padding: "1em"
                         }}
-                        onClick={(e) => {e.preventDefault()}}
-                    />
-                </Whisper>
-            </Stack>
-        </Link>
+                    >
+                        <Stack direction='column'>
+                            <h2>{sessionProps.date.getDate()}</h2>
+                            <h2>{sessionProps.date.toDateString().split(' ')[1]}</h2>
+                            <h2>{sessionProps.date.getFullYear()}</h2>
+                        </Stack>
+                        <Divider vertical style={{height: '10em'}} />
+                        <Stack spacing='1em' direction='column' justifyContent='space-between' >
+                            <h4> {sessionProps.worship_leader} </h4>
+                                {
+                                    sessionProps.songs.length > 0 ?
+                                    <Whisper preventOverflow placement="auto" trigger="click" controlId="control-id-click" speaker={<SongList song_ids={sessionProps.songs} />}>
+                                        <Button onClick={(e) => {e.preventDefault()}} appearance="primary" block >{`${sessionProps.songs.length} songs`}</Button>
+                                    </Whisper>
+                                    :
+                                    <h5 style={{color: 'red'}} ><i>No songs</i></h5>
+                                }
+                        </Stack>
+                        <Whisper placement="auto" trigger="click" speaker={renderSessionMenu(sessionProps)}>
+                            <IconButton appearance="ghost" icon={<More />}
+                                style={{
+                                    position: 'absolute',
+                                    bottom: 0,
+                                    right: 0
+                                }}
+                                onClick={(e) => {e.preventDefault()}}
+                            />
+                        </Whisper>
+                    </Stack>
+                </Link>
+            </m.div>
+        </LazyMotion>
     )
 }
 

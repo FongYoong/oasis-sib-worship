@@ -7,7 +7,7 @@ const ReactQuill = dynamic(() => import('react-quill'), {
     loading: () => <Loader content="Loading lyrics..." />
 });
 import useSWR from 'swr'
-import { Stack, Divider, Button, Loader, Animation } from 'rsuite';
+import { Stack, Divider, Button, Loader } from 'rsuite';
 import SongModal from '../../components/SongModal'
 import ExportSongModal from '../../components/ExportSongModal'
 import DeleteSongModal from '../../components/DeleteSongModal'
@@ -70,36 +70,36 @@ const ViewSongPage: NextPage = () => {
         <ExportSongModal songData={song_data} visibility={exportSongShow} handleClose={handleExportSongClose} />
         <DeleteSongModal songData={song_data} visibility={deleteSongShow} handleClose={handleDeleteSongClose} onSuccess={mutate} />
         <main>
-            <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' >
+            <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' style={{
+                width: '100vw'
+            }} >
                 { song_data &&
-                    <Animation.Bounce in={true} >
-                         <Stack spacing='3em' direction='column' alignItems='center' justifyContent='center' >
-                            <Stack direction='column' alignItems='center' justifyContent='center' >
-                                <h3 style={{textAlign: 'center'}} >{song_data.title}</h3>
-                                <Divider style={{height: '0.2em', width: '50vw', marginTop:'0.3em', marginBottom:'0.3em'}} />
-                                <h5 style={{textAlign: 'center'}} >{song_data.artist}</h5>
-                            </Stack>
-                            <Stack wrap spacing='1em' direction='row' alignItems='center' justifyContent='center' >
-                                <Button appearance="primary" color="blue" onClick={() => setEditSongShow(true)} >
-                                    <FiEdit style={{marginRight: '1em'}} />Edit Song
-                                </Button>
-                                <Button appearance="primary" color="violet" onClick={() => {
-                                    const url = `${domainUrl}/view_song/${song_data.id}`;
-                                    copyToClipboard(url, 'Copied URL to clipboard');
-                                }} >
-                                    <AiOutlineLink style={{marginRight: '1em'}} />Share Song
-                                </Button>
-                                <Button appearance="primary" color="orange" onClick={() => setExportSongShow(true)} >
-                                    <BiExport style={{marginRight: '1em'}} />Export Song
-                                </Button>
-                                <Button appearance="primary" color="red" onClick={() => setDeleteSongShow(true)} >
-                                    <RiDeleteBin2Fill style={{marginRight: '1em'}} />Delete Song
-                                </Button>
-                            </Stack>
-                            <ReactQuill style={{border: '5px solid rgba(28,110,164,0.12)'}} readOnly={true} theme="bubble" value={song_data.lyrics} />
-                            <YouTubeSong keyword={`${song_data.title} - ${song_data.artist}`} />
+                    <Stack spacing='3em' direction='column' alignItems='center' justifyContent='center' >
+                        <Stack direction='column' alignItems='center' justifyContent='center' >
+                            <h3 style={{textAlign: 'center'}} >{song_data.title}</h3>
+                            <Divider style={{height: '0.2em', width: '50vw', marginTop:'0.3em', marginBottom:'0.3em'}} />
+                            <h5 style={{textAlign: 'center'}} >{song_data.artist}</h5>
                         </Stack>
-                    </Animation.Bounce>
+                        <Stack wrap spacing='1em' direction='row' alignItems='center' justifyContent='center' >
+                            <Button appearance="primary" color="blue" onClick={() => setEditSongShow(true)} >
+                                <FiEdit style={{marginRight: '1em'}} />Edit Song
+                            </Button>
+                            <Button appearance="primary" color="violet" onClick={() => {
+                                const url = `${domainUrl}/view_song/${song_data.id}`;
+                                copyToClipboard(url, 'Copied URL to clipboard');
+                            }} >
+                                <AiOutlineLink style={{marginRight: '1em'}} />Share Song
+                            </Button>
+                            <Button appearance="primary" color="orange" onClick={() => setExportSongShow(true)} >
+                                <BiExport style={{marginRight: '1em'}} />Export Song
+                            </Button>
+                            <Button appearance="primary" color="red" onClick={() => setDeleteSongShow(true)} >
+                                <RiDeleteBin2Fill style={{marginRight: '1em'}} />Delete Song
+                            </Button>
+                        </Stack>
+                        <ReactQuill style={{border: '5px solid rgba(28,110,164,0.12)'}} readOnly={true} theme="bubble" value={song_data.lyrics} />
+                        <YouTubeSong keyword={`${song_data.title} - ${song_data.artist}`} />
+                    </Stack>
                 }
                 {
                     !song_data && <Loader size='md' content="Fetching song..." />

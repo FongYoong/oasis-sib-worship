@@ -130,38 +130,43 @@ export const rotateZ = {
   },
 };
 
-export const fade = {
-    name: "Fade",
+export const fadeOnly = {
+  name: "Fade",
+  variants: {
+    initial: {
+      opacity: 0,
+    },
+    animate: {
+      opacity: 1,
+    },
+    exit: {
+      opacity: 0,
+    },
+  },
+  transition: {
+    duration: 0.5,
+  }
+};
+
+export const fadeSlide = (goLeft: boolean) => {
+  return {
+    name: "FadeSlide",
     variants: {
       initial: {
+        right: goLeft ? "-100vw" : "100vw",
         opacity: 0,
       },
       animate: {
+        right: "0vw",
         opacity: 1,
       },
       exit: {
+        right: goLeft ? "100vw" : "-100vw",
         opacity: 0,
       },
     },
     transition: {
       duration: 0.5,
     }
-};
-
-export const expand = {
-    name: "Expand",
-    variants: {
-      initial: {
-        right: "100vw",
-      },
-      animate: {
-        right: 0,
-      },
-      exit: {
-        left: "100vw",
-      },
-    },
-    transition: {
-      duration: 0.5,
-    }
+  }
 };

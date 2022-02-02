@@ -88,10 +88,13 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
     }
   };
 
-  const GenerateSessionCard = ({session}: {session: SessionProps}) => {
+  const GenerateSessionCard = ({session, ...rest}: {session: SessionProps}) => {
     return (
-      <SessionCard {...session}
-        handleSessionMenuSelect={handleSessionMenuSelect}
+      <SessionCard sessionProps={{
+          handleSessionMenuSelect,
+          ...session
+        }}
+        {...rest}
         // onClick={(event: React.MouseEvent<Element, MouseEvent>) => {
         //   if (!['BUTTON', 'svg', 'LI'].includes((event.target as Element).nodeName)) {
         //     router.push(`/view_session/${session.id}`);
@@ -114,7 +117,9 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
       }
     }) : [];
     return (
-        data ? sessions.map((session_data: SessionProps) => <GenerateSessionCard key={session_data.id} session={session_data} />): <></>
+        <Stack wrap direction='row' alignItems='center' justifyContent='flex-start' spacing="2em" >
+          {data ? sessions.map((session_data: SessionProps) => <GenerateSessionCard key={session_data.id} session={session_data} />): <></>}
+        </Stack>
     )
   }
 
@@ -142,7 +147,9 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
       <ExportSessionModal sessionData={exportSessionData} visibility={exportSessionShow} handleClose={handleExportSessionClose} />
       <DeleteSessionModal sessionData={deleteSessionData} visibility={deleteSessionShow} handleClose={handleDeleteSessionClose} onSuccess={mutate} />
       <main>
-        <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' >
+        <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' style={{
+          width: '100vw'
+        }} >
           <Animation.Bounce in={isValidating} >
             <Loader size='md' content="Fetching sessions..." />
           </Animation.Bounce>
@@ -209,10 +216,10 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
                 duration={300}
                 height={upcoming_sessions && upcoming_sessions.length > 0 ? "auto" : 0}
               >
-                <Stack wrap direction='row' justifyContent='center' spacing="2em" >
-                    {upcoming_sessions && upcoming_sessions.map((session: SessionProps) => 
+                <Stack wrap direction='row' alignItems='center' justifyContent='flex-start' spacing="2em" >
+                  {upcoming_sessions && upcoming_sessions.map((session: SessionProps) => 
                       <GenerateSessionCard key={session.id} session={session} />
-                    )}
+                  )}
                 </Stack>
               </AnimateHeight>
             </Animation.Bounce>
@@ -224,14 +231,14 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
                 duration={300}
                 height={past_sessions && past_sessions.length > 0 ? "auto" : 0}
               >
-                <Stack wrap direction='row' justifyContent='center' spacing="2em" >
-                    {past_sessions && past_sessions.map((session: SessionProps) => 
+                <Stack wrap direction='row' alignItems='center' justifyContent='flex-start' spacing="2em" >
+                  {past_sessions.map((session: SessionProps) =>
                       <GenerateSessionCard key={session.id} session={session} />
-                    )}
-                    {previousSessionPages}
+                  )}
+                  {previousSessionPages.map((page) => page)}
                 </Stack>
-              </AnimateHeight>
-            </Animation.Bounce>
+               </AnimateHeight>
+            </Animation.Bounce> 
             { (pageIndex < totalPages) && 
               <Button appearance="primary" color="violet" onClick={() => {setPageIndex(pageIndex + 1)}} >
                     <MdExpandMore style={{marginRight: '1em'}} />More

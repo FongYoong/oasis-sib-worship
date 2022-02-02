@@ -7,16 +7,18 @@ import { useRouter } from 'next/router'
 import { Container } from 'rsuite'
 import NextNProgress from 'nextjs-progressbar'
 import { LazyMotion, AnimatePresence, domAnimation, m } from "framer-motion"
-import { fadeBack } from '../lib/animations'
-import { PageName } from '../lib/types'
+import { fadeOnly } from '../lib/animations'
+import { resolvePageRoute } from '../lib/utils'
 import Head from '../components/Head'
 import Footer from '../components/Footer'
 
-const animation = fadeBack;
+const animation = fadeOnly;
 
 function MyApp({ Component, pageProps }: AppProps) {
 
   const router = useRouter();
+  const title = resolvePageRoute(router.pathname);
+
   // const [pageLoading, setPageLoading] = useState<boolean>(false);
   // useEffect(() => {
   //   const handleStart = () => { setPageLoading(true); };
@@ -26,14 +28,13 @@ function MyApp({ Component, pageProps }: AppProps) {
   //   router.events.on('routeChangeComplete', handleComplete);
   //   router.events.on('routeChangeError', handleComplete);
   // }, [router]);
-  console.log(router.pathname)
-  let title;
+
 
   return (
     <>
       <NextNProgress />
       <Container className='page' >
-        <Head title={PageName.AllSongs} description="All songs page" />
+        <Head title={title} description={title} />
         <LazyMotion features={domAnimation}>
           <AnimatePresence exitBeforeEnter>
             <m.div

@@ -89,94 +89,94 @@ const ViewSessionPage: NextPage = () => {
         <ExportSessionModal sessionData={session_data} visibility={exportSessionShow} handleClose={handleExportSessionClose} />
         <DeleteSessionModal sessionData={session_data} visibility={deleteSessionShow} handleClose={handleDeleteSessionClose} onSuccess={mutate} />
         <main>
-            <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' >
+            <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' style={{
+                width: '100vw'
+            }} >
                 { session_data &&
-                    <Animation.Bounce in={true} >
-                         <Stack spacing='3em' direction='column' alignItems='center' justifyContent='center' >
-                            <Stack direction='column' alignItems='center' justifyContent='center' >
-                                <h3 style={{textAlign: 'center'}} >{session_data.date.toDateString()}</h3>
-                                <Divider style={{height: '0.2em', width: '50vw', marginTop:'0.3em', marginBottom:'0.3em'}} />
-                                {/*  */}
-                                <Panel onClick={() => setSessionInfoShow(!sessionInfoShow)} header={
-                                    <Stack spacing='0.5em' direction='row' alignItems='center' justifyContent='center' >
-                                        <SessionDetailItem placeholder="Worship Leader" value={session_data.worship_leader} />
-                                        <Button appearance="subtle" color="cyan" onClick={() => setSessionInfoShow(!sessionInfoShow)} >
-                                            {sessionInfoShow ? <AiOutlineUpCircle /> : <AiOutlineDownCircle />}
-                                        </Button>
-                                    </Stack>
-                                } collapsible bordered >
-                                    <Stack spacing='1em' direction='column' alignItems='flex-start' justifyContent='center' >
-                                        <SessionDetailItem placeholder="Vocalist" value={session_data.vocalist} />
-                                        <SessionDetailItem placeholder="Keyboardist" value={session_data.keyboard} />
-                                        <SessionDetailItem placeholder="Guitarist" value={session_data.guitar} />
-                                        <SessionDetailItem placeholder="Drummer" value={session_data.drums} />
-                                        <SessionDetailItem placeholder="Sound Personnel" value={session_data.sound_personnel} />
-                                    </Stack>
-                                </Panel>
-                            </Stack>
-                            <Stack wrap spacing='1em' direction='row' alignItems='center' justifyContent='center' >
-                                <Button appearance="primary" color="blue" onClick={() => setEditSessionShow(true)} >
-                                    <FiEdit style={{marginRight: '1em'}} />Edit Session
-                                </Button>
-                                <Button appearance="primary" color="violet" onClick={() => {
-                                    const url = `${domainUrl}/view_song/${session_data.id}`;
-                                    copyToClipboard(url, 'Copied URL to clipboard');
-                                }} >
-                                    <AiOutlineLink style={{marginRight: '1em'}} />Share Session
-                                </Button>
-                                <Button appearance="primary" color="orange" onClick={() => setExportSessionShow(true)} >
-                                    <BiExport style={{marginRight: '1em'}} />Export Session
-                                </Button>
-                                <Button appearance="primary" color="red" onClick={() => setDeleteSessionShow(true)} >
-                                    <RiDeleteBin2Fill style={{marginRight: '1em'}} />Delete Session
-                                </Button>
-                            </Stack>
-                            <Divider style={{height: '0.2em', width: '50vw', marginTop:'0em', marginBottom:'0em'}} />
-                            <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' >
-                                <Stack direction='row' alignItems='center' justifyContent='center' >
-                                    <Button appearance="subtle" disabled={currentSongIndex <= 0}
-                                        onClick={() => setCurrentSongIndex(currentSongIndex <= 0 ? currentSongIndex : currentSongIndex - 1)} >
-                                            <GrSubtractCircle />
-                                    </Button>
-                                    <Dropdown activeKey={currentSong} title={`Song ${currentSongIndex + 1}`} onSelect={(eventKey: number) => setCurrentSongIndex(eventKey)} >
-                                        {songArray.map((song, index) => (
-                                            <Dropdown.Item key={index} eventKey={index}>{song.title} - {song.artist}</Dropdown.Item>
-                                        ))}
-                                    </Dropdown>
-                                    <Button appearance="subtle" disabled={currentSongIndex + 1 >= songArray.length}
-                                        onClick={() => setCurrentSongIndex((currentSongIndex + 1 >= songArray.length) ? currentSongIndex : currentSongIndex + 1)} >
-                                            <GrAddCircle />
+                    <Stack spacing='3em' direction='column' alignItems='center' justifyContent='center' >
+                        <Stack direction='column' alignItems='center' justifyContent='center' >
+                            <h3 style={{textAlign: 'center'}} >{session_data.date.toDateString()}</h3>
+                            <Divider style={{height: '0.2em', width: '50vw', marginTop:'0.3em', marginBottom:'0.3em'}} />
+                            {/*  */}
+                            <Panel onClick={() => setSessionInfoShow(!sessionInfoShow)} header={
+                                <Stack spacing='0.5em' direction='row' alignItems='center' justifyContent='center' >
+                                    <SessionDetailItem placeholder="Worship Leader" value={session_data.worship_leader} />
+                                    <Button appearance="subtle" color="cyan" onClick={() => setSessionInfoShow(!sessionInfoShow)} >
+                                        {sessionInfoShow ? <AiOutlineUpCircle /> : <AiOutlineDownCircle />}
                                     </Button>
                                 </Stack>
-                                
-                                {currentSong &&
-                                    <Stack spacing='0.5em' direction='column' alignItems='center' justifyContent='center' >
-                                        <h2 style={{textAlign: 'center'}} >{currentSong.title} - {currentSong.artist}</h2>
-                                        <Stack wrap spacing='1em' direction='row' alignItems='center' justifyContent='center' >
-                                            <Button appearance="ghost" onClick={() => router.push(`/view_song/${currentSong.id}`)} >
-                                                <GrFormNext style={{marginRight: '1em'}} />More Details
-                                            </Button>
-                                            <Button appearance="ghost" onClick={() => setShowSongLyrics(!showSongLyrics)} >
-                                                {showSongLyrics ? <GrFormView style={{marginRight: '1em'}} /> : <GrFormViewHide style={{marginRight: '1em'}} />}
-                                                Lyrics
-                                            </Button>
-                                        </Stack>
-                                        <Animation.Collapse in={showSongLyrics} >
-                                            <div>
-                                            <div ref={quillEditorRef} >
-                                                <ReactQuill style={{border: '5px solid rgba(28,110,164,0.12)'}} readOnly={true} theme="bubble" value={currentSong.lyrics} />
-                                            </div>
-                                            </div>
-                                        </Animation.Collapse>
-                                    </Stack>
-                                }
-                                {!currentSong &&
-                                    <h2>No songs.</h2>
-                                }
-                                
-                            </Stack>
+                            } collapsible bordered >
+                                <Stack spacing='1em' direction='column' alignItems='flex-start' justifyContent='center' >
+                                    <SessionDetailItem placeholder="Vocalist" value={session_data.vocalist} />
+                                    <SessionDetailItem placeholder="Keyboardist" value={session_data.keyboard} />
+                                    <SessionDetailItem placeholder="Guitarist" value={session_data.guitar} />
+                                    <SessionDetailItem placeholder="Drummer" value={session_data.drums} />
+                                    <SessionDetailItem placeholder="Sound Personnel" value={session_data.sound_personnel} />
+                                </Stack>
+                            </Panel>
                         </Stack>
-                    </Animation.Bounce>
+                        <Stack wrap spacing='1em' direction='row' alignItems='center' justifyContent='center' >
+                            <Button appearance="primary" color="blue" onClick={() => setEditSessionShow(true)} >
+                                <FiEdit style={{marginRight: '1em'}} />Edit Session
+                            </Button>
+                            <Button appearance="primary" color="violet" onClick={() => {
+                                const url = `${domainUrl}/view_song/${session_data.id}`;
+                                copyToClipboard(url, 'Copied URL to clipboard');
+                            }} >
+                                <AiOutlineLink style={{marginRight: '1em'}} />Share Session
+                            </Button>
+                            <Button appearance="primary" color="orange" onClick={() => setExportSessionShow(true)} >
+                                <BiExport style={{marginRight: '1em'}} />Export Session
+                            </Button>
+                            <Button appearance="primary" color="red" onClick={() => setDeleteSessionShow(true)} >
+                                <RiDeleteBin2Fill style={{marginRight: '1em'}} />Delete Session
+                            </Button>
+                        </Stack>
+                        <Divider style={{height: '0.2em', width: '50vw', marginTop:'0em', marginBottom:'0em'}} />
+                        <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' >
+                            <Stack direction='row' alignItems='center' justifyContent='center' >
+                                <Button appearance="subtle" disabled={currentSongIndex <= 0}
+                                    onClick={() => setCurrentSongIndex(currentSongIndex <= 0 ? currentSongIndex : currentSongIndex - 1)} >
+                                        <GrSubtractCircle />
+                                </Button>
+                                <Dropdown activeKey={currentSong} title={`Song ${currentSongIndex + 1}`} onSelect={(eventKey: number) => setCurrentSongIndex(eventKey)} >
+                                    {songArray.map((song, index) => (
+                                        <Dropdown.Item key={index} eventKey={index}>{song.title} - {song.artist}</Dropdown.Item>
+                                    ))}
+                                </Dropdown>
+                                <Button appearance="subtle" disabled={currentSongIndex + 1 >= songArray.length}
+                                    onClick={() => setCurrentSongIndex((currentSongIndex + 1 >= songArray.length) ? currentSongIndex : currentSongIndex + 1)} >
+                                        <GrAddCircle />
+                                </Button>
+                            </Stack>
+                            
+                            {currentSong &&
+                                <Stack spacing='0.5em' direction='column' alignItems='center' justifyContent='center' >
+                                    <h2 style={{textAlign: 'center'}} >{currentSong.title} - {currentSong.artist}</h2>
+                                    <Stack wrap spacing='1em' direction='row' alignItems='center' justifyContent='center' >
+                                        <Button appearance="ghost" onClick={() => router.push(`/view_song/${currentSong.id}`)} >
+                                            <GrFormNext style={{marginRight: '1em'}} />More Details
+                                        </Button>
+                                        <Button appearance="ghost" onClick={() => setShowSongLyrics(!showSongLyrics)} >
+                                            {showSongLyrics ? <GrFormView style={{marginRight: '1em'}} /> : <GrFormViewHide style={{marginRight: '1em'}} />}
+                                            Lyrics
+                                        </Button>
+                                    </Stack>
+                                    <Animation.Collapse in={showSongLyrics} >
+                                        <div>
+                                        <div ref={quillEditorRef} >
+                                            <ReactQuill style={{border: '5px solid rgba(28,110,164,0.12)'}} readOnly={true} theme="bubble" value={currentSong.lyrics} />
+                                        </div>
+                                        </div>
+                                    </Animation.Collapse>
+                                </Stack>
+                            }
+                            {!currentSong &&
+                                <h2>No songs.</h2>
+                            }
+                            
+                        </Stack>
+                    </Stack>
                 }
                 {
                     !session_data && <Loader size='md' content="Fetching session..." />
