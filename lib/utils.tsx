@@ -1,6 +1,7 @@
 import { Element as ReactParserElement, DOMNode, domToReact, attributesToProps  } from 'html-react-parser';
 import { CopyClipboardMessage } from './messages';
 import { SessionProps, SongProps, PageName } from './types';
+import { allErrorCodes } from './status_codes';
 
 //export const domainUrl = process.env.NEXT_PUBLIC_VERCEL_URL ? process.env.NEXT_PUBLIC_VERCEL_URL : 'localhost:3000';
 export const domainUrl = process.env.NEXT_PUBLIC_VERCEL_URL ? "oasis-sib-worship.vercel.app" : 'localhost:3000';
@@ -34,7 +35,18 @@ export const isPresentOrFutureDate = (date: Date) => {
     return date.setHours(0, 0, 0, 0) >= today.setHours(0, 0, 0, 0);
 };
 
-export const json_fetcher = (method: string, body?: object) => (url: string) => fetch(url, {method: method, body: JSON.stringify(body)}).then(r => r.json());
+export const json_fetcher = (method: string, body?: object) => (url: string) => {
+    return fetch(url, {
+        method: method,
+        body: JSON.stringify(body)
+    })
+    .then(r => {
+        if (allErrorCodes.includes(r.status)) {
+            throw new Error(r.statusText)
+        }
+        return r.json()
+    });
+}
 
 export const convertStringToIds = (data: string) => {
     const ids = data.split(',').map((id: string) => parseInt(id)).filter((id) => !isNaN(id));

@@ -23,7 +23,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 const body = JSON.parse(req.body);
                 if (await verifyPassword(body.password, res)) {
                     const response = await delete_song(body.id);
-                    console.log('Success"');
+                    console.log('Success');
                     console.log(response);
                     res.status(SUCCESS_CODE).json({ message: 'Deleted song successfully!' });
                 }

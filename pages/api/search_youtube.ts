@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 if (req.query.keyword) {
                     const result = await YouTubeSearch.GetListByKeyword(req.query.keyword);
                     console.log('Success:');
-                    console.log(result);
+                    //console.log(result);
                     res.status(SUCCESS_CODE).json(JSON.stringify(result.items[0].id));
                 }
                 else {

@@ -2,8 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '../../lib/prisma'
 import { CREATE_SUCCESS_CODE, INTERNAL_SERVER_ERROR_ERROR_CODE, NOT_ALLOWED_ERROR_CODE } from '../../lib/status_codes'
 
-async function add_session({date, songs, worship_leader, vocalist, keyboard, guitar, drums, sound_personnel}:
-    {date: string, songs: string, worship_leader: string, vocalist?: string, keyboard?: string, guitar?: string, drums?: string, sound_personnel?: string}) {
+async function add_session({date, songs, worship_leader, vocalist, keyboard, guitar, drums, sound_personnel, info}:
+    {date: string, songs: string, worship_leader: string, vocalist?: string, keyboard?: string, guitar?: string, drums?: string, sound_personnel?: string, info?: string}) {
     const result = await prisma.session.create({
         data: {
             date,
@@ -13,7 +13,8 @@ async function add_session({date, songs, worship_leader, vocalist, keyboard, gui
             keyboard,
             guitar,
             drums,
-            sound_personnel
+            sound_personnel,
+            info
         },
     });
     return result;

@@ -10,31 +10,38 @@ const fontFace = "Trebuchet MS"; // https://blog.hubspot.com/website/web-safe-ht
 export const TitleSlide = (title: string, artist: string) => {
   return (
     <Slide style={{ backgroundColor: "#00FF00" }} >
-    <Shape
-      type="rect"
-      style={{
-        x: 0, y: 0, w: 10, h: 1.4,
-        backgroundColor: "rgba(0, 0, 0, 0.5)"
-      }}
-    />
-    <Text style={{
-      color: 'white',
-      align: 'center',
-      verticalAlign: 'middle',
-      x: 0, y: 0, w: 10, h: 0.8,
-      fontFace, fontSize: 36, bold: true
-    }}>
-      {title.toUpperCase()}
-    </Text>
-    <Text style={{
-      color: 'white',
-      align: 'center',
-      verticalAlign: 'middle',
-      x: 0, y: 0.6, w: 10, h: 0.8,
-      fontFace, fontSize: 24, bold: false, italic:true
-    }}>
-      {artist.toUpperCase()}
-    </Text>
+      <Shape
+        type="rect"
+        style={{
+          x: 0, y: 0, w: 10, h: 1.4,
+          backgroundColor: "rgba(0, 0, 0, 0.5)"
+        }}
+      />
+      <Text style={{
+        color: 'white',
+        align: 'center',
+        verticalAlign: 'middle',
+        x: 0, y: 0, w: 10, h: 0.8,
+        fontFace, fontSize: 36, bold: true
+      }}>
+        {title.toUpperCase()}
+      </Text>
+      <Text style={{
+        color: 'white',
+        align: 'center',
+        verticalAlign: 'middle',
+        x: 0, y: 0.6, w: 10, h: 0.8,
+        fontFace, fontSize: 24, bold: false, italic:true
+      }}>
+        {artist.toUpperCase()}
+      </Text>
+    </Slide>
+  )
+}
+
+export const BlankSlide = () => {
+  return (
+    <Slide style={{ backgroundColor: "#00FF00" }} >
     </Slide>
   )
 }
@@ -98,7 +105,7 @@ export const getTextFromNodes = (nodes: Node[]) => {
 }
 
 export async function convertSongToPPTX(title: string, artist: string, lyrics: string) {
-  const slides = [TitleSlide(title, artist)];
+  const slides = [BlankSlide(), TitleSlide(title, artist)];
   let slideType : "Section" | "Normal" = "Normal";
   let normalTextTemp: string[] = [];
 

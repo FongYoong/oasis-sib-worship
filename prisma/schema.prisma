@@ -22,6 +22,7 @@ model Session {
   guitar          String?
   drums           String?
   sound_personnel String?
+  info            String?
 }
 
 model Song {

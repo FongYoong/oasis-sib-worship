@@ -42,8 +42,10 @@ function MyApp({ Component, pageProps }: AppProps) {
               style={{
                 display: "flex",
                 position: "relative",
+                justifyContent: 'center',
+                alignItems: 'center',
                 height: "100%",
-                width: "100vw"
+                width: "96vw"
               }}
               initial="initial"
               animate="animate"

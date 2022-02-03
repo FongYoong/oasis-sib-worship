@@ -4,6 +4,7 @@ import { DragDropContext, DropResult, Droppable, Draggable } from "react-beautif
 import useSWR from 'swr'
 import { Steps, DatePicker, Modal, Form, Stack, Button, IconButton, Animation, InputGroup, AutoComplete, Divider, Loader } from 'rsuite'
 import { PickerInstance } from 'rsuite/Picker'
+import { QuillLoadingContext, ReactQuill, quillModules, quillFormats } from './QuillLoad'
 import SongModal from './SongModal'
 import { json_fetcher } from '../lib/utils'
 import { SuccessMessage, ErrorMessage } from '../lib/messages'
@@ -135,10 +136,13 @@ const SongListItem = ({ song_id, index, deleteHandler } : { song_id: number, ind
 
 const session_fetcher = json_fetcher('GET');
 
+const initialSessionInfo = ''
+
 const SessionModal = (props: SessionModalProps) => {
     const [formIndex, setFormIndex] = useState<number>(0);
     const [dateValue, setDateValue] = useState<Date|null>(null);
     const [dutyFormData, setDutyFormData] = useState<Record<string, string>|undefined>(undefined);
+    const [sessionInfo, setSessionInfo] = useState<string>(props.editSession ? '' : initialSessionInfo);
     const [addSongShow, setAddSongShow] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const handleAddSongClose = () => {
@@ -206,6 +210,7 @@ const SessionModal = (props: SessionModalProps) => {
             ...dutyFormData,
             date: dateValue ? dateValue : new Date(),
             songs: songList.join(','),
+            info: sessionInfo
         });
         fetch('/api/add_session', {
             method: 'POST',
@@ -229,6 +234,7 @@ const SessionModal = (props: SessionModalProps) => {
             id: props.editSessionId,
             date: dateValue ? dateValue : new Date(),
             songs: songList.join(','),
+            info: sessionInfo
         });
         fetch('/api/update_session', {
             method: 'POST',
@@ -254,182 +260,184 @@ const SessionModal = (props: SessionModalProps) => {
     }
 
     return (
-        <Modal overflow={false} backdrop='static' open={props.visibility}
-            onClose={closeModal}
-        >
-            {isValidating &&
-                <Loader style={{zIndex: 1000}} backdrop center content="Fetching session..." />
-            }
-            <Modal.Header>
-                <h4>{props.editSession ? "Edit":"Add"} Session</h4>
-                <Steps current={formIndex}>
-                    <Steps.Item title="Duties" />
-                    <Steps.Item title="Songs" />
-                </Steps>
-                <SongModal visibility={addSongShow} handleClose={handleAddSongClose} />
-            </Modal.Header>
-            <Modal.Body>
-                <Animation.Collapse unmountOnExit in={formIndex == 0} >
-                    <Form fluid
-                        onChange={setDutyFormData} formValue={dutyFormData} style={{marginBottom:'1em'}} >
-                        <Form.Group controlId="datePicker">
-                            <Form.ControlLabel>Date:</Form.ControlLabel>
-                            <Form.Control name="date" accepter={DatePicker}
-                                block oneTap size="md" value={dateValue} onChange={(value: Date|null)=>setDateValue(value)}
-                                errorMessage={dutyFormData?.date ? '' : 'This field is required'}
-                                errorPlacement='bottomStart'
-                                readOnly={pauseModal}
-                            />
-                        </Form.Group>
-                        <Form.Group controlId="worship_leader">
-                            <InputGroup style={{width: '100%'}} >
-                                <InputGroup.Addon>
-                                    <BsFillPersonFill />
-                                </InputGroup.Addon>
-                                <Form.Control
-                                    name="worship_leader"
-                                    placeholder="Worship Leader"
-                                    errorMessage={dutyFormData?.worship_leader ? '' : 'This field is required'}
+        <QuillLoadingContext.Provider value={setLoading} >
+            <Modal overflow={false} backdrop='static' open={props.visibility}
+                onClose={closeModal}
+            >
+                {isValidating &&
+                    <Loader style={{zIndex: 1000}} backdrop center content="Fetching session..." />
+                }
+                <Modal.Header>
+                    <h4>{props.editSession ? "Edit":"Add"} Session</h4>
+                    <Steps current={formIndex}>
+                        <Steps.Item title="Duties" />
+                        <Steps.Item title="Songs" />
+                        <Steps.Item title="Info" />
+                    </Steps>
+                    <SongModal visibility={addSongShow} handleClose={handleAddSongClose} />
+                </Modal.Header>
+                <Modal.Body>
+                    <Animation.Collapse unmountOnExit in={formIndex == 0} >
+                        <Form fluid
+                            onChange={setDutyFormData} formValue={dutyFormData} style={{marginBottom:'1em'}} >
+                            <Form.Group controlId="datePicker">
+                                <Form.ControlLabel>Date:</Form.ControlLabel>
+                                <Form.Control name="date" accepter={DatePicker}
+                                    block oneTap size="md" value={dateValue} onChange={(value: Date|null)=>setDateValue(value)}
+                                    errorMessage={dutyFormData?.date ? '' : 'This field is required'}
                                     errorPlacement='bottomStart'
                                     readOnly={pauseModal}
                                 />
-                            </InputGroup>
-                        </Form.Group>
-                        <Form.Group controlId="vocalist">
-                            <InputGroup style={{width: '100%'}} >
-                                <InputGroup.Addon>
-                                    <IoPersonAdd />
-                                </InputGroup.Addon>
-                                <Form.Control
-                                    name="vocalist"
-                                    placeholder="Vocalist"
-                                    readOnly={pauseModal}
-                                />
-                            </InputGroup>
-                        </Form.Group>
-                        <Form.Group controlId="keyboard">
-                            <InputGroup style={{width: '100%'}} >
-                                <InputGroup.Addon>
-                                    <MdPiano />
-                                </InputGroup.Addon>
-                                <Form.Control
-                                    name="keyboard"
-                                    placeholder="Keyboard"
-                                    readOnly={pauseModal}
-                                />
-                            </InputGroup>
-                        </Form.Group>
-                        <Form.Group controlId="guitar">
-                            <InputGroup style={{width: '100%'}} >
-                                <InputGroup.Addon>
-                                    <GiGuitar />
-                                </InputGroup.Addon>
-                                <Form.Control
-                                    name="guitar"
-                                    placeholder="Guitar"
-                                    readOnly={pauseModal}
-                                />
-                            </InputGroup>
-                        </Form.Group>
-                        <Form.Group controlId="drums">
-                            <InputGroup style={{width: '100%'}} >
-                                <InputGroup.Addon>
-                                    <FaDrumSteelpan />
-                                </InputGroup.Addon>
-                                <Form.Control
-                                    name="drums"
-                                    placeholder="Drums"
-                                    readOnly={pauseModal}
-                                />
-                            </InputGroup>
-                        </Form.Group>
-                        <Form.Group controlId="sound_personnel">
-                            <InputGroup style={{width: '100%'}} >
-                                <InputGroup.Addon>
-                                    <AiFillSound />
-                                </InputGroup.Addon>
-                                <Form.Control
-                                    name="sound_personnel"
-                                    placeholder="Sound_personnel"
-                                    readOnly={pauseModal}
-                                />
-                            </InputGroup>
-                        </Form.Group>
-                    </Form>
-                </Animation.Collapse>
-                <Animation.Collapse unmountOnExit in={formIndex == 1} >
-                    <Form fluid >
-                        <Form.Group>
-                            <IconButton disabled={pauseModal} block appearance="primary" color="green" icon={<Plus />} onClick={() => setAddSongShow(true)} >
-                                Add Song
-                            </IconButton>
-                        </Form.Group>
-                        <Form.Group>
-                            <InputGroup style={{width: '100%'}} >
-                                <InputGroup.Addon>
-                                    <FaMusic />
-                                </InputGroup.Addon>
-                                <SongAutocomplete onSelect={(song_id: number) => setSongList([...songList, song_id])}
-                                />
-                            </InputGroup>
-                        </Form.Group>
-                        <Form.Group>
-                            {/* <List sortable onSort={handleSongSort}>
-                                {songList.map((song_id, index) => (
-                                    <SongListItem key={index} index={index} song_id={song_id}
-                                        deleteHandler={() => {
-                                            setSongList([...songList.slice(0,index), ...songList.slice(index+1)])                                            
-                                        }}
+                            </Form.Group>
+                            <Form.Group controlId="worship_leader">
+                                <InputGroup style={{width: '100%'}} >
+                                    <InputGroup.Addon>
+                                        <BsFillPersonFill />
+                                    </InputGroup.Addon>
+                                    <Form.Control
+                                        name="worship_leader"
+                                        placeholder="Worship Leader"
+                                        errorMessage={dutyFormData?.worship_leader ? '' : 'This field is required'}
+                                        errorPlacement='bottomStart'
+                                        readOnly={pauseModal}
                                     />
-                                ))}
-                            </List> */}
-                            <DragDropContext onDragEnd={onDragEnd}>
-                                <Droppable droppableId="droppable">
-                                    {(provided, snapshot) => (
-                                        <div
-                                            {...provided.droppableProps}
-                                            ref={provided.innerRef}
-                                            style={{
-                                                background: snapshot.isDraggingOver ? "lightblue" : "white",
-                                            }}
-                                        >
-                                            {songList.map((song_id: number, index: number) => (
-                                                <SongListItem key={index} song_id={song_id} index={index} 
-                                                    deleteHandler={() => {
-                                                        setSongList([...songList.slice(0,index), ...songList.slice(index+1)])                                            
-                                                    }}
-                                                />
-                                            ))}
-                                            {provided.placeholder}
-                                        </div>
-                                    )}
-                                </Droppable>
-                            </DragDropContext>
-                        </Form.Group>
-                    </Form>
-                </Animation.Collapse>
-            </Modal.Body>
-            <Modal.Footer>
-                {formIndex == 0 && 
-                    <Button disabled={pauseModal || !dutyFormData?.worship_leader || !dutyFormData?.date} onClick={() => setFormIndex(formIndex + 1)} color="blue" appearance="primary">
-                        Next
-                    </Button>
-                }
-                {formIndex == 1 &&
-                    <>
+                                </InputGroup>
+                            </Form.Group>
+                            <Form.Group controlId="vocalist">
+                                <InputGroup style={{width: '100%'}} >
+                                    <InputGroup.Addon>
+                                        <IoPersonAdd />
+                                    </InputGroup.Addon>
+                                    <Form.Control
+                                        name="vocalist"
+                                        placeholder="Vocalist"
+                                        readOnly={pauseModal}
+                                    />
+                                </InputGroup>
+                            </Form.Group>
+                            <Form.Group controlId="keyboard">
+                                <InputGroup style={{width: '100%'}} >
+                                    <InputGroup.Addon>
+                                        <MdPiano />
+                                    </InputGroup.Addon>
+                                    <Form.Control
+                                        name="keyboard"
+                                        placeholder="Keyboard"
+                                        readOnly={pauseModal}
+                                    />
+                                </InputGroup>
+                            </Form.Group>
+                            <Form.Group controlId="guitar">
+                                <InputGroup style={{width: '100%'}} >
+                                    <InputGroup.Addon>
+                                        <GiGuitar />
+                                    </InputGroup.Addon>
+                                    <Form.Control
+                                        name="guitar"
+                                        placeholder="Guitar"
+                                        readOnly={pauseModal}
+                                    />
+                                </InputGroup>
+                            </Form.Group>
+                            <Form.Group controlId="drums">
+                                <InputGroup style={{width: '100%'}} >
+                                    <InputGroup.Addon>
+                                        <FaDrumSteelpan />
+                                    </InputGroup.Addon>
+                                    <Form.Control
+                                        name="drums"
+                                        placeholder="Drums"
+                                        readOnly={pauseModal}
+                                    />
+                                </InputGroup>
+                            </Form.Group>
+                            <Form.Group controlId="sound_personnel">
+                                <InputGroup style={{width: '100%'}} >
+                                    <InputGroup.Addon>
+                                        <AiFillSound />
+                                    </InputGroup.Addon>
+                                    <Form.Control
+                                        name="sound_personnel"
+                                        placeholder="Sound_personnel"
+                                        readOnly={pauseModal}
+                                    />
+                                </InputGroup>
+                            </Form.Group>
+                        </Form>
+                    </Animation.Collapse>
+                    <Animation.Collapse unmountOnExit in={formIndex == 1} >
+                        <Form fluid >
+                            <Form.Group>
+                                <IconButton disabled={pauseModal} block appearance="primary" color="green" icon={<Plus />} onClick={() => setAddSongShow(true)} >
+                                    Create New Song
+                                </IconButton>
+                            </Form.Group>
+                            <Form.Group>
+                                <InputGroup style={{width: '100%'}} >
+                                    <InputGroup.Addon>
+                                        <FaMusic />
+                                    </InputGroup.Addon>
+                                    <SongAutocomplete onSelect={(song_id: number) => setSongList([...songList, song_id])}
+                                    />
+                                </InputGroup>
+                            </Form.Group>
+                            <Form.Group>
+                                <DragDropContext onDragEnd={onDragEnd}>
+                                    <Droppable droppableId="droppable">
+                                        {(provided, snapshot) => (
+                                            <div
+                                                {...provided.droppableProps}
+                                                ref={provided.innerRef}
+                                                style={{
+                                                    background: snapshot.isDraggingOver ? "lightblue" : "white",
+                                                }}
+                                            >
+                                                {songList.length > 0 && songList.map((song_id: number, index: number) => (
+                                                    <SongListItem key={index} song_id={song_id} index={index} 
+                                                        deleteHandler={() => {
+                                                            setSongList([...songList.slice(0,index), ...songList.slice(index+1)])                                            
+                                                        }}
+                                                    />
+                                                ))}
+                                                {songList.length <=0 && <h4>Use the search bar to add songs.</h4> }
+                                                {provided.placeholder}
+                                            </div>
+                                        )}
+                                    </Droppable>
+                                </DragDropContext>
+                            </Form.Group>
+                        </Form>
+                    </Animation.Collapse>
+                    <Animation.Collapse unmountOnExit in={formIndex == 2} >
+                        <div>
+                            <ReactQuill readOnly={pauseModal} theme="snow" modules={quillModules} formats={quillFormats}
+                                value={sessionInfo} onChange={setSessionInfo}
+                            />
+                        </div>
+                    </Animation.Collapse>
+                </Modal.Body>
+                <Modal.Footer>
+                    {formIndex >= 1 &&
                         <Button disabled={pauseModal} onClick={() => setFormIndex(formIndex - 1)} color="blue" appearance="primary">
                             Back
                         </Button>
+                    }
+                    {formIndex >= 0 && formIndex < 2 && 
+                        <Button disabled={pauseModal || !dutyFormData?.worship_leader || !dutyFormData?.date} onClick={() => setFormIndex(formIndex + 1)} color="blue" appearance="primary">
+                            Next
+                        </Button>
+                    }
+                    {formIndex == 2 &&
                         <Button loading={pauseModal} disabled={pauseModal} onClick={props.editSession ? updateSession : addSession} color="green" appearance="primary">
                             Confirm
                         </Button>
-                    </>
-                }
-                <Button onClick={closeModal} appearance="subtle">
-                    Cancel
-                </Button>
-            </Modal.Footer>
-        </Modal>
+                    }
+                    <Button onClick={closeModal} appearance="subtle">
+                        Cancel
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </QuillLoadingContext.Provider>
     )
 }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
@@ -12,6 +12,7 @@ import { SessionProps } from '../lib/types'
 import { domainUrl, copyToClipboard, json_fetcher, isPresentOrFutureDate, dateToISOString, getStartOfMonthDate, getEndOfMonthDate } from '../lib/utils'
 import { Plus, Search } from '@rsuite/icons'
 import { MdExpandMore } from 'react-icons/md'
+import hoverStyles from '../styles/hover.module.css'
 
 const sessions_fetcher = json_fetcher('GET');
 
@@ -30,6 +31,7 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
   const [endDate, setEndDate] = useState<Date | undefined>(initialEndDate ? new Date(initialEndDate) : undefined);
   const endDateText = dateToISOString(endDate);
   const [pageIndex, setPageIndex] = useState<number>(initialPageIndex);
+  const bottomRef = useRef<HTMLDivElement>(null)
 
   const updateDateQuery = (start?: Date, end?: Date) => {
     setStartDate(start);
@@ -117,7 +119,7 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
       }
     }) : [];
     return (
-        <Stack wrap direction='row' alignItems='center' justifyContent='flex-start' spacing="2em" >
+        <Stack wrap direction='row' alignItems='center' justifyContent='center' spacing="2em" >
           {data ? sessions.map((session_data: SessionProps) => <GenerateSessionCard key={session_data.id} session={session_data} />): <></>}
         </Stack>
     )
@@ -165,11 +167,13 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
                     </InputGroup.Addon>
                     <Input value={searchText} onChange={(text)=>{
                         setSearchText(text);
+                        setPageIndex(1);
                         router.replace({
                           pathname: router.pathname,
                           query: {
                             ...router.query,
-                            searchText: text
+                            searchText: text,
+                            pageIndex: 1
                           },
                         });
                       }} placeholder="Search session" />
@@ -216,7 +220,7 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
                 duration={300}
                 height={upcoming_sessions && upcoming_sessions.length > 0 ? "auto" : 0}
               >
-                <Stack wrap direction='row' alignItems='center' justifyContent='flex-start' spacing="2em" >
+                <Stack wrap direction='row' alignItems='flex-start' justifyContent='center' spacing="2em" >
                   {upcoming_sessions && upcoming_sessions.map((session: SessionProps) => 
                       <GenerateSessionCard key={session.id} session={session} />
                   )}
@@ -231,19 +235,35 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
                 duration={300}
                 height={past_sessions && past_sessions.length > 0 ? "auto" : 0}
               >
-                <Stack wrap direction='row' alignItems='center' justifyContent='flex-start' spacing="2em" >
+                <Stack wrap direction='row' alignItems='flex-start' justifyContent='center' spacing="2em" >
                   {past_sessions.map((session: SessionProps) =>
-                      <GenerateSessionCard key={session.id} session={session} />
+                    <GenerateSessionCard key={session.id} session={session} />
                   )}
                   {previousSessionPages.map((page) => page)}
                 </Stack>
                </AnimateHeight>
             </Animation.Bounce> 
             { (pageIndex < totalPages) && 
-              <Button appearance="primary" color="violet" onClick={() => {setPageIndex(pageIndex + 1)}} >
-                    <MdExpandMore style={{marginRight: '1em'}} />More
+              <Button className={hoverStyles.hover_grow} appearance="primary" color="violet" onClick={() => {
+                setPageIndex(pageIndex + 1);
+                router.replace({
+                  pathname: router.pathname,
+                  query: {
+                    ...router.query,
+                    pageIndex: pageIndex + 1
+                  },
+                });
+                setTimeout(() => {
+                  if (bottomRef.current) {
+                    bottomRef.current.scrollIntoView({ block: 'nearest'})
+                  }
+                }, 100)
+              }} >
+                    <MdExpandMore style={{marginRight: '1em'}} />
+                    More
               </Button>
             }
+            <div ref={bottomRef}></div>
           </Stack>
         </Stack>
       </main>

@@ -1,24 +1,4 @@
-import { useState, useRef, useEffect, createContext, useContext } from 'react'
-import dynamic from 'next/dynamic'
-
-const QuillLoadingContext = createContext<((value: boolean) => void) | undefined>(undefined);
-const QuillLoader = () => {
-    const setLoading = useContext(QuillLoadingContext);
-    useEffect(() => {
-        if (setLoading) {
-            setLoading(true);
-            return () => setLoading(false);
-        }
-    }, [setLoading]);
-
-    return (
-        <Loader content="Loading lyrics..." />
-    )
-}
-const ReactQuill = dynamic(() => import('react-quill'), {
-    ssr: false,
-    loading: () => <QuillLoader />
-});
+import { useState, useRef, useEffect } from 'react'
 import Compressor from 'compressorjs';
 import ImageFilters from 'canvas-filters'
 import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider'
@@ -26,8 +6,11 @@ import Tesseract from 'tesseract.js'
 import useSWR from 'swr'
 import { useFilePicker } from 'use-file-picker'
 import { Modal, Stack, Button, IconButton, Form, Loader, InputGroup, Progress, Animation } from 'rsuite'
+import { QuillLoadingContext, ReactQuill, quillModules, quillFormats } from './QuillLoad'
 import { json_fetcher } from '../lib/utils'
 import { SuccessMessage, ErrorMessage } from '../lib/messages'
+import { SUCCESS_CODE } from '../lib/status_codes'
+import PasswordInput from './PasswordInput'
 import { BsFillPersonFill } from 'react-icons/bs'
 import { MdTitle } from 'react-icons/md'
 import { Image as ImageIcon } from '@rsuite/icons'
@@ -41,25 +24,6 @@ interface SongModalProps {
     editSongId?: number
 }
 
-const quillModules = {
-    toolbar: {
-        container: [
-            [{ 'header': [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline','strike'],
-            [{'list': 'ordered'}, {'list': 'bullet'}],
-            ['link'],
-            ['clean']
-        ]
-    },
-};
-
-const quillFormats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
-    'link', 'image'
-];
-
 const initialLyrics = "<h2>Verse 1</h2><p>Type something here</p><h2>Verse 2</h2><p>Type something here</p><h2>Pre-Chorus</h2><p>Type something here</p><h2>Chorus</h2><p>Type something here</p><h2>Bridge</h2><p>Type something here</p>";
 
 const song_fetcher = json_fetcher('GET');
@@ -68,6 +32,8 @@ const SongModal = (props: SongModalProps) => {
 
     const [formData, setFormData] = useState<Record<string, string>|undefined>(undefined);
     const [songLyrics, setSongLyrics] = useState<string>(props.editSong ? '' : initialLyrics);
+    const [password, setPassword] = useState<string>('')
+    const [passwordError, setPasswordError] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false);
 
     const canvasOCR = useRef<HTMLCanvasElement>(null);
@@ -104,6 +70,7 @@ const SongModal = (props: SongModalProps) => {
     const resetModal = () => {
         setFormData(undefined);
         setSongLyrics(initialLyrics);
+        setPassword('');
     }
 
     const onSuccess = (messsage: string) => {
@@ -149,22 +116,28 @@ const SongModal = (props: SongModalProps) => {
             id: props.editSongId,
             title: formData?.title,
             artist: formData?.artist,
-            lyrics: songLyrics
+            lyrics: songLyrics,
+            password
         });
-        console.log(songLyrics)
         fetch('/api/update_song', {
             method: 'POST',
             body: body,
         }).then((res) => {
-            res.json().then((res_data) => {
-                console.log("Updated song");
-                console.log(res_data);
-            });
-            mutate();
-            onSuccess("Updated song");
+            if (res.status == SUCCESS_CODE) {
+                res.json().then((res_data) => {
+                    console.log("Updated song");
+                    console.log(res_data);
+                });
+                mutate();
+                onSuccess("Updated song");
+            }
+            else {
+                throw new Error()
+            }
         }).catch((error) => {
             console.log(error);
             onFailure("Failed to update song");
+            setPasswordError(true);
         });
     };
 
@@ -297,6 +270,9 @@ const SongModal = (props: SongModalProps) => {
                     <ReactQuill readOnly={pauseModal} theme="snow" modules={quillModules} formats={quillFormats}
                         value={songLyrics} onChange={setSongLyrics}
                     />
+                    {props.editSong &&
+                        <PasswordInput setPassword={setPassword} passwordError={passwordError} setPasswordError={setPasswordError} />
+                    }
                 </Modal.Body>
                 <Modal.Footer>
                     <Stack direction='row' justifyContent='flex-end' style={{marginBottom: '1em'}} >

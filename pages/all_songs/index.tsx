@@ -1,6 +1,7 @@
 import React from 'react'
 import { useState } from 'react'
 import { NextPage } from 'next'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
 import { IconButton, Input, InputGroup, Stack, Divider, Table, Whisper, Popover, Dropdown, Pagination, Animation } from 'rsuite';
@@ -23,7 +24,7 @@ const renderRowMenu = (row_data: SongProps, handleRowMenuSelect: (eventKey?: str
     }
     return (
       <Popover ref={ref} className={className} full>
-        <Dropdown.Menu onSelect={onSelect} >
+        <Dropdown.Menu onSelect={onSelect} onClick={(e) => e.preventDefault()} >
           <Dropdown.Item icon={<FiEdit style={{marginRight: '0.4em'}} />} eventKey='edit'>Edit</Dropdown.Item>
           <Dropdown.Item icon={<AiOutlineLink style={{marginRight: '0.4em'}} />} eventKey='share'>Share</Dropdown.Item>
           <Dropdown.Item icon={<BiExport style={{marginRight: '0.4em'}} />} eventKey='export'>Export</Dropdown.Item>
@@ -100,12 +101,14 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
     const handleSortColumn = (sortColumn: string, sortType: SortType) => {
         setSortColumn(sortColumn);
         setSortType(sortType);
+        setPageIndex(1);
         router.replace({
             pathname: router.pathname,
             query: {
               ...router.query,
               sortColumn,
-              sortType
+              sortType,
+              pageIndex: 1
             },
         });
     };
@@ -128,7 +131,7 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
             <DeleteSongModal songData={deleteSongData} visibility={deleteSongShow} handleClose={handleDeleteSongClose} onSuccess={mutate} />
             <main>
                 <Stack wrap direction='row' justifyContent='center' spacing="1em" style={{
-                    width: '100vw'
+                    width: '96vw'
                 }} >
                     <IconButton appearance="primary" color="green" icon={<Plus />} onClick={() => setAddSongShow(true)} >
                         Add Song
@@ -139,11 +142,13 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
                         </InputGroup.Addon>
                         <Input value={searchText} onChange={(text)=>{
                             setSearchText(text);
+                            setPageIndex(1);
                             router.replace({
                                 pathname: router.pathname,
                                 query: {
                                   ...router.query,
-                                  searchText: text
+                                  searchText: text,
+                                  pageIndex: 1
                                 },
                             });
                             }} placeholder="Search song" />
@@ -161,32 +166,44 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
                     sortColumn={sortColumn}
                     sortType={sortType}
                     onSortColumn={handleSortColumn}
-                    onRowClick={(row_data: unknown, event: React.MouseEvent<Element, MouseEvent>) => {
-                        if ((event.target as Element).nodeName == 'DIV') {
-                            router.push(`/view_song/${(row_data as SongProps).id}`);
-                        }
+                    // onRowClick={(row_data: unknown, event: React.MouseEvent<Element, MouseEvent>) => {
+                    //     if ((event.target as Element).nodeName == 'DIV') {
+                    //         router.push(`/view_song/${(row_data as SongProps).id}`);
+                    //     }
+                    // }}
+                    renderRow={(children, row_data) => {
+                        return (
+                                row_data ?
+                                <Link passHref href={`/view_song/${(row_data as SongProps).id}`} >
+                                    <a>
+                                        {children}
+                                    </a>
+                                </Link>
+                                :
+                                children
+                        )
                     }}
                     >
-                    <Table.Column width={120} align="center" fixed sortable flexGrow={1} >
+                    <Table.Column align="center" fixed sortable flexGrow={1} >
                         <Table.HeaderCell>Updated</Table.HeaderCell>
                         <Table.Cell dataKey="updatedAt" />
                     </Table.Column>
-                    <Table.Column width={100} align="center" fixed sortable flexGrow={2} >
+                    <Table.Column align="center" fixed sortable flexGrow={2} >
                         <Table.HeaderCell>Title</Table.HeaderCell>
                         <Table.Cell dataKey="title" />
                     </Table.Column>
-                    <Table.Column width={100} align="center" fixed sortable flexGrow={1} >
+                    <Table.Column align="center" fixed sortable flexGrow={1} >
                         <Table.HeaderCell>Artist</Table.HeaderCell>
                         <Table.Cell dataKey="artist" />
                     </Table.Column>
-                    <Table.Column width={200} flexGrow={1} >
+                    <Table.Column flexGrow={1} >
                         <Table.HeaderCell>Action</Table.HeaderCell>
                         <Table.Cell>
                             {(rowData: SongProps) => {
                                 return (
                                     <>
                                     <Whisper placement="auto" trigger="click" speaker={renderRowMenu(rowData, handleRowMenuSelect)}>
-                                        <IconButton appearance="ghost" icon={<More />} />
+                                        <IconButton onClick={(e) => e.preventDefault()} appearance="ghost" icon={<More />} />
                                     </Whisper>
                                     </>
                                 );
@@ -196,7 +213,8 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
                 </Table>
                 { data &&
                     <Animation.Bounce in >
-                        <Pagination style={{padding: '0.5em', border: '5px double rgba(47,116,169,0.5)', borderRadius: '0.5em'}} prev next last first size="lg"
+                        <Pagination style={{padding: '0.5em', border: '5px double rgba(47,116,169,0.5)', borderRadius: '0.5em'}}                            
+                            prev next size="lg"
                             total={totalPages * maxItemsPerPage} limit={maxItemsPerPage} activePage={pageIndex}
                             onChangePage={(newIndex: number) => {
                                 setPageIndex(newIndex);

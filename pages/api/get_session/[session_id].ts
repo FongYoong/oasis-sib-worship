@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { SUCCESS_CODE, INTERNAL_SERVER_ERROR_ERROR_CODE, NOT_ALLOWED_ERROR_CODE } from '../../../lib/status_codes'
+import { SUCCESS_CODE,NOT_FOUND_ERROR_CODE, INTERNAL_SERVER_ERROR_ERROR_CODE, NOT_ALLOWED_ERROR_CODE } from '../../../lib/status_codes'
 import { get_session } from '../../../lib/db'
 import { convertStringToIds } from '../../../lib/utils'
 
@@ -13,6 +13,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 console.log("Request query: ");
                 console.log(req.query);
                 const session = await get_session(parseInt(session_id as string));
+                if (session == null) {
+                    res.status(NOT_FOUND_ERROR_CODE).json({ message: 'Session not found!' });
+                    return;
+                }
                 const sessionWithSongIDs = session ? {
                     ...session,
                     songs: convertStringToIds(session.songs)

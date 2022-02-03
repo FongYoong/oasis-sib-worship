@@ -2,7 +2,6 @@ import React from 'react'
 import Link from 'next/link'
 import { Stack, Divider, Whisper, Popover, Dropdown, Button, IconButton, List, Loader } from 'rsuite'
 import useSWR from 'swr'
-import { LazyMotion, AnimatePresence, domAnimation, m } from "framer-motion"
 import { SessionProps, SongProps } from '../lib/types'
 import { json_fetcher } from '../lib/utils'
 import { More } from '@rsuite/icons'
@@ -43,15 +42,15 @@ const SongList = React.forwardRef(({song_ids, ...rest}: {song_ids: number[]}, re
             }}
         >
             <List bordered hover>
-            {
-                songsData && songsData.map((songData: SongProps, index: number) => 
-                    <Link key={index} passHref href={`/view_song/${songData.id}`}>
-                        <List.Item index={index}>
-                            <SongItem songData={songData} index={index} />
-                        </List.Item>
-                    </Link>
-                )
-            }
+                { songsData && songsData.map((songData: SongProps, index: number) => 
+                        <Link key={index} passHref href={`/view_song/${songData.id}`}>
+                            <List.Item index={index}>
+                                <SongItem songData={songData} index={index} />
+                            </List.Item>
+                        </Link>
+                    )
+                }
+                {!songsData && <Loader style={{margin:'2em'}} /> }
             </List>
         </Popover>
     )
@@ -77,54 +76,49 @@ const renderSessionMenu = (props: SessionCardProps) => ({ onClose, className }: 
 
 const SessionCard = ({sessionProps, ...rest}: {sessionProps: SessionCardProps}) => {
     return (
-        <LazyMotion features={domAnimation}>
-            <m.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
+        <Link passHref href={`/view_session/${sessionProps.id}`} >
+            <a>
+            <Stack justifyContent='space-between' direction='row'
+                className={hoverStyles.hover_grow}
+                style={{
+                    cursor: 'pointer',
+                    backgroundColor: 'white',
+                    boxShadow: "rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px",
+                    borderRadius: "0.5em",
+                    padding: "1em"
+                }}
+                {...rest}
             >
-                <Link passHref href={`/view_session/${sessionProps.id}`} >
-                    <Stack justifyContent='space-between' direction='row'
-                        className={hoverStyles.hover_grow}
+                <Stack direction='column'>
+                    <h2>{sessionProps.date.getDate()}</h2>
+                    <h2>{sessionProps.date.toDateString().split(' ')[1]}</h2>
+                    <h2>{sessionProps.date.getFullYear()}</h2>
+                </Stack>
+                <Divider vertical style={{height: '10em'}} />
+                <Stack spacing='1em' direction='column' justifyContent='space-between' >
+                    <h4> {sessionProps.worship_leader} </h4>
+                        {
+                            sessionProps.songs.length > 0 ?
+                            <Whisper preventOverflow placement="auto" trigger="click" controlId="control-id-click" speaker={<SongList song_ids={sessionProps.songs} />}>
+                                <Button onClick={(e) => {e.preventDefault()}} appearance="primary" block >{`${sessionProps.songs.length} songs`}</Button>
+                            </Whisper>
+                            :
+                            <h5 style={{color: 'red'}} ><i>No songs</i></h5>
+                        }
+                </Stack>
+                <Whisper placement="auto" trigger="click" speaker={renderSessionMenu(sessionProps)}>
+                    <IconButton appearance="ghost" icon={<More />}
                         style={{
-                            cursor: 'pointer',
-                            backgroundColor: 'white',
-                            boxShadow: "rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px",
-                            borderRadius: "0.5em",
-                            padding: "1em"
+                            position: 'absolute',
+                            bottom: 0,
+                            right: 0
                         }}
-                    >
-                        <Stack direction='column'>
-                            <h2>{sessionProps.date.getDate()}</h2>
-                            <h2>{sessionProps.date.toDateString().split(' ')[1]}</h2>
-                            <h2>{sessionProps.date.getFullYear()}</h2>
-                        </Stack>
-                        <Divider vertical style={{height: '10em'}} />
-                        <Stack spacing='1em' direction='column' justifyContent='space-between' >
-                            <h4> {sessionProps.worship_leader} </h4>
-                                {
-                                    sessionProps.songs.length > 0 ?
-                                    <Whisper preventOverflow placement="auto" trigger="click" controlId="control-id-click" speaker={<SongList song_ids={sessionProps.songs} />}>
-                                        <Button onClick={(e) => {e.preventDefault()}} appearance="primary" block >{`${sessionProps.songs.length} songs`}</Button>
-                                    </Whisper>
-                                    :
-                                    <h5 style={{color: 'red'}} ><i>No songs</i></h5>
-                                }
-                        </Stack>
-                        <Whisper placement="auto" trigger="click" speaker={renderSessionMenu(sessionProps)}>
-                            <IconButton appearance="ghost" icon={<More />}
-                                style={{
-                                    position: 'absolute',
-                                    bottom: 0,
-                                    right: 0
-                                }}
-                                onClick={(e) => {e.preventDefault()}}
-                            />
-                        </Whisper>
-                    </Stack>
-                </Link>
-            </m.div>
-        </LazyMotion>
+                        onClick={(e) => {e.preventDefault()}}
+                    />
+                </Whisper>
+            </Stack>
+            </a>
+        </Link>
     )
 }
 

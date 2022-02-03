@@ -2,8 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import prisma from '../../lib/prisma'
 import { SUCCESS_CODE, INTERNAL_SERVER_ERROR_ERROR_CODE, NOT_ALLOWED_ERROR_CODE } from '../../lib/status_codes'
 
-async function update_session({id, date, songs, worship_leader, vocalist, keyboard, guitar, drums, sound_personnel}:
-    {id: number, date: string, songs: string, worship_leader: string, vocalist?: string, keyboard?: string, guitar?: string, drums?: string, sound_personnel?: string}) {
+async function update_session({id, date, songs, worship_leader, vocalist, keyboard, guitar, drums, sound_personnel, info}:
+    {id: number, date: string, songs: string, worship_leader: string, vocalist?: string, keyboard?: string, guitar?: string, drums?: string, sound_personnel?: string, info?: string}) {
     const result = await prisma.session.update({
         where: {
             id: id,
@@ -16,7 +16,8 @@ async function update_session({id, date, songs, worship_leader, vocalist, keyboa
             keyboard,
             guitar,
             drums,
-            sound_personnel
+            sound_personnel,
+            info
         },
     });
     return result;

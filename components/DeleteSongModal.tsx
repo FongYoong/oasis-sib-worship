@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Modal, Stack, Button, InputGroup, Input, Divider } from 'rsuite'
+import { Modal, Stack, Button, InputGroup, Input } from 'rsuite'
 import { SUCCESS_CODE } from '../lib/status_codes'
 import { SongProps } from '../lib/types'
 import PasswordInput from './PasswordInput'
@@ -81,7 +81,6 @@ const DeleteSongModal = (props: DeleteSongModalProps) => {
                             readOnly={true}
                         />
                     </InputGroup>
-                    <Divider style={{marginTop:'1em', marginBottom:'0', height: '0.2em', width: '30vw'}} />
                     <PasswordInput setPassword={setPassword} passwordError={passwordError} setPasswordError={setPasswordError} />
                 </Stack>
             </Modal.Body>

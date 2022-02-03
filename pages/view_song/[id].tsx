@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { NextPage } from 'next'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic'
 const ReactQuill = dynamic(() => import('react-quill'), {
@@ -7,10 +8,11 @@ const ReactQuill = dynamic(() => import('react-quill'), {
     loading: () => <Loader content="Loading lyrics..." />
 });
 import useSWR from 'swr'
-import { Stack, Divider, Button, Loader } from 'rsuite';
+import { Stack, Divider, Button, Loader, Animation } from 'rsuite';
 import SongModal from '../../components/SongModal'
 import ExportSongModal from '../../components/ExportSongModal'
 import DeleteSongModal from '../../components/DeleteSongModal'
+import NotFound from '../../components/NotFound'
 import { domainUrl, copyToClipboard, json_fetcher } from '../../lib/utils'
 import { AiOutlineLink } from 'react-icons/ai'
 import { FiEdit } from 'react-icons/fi'
@@ -24,7 +26,7 @@ const YouTubeSong = ({keyword}: {keyword: string}) => {
     return (
         <>
         { data ? 
-            <div style={{width: '100vw', height: '100vh', padding: '2em'}} >
+            <div style={{width: '90vw', height: '90vh', padding: '2em'}} >
                 <div className="video-responsive"  >
                     <iframe
                         src={`https://www.youtube.com/embed/${embedId}`}
@@ -50,6 +52,13 @@ const ViewSongPage: NextPage = () => {
     const [editSongShow, setEditSongShow] = useState<boolean>(false);
     const [exportSongShow, setExportSongShow] = useState<boolean>(false);
     const [deleteSongShow, setDeleteSongShow] = useState<boolean>(false);
+    const [loaded, setLoaded] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (!loaded && !error && data) {
+            setLoaded(true)
+        }
+    }, [data, error])
 
     const handleEditSongClose = () => {
         setEditSongShow(false);
@@ -62,7 +71,6 @@ const ViewSongPage: NextPage = () => {
     }
 
     const song_data = data;
-    console.log(error);
 
     return (
     <>
@@ -73,12 +81,15 @@ const ViewSongPage: NextPage = () => {
             <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' style={{
                 width: '100vw'
             }} >
-                { song_data &&
+                <Animation.Bounce in={!song_data && isValidating} >
+                    <Loader size='md' content="Fetching song..." />
+                </Animation.Bounce>
+                { loaded && song_data &&
                     <Stack spacing='3em' direction='column' alignItems='center' justifyContent='center' >
                         <Stack direction='column' alignItems='center' justifyContent='center' >
-                            <h3 style={{textAlign: 'center'}} >{song_data.title}</h3>
+                            <h2 style={{textAlign: 'center'}} >{song_data.title}</h2>
                             <Divider style={{height: '0.2em', width: '50vw', marginTop:'0.3em', marginBottom:'0.3em'}} />
-                            <h5 style={{textAlign: 'center'}} >{song_data.artist}</h5>
+                            <h4 style={{textAlign: 'center'}} >{song_data.artist}</h4>
                         </Stack>
                         <Stack wrap spacing='1em' direction='row' alignItems='center' justifyContent='center' >
                             <Button appearance="primary" color="blue" onClick={() => setEditSongShow(true)} >
@@ -101,8 +112,8 @@ const ViewSongPage: NextPage = () => {
                         <YouTubeSong keyword={`${song_data.title} - ${song_data.artist}`} />
                     </Stack>
                 }
-                {
-                    !song_data && <Loader size='md' content="Fetching song..." />
+                { (!isValidating && !loaded) &&
+                    <NotFound message="We could not find this song." redirectLink="/all_songs" redirectMessage='View all songs' />
                 }
             </Stack>
         </main>
