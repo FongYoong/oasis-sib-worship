@@ -25,7 +25,7 @@ export const resolvePageRoute = (path: string) => {
         return PageName.None
     }
     else {
-        throw Error('Cannot resolve path to PageName')
+        return PageName.None
     }
 }
 

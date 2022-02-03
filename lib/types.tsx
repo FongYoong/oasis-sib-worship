@@ -28,5 +28,6 @@ export enum PageName {
     About = "About",
     ViewSong = "View Song",
     ViewSession = "View Session",
-    None = ""
+    None = "",
+    Error = "Page Not Found"
 }
