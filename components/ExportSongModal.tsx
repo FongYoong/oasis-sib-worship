@@ -91,6 +91,7 @@ const ExportSongModal = (props: ExportSongModalProps) => {
                         onSuccess();
                     },
                     filename: `${file_name}.pdf`,
+                    autoPaging: 'text',
                     margin: 10,
                     x: 0,
                     y: 0,
