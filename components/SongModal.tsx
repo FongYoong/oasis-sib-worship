@@ -35,6 +35,7 @@ const SongModal = (props: SongModalProps) => {
     const [password, setPassword] = useState<string>('')
     const [passwordError, setPasswordError] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false);
+    const [showHelp, setShowHelp] = useState<boolean>(false);
 
     const canvasOCR = useRef<HTMLCanvasElement>(null);
     const [OCRLoading, setOCRLoading] = useState<boolean>(false);
@@ -213,13 +214,11 @@ const SongModal = (props: SongModalProps) => {
         }
         props.handleClose();
     }
+    console.log(showHelp)
 
     return (
         <QuillLoadingContext.Provider value={setLoading}>
-            <Modal overflow={false} backdrop='static' open={props.visibility}
-                onClose={closeModal}
-            
-            >
+            <Modal overflow={false} backdrop='static' open={props.visibility} onClose={closeModal} >
                 {isValidating &&
                     <Loader style={{zIndex: 1000}} backdrop center content="Fetching song..." />
                 }
@@ -240,7 +239,7 @@ const SongModal = (props: SongModalProps) => {
                 <Modal.Body>
                     <Form fluid
                         onChange={setFormData} formValue={formData} style={{marginBottom:'1em'}} >
-                        <Form.Group controlId="title">
+                        <Form.Group controlId="title" id='title' >
                             <InputGroup>
                                 <InputGroup.Addon>
                                     <MdTitle />
@@ -254,7 +253,7 @@ const SongModal = (props: SongModalProps) => {
                                 />
                             </InputGroup>
                         </Form.Group>
-                        <Form.Group controlId="artist">
+                        <Form.Group controlId="artist" id='artist' >
                             <InputGroup>
                                 <InputGroup.Addon>
                                     <BsFillPersonFill />
@@ -275,7 +274,10 @@ const SongModal = (props: SongModalProps) => {
                     }
                 </Modal.Body>
                 <Modal.Footer>
-                    <Stack direction='row' justifyContent='flex-end' style={{marginBottom: '1em'}} >
+                    <Stack spacing='1em' direction='row' justifyContent='flex-end' style={{marginBottom: '1em'}} >
+                        <Button onClick={() => setShowHelp(true)} color='cyan' appearance="primary">
+                            Help
+                        </Button>
                         <Button loading={pauseModal} disabled={pauseModal || !formData?.title} onClick={props.editSong ? updateSong : addSong} color="green" appearance="primary">
                             Confirm
                         </Button>
