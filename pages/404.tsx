@@ -1,5 +1,4 @@
 import { NextPage } from 'next'
-import Link from 'next/link'
 import { Stack } from 'rsuite';
 import NotFound from '../components/NotFound'
 

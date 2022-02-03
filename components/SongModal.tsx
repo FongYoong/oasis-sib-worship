@@ -35,7 +35,6 @@ const SongModal = (props: SongModalProps) => {
     const [password, setPassword] = useState<string>('')
     const [passwordError, setPasswordError] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false);
-    const [showHelp, setShowHelp] = useState<boolean>(false);
 
     const canvasOCR = useRef<HTMLCanvasElement>(null);
     const [OCRLoading, setOCRLoading] = useState<boolean>(false);
@@ -214,7 +213,6 @@ const SongModal = (props: SongModalProps) => {
         }
         props.handleClose();
     }
-    console.log(showHelp)
 
     return (
         <QuillLoadingContext.Provider value={setLoading}>
@@ -275,9 +273,6 @@ const SongModal = (props: SongModalProps) => {
                 </Modal.Body>
                 <Modal.Footer>
                     <Stack spacing='1em' direction='row' justifyContent='flex-end' style={{marginBottom: '1em'}} >
-                        <Button onClick={() => setShowHelp(true)} color='cyan' appearance="primary">
-                            Help
-                        </Button>
                         <Button loading={pauseModal} disabled={pauseModal || !formData?.title} onClick={props.editSong ? updateSong : addSong} color="green" appearance="primary">
                             Confirm
                         </Button>

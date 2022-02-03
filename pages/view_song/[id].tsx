@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { NextPage } from 'next'
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic'
 const ReactQuill = dynamic(() => import('react-quill'), {
