@@ -57,7 +57,7 @@ const ExportSongModal = (props: ExportSongModalProps) => {
 
     const lyricsDivRef = useRef<HTMLDivElement>(null);
     const { data, isValidating, error } = useSWR(props.visibility ? `/api/get_song/${props.songData?.id}` : null, song_fetcher);
-    const parsedLyrics = data ? parse(data.lyrics, exportPDFParseOptions) : <></>;
+    const parsedLyrics = data ? parse(`<h2><strong>${data.title}</strong></h2>\n<h3>${data.artist}</h3>\n<hr />\n` + data.lyrics, exportPDFParseOptions) : <></>;
 
     const [exportType, setExportType] = useState<ExportType>('ppt');
     const exportTypeDetails = getExportDetails(exportType);

@@ -99,8 +99,8 @@ export const exportPDFParseOptions = {
 };
 
 export const mergeSessiontoHTML = (session: SessionProps | undefined, songs: SongProps[]) => {
-    return `<h1>Worship Session:<br /> ${session?.date.toDateString()}</h1><hr />\n`
-    + songs.map((songData) => `<h1><strong>${songData.title} - ${songData.artist}</strong></h1>\n` + songData.lyrics + "\n<hr />").join('\n')
+    return `<h2>Worship Session:<br /> ${session?.date.toDateString()}</h2><hr />\n`
+    + songs.map((songData) => `<h2><strong>${songData.title}</strong></h2>\n<h3>${songData.artist}</h3>\n<hr />\n` + songData.lyrics + "\n<hr />").join('\n')
 }
 
 export function dataURLtoBlob(dataURI: string) {
