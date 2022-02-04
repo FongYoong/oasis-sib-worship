@@ -179,7 +179,7 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
                       }} placeholder="Search session" />
                   </InputGroup>
                   <Stack wrap direction='row' justifyContent='center' spacing="0em" >
-                    <DatePicker value={startDate} isoWeek format="yyyy-MM" placement='autoVerticalStart' ranges={[]}
+                    <DatePicker value={startDate} isoWeek format="yyyy-MM" placement='bottomStart' ranges={[]}
                       onOk={(date) => {
                         if (date) {
                           let end = endDate;
@@ -193,9 +193,10 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
                       onClean={() => {
                         updateDateQuery(undefined, undefined);
                       }}
+                      onClick={(event: React.MouseEvent<Element, MouseEvent>) => event.preventDefault()}
                     />
                     <InputGroup.Addon style={{paddingTop: '1em', paddingBottom: '1em'}} >to</InputGroup.Addon>
-                    <DatePicker value={endDate} isoWeek format="yyyy-MM" placement='autoVerticalEnd' ranges={[]}
+                    <DatePicker value={endDate} isoWeek format="yyyy-MM" placement='bottomEnd' ranges={[]}
                       onOk={(date) => {
                         if (date) {
                           let start = startDate;
@@ -209,6 +210,7 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
                       onClean={() => {
                         updateDateQuery(undefined, undefined);
                       }}
+                      onClick={(event: React.MouseEvent<Element, MouseEvent>) => event.preventDefault()}
                     />
                   </Stack>
               </Stack>

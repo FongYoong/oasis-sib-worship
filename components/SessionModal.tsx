@@ -287,6 +287,8 @@ const SessionModal = (props: SessionModalProps) => {
                                     errorMessage={dutyFormData?.date ? '' : 'This field is required'}
                                     errorPlacement='bottomStart'
                                     readOnly={pauseModal}
+                                    placement="bottomStart"
+                                    onClick={(event: React.MouseEvent<Element, MouseEvent>) => event.preventDefault()}
                                 />
                             </Form.Group>
                             <Form.Group controlId="worship_leader">
