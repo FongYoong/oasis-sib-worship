@@ -155,7 +155,7 @@ const SongListItem = ({ song_id, index, deleteHandler } : { song_id: number, ind
 
 const session_fetcher = json_fetcher('GET');
 
-const initialSessionInfo = ''
+const initialSessionInfo = 'Additional info here'
 
 const SessionModal = (props: SessionModalProps) => {
     const [formIndex, setFormIndex] = useState<number>(0);
@@ -201,6 +201,7 @@ const SessionModal = (props: SessionModalProps) => {
             setDateValue(new Date(data.date))
             setDutyFormData(data)
             setSongList(data.songs)
+            setSessionInfo(data.info)
         }
     }, [data]);
 
