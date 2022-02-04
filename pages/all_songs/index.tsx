@@ -116,9 +116,13 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
     const maxItemsPerPage: number = data ? data.maxItemsPerPage : 0;
     const totalPages: number = data ? data.totalPages : 0;
     const processed_data = data && data.songs ? data.songs.map((song: SongProps) => {
+        const date = new Date(song.updatedAt);
+        //const dateString = date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+        const dateString = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+        const timeString = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
         return {
             ...song,
-            updatedAt: new Date(song.updatedAt).toLocaleString()
+            updatedAt: `${dateString}, ${timeString}`
         }
     }) : [];
     console.log(error);

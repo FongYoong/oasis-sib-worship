@@ -179,7 +179,7 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
                       }} placeholder="Search session" />
                   </InputGroup>
                   <Stack wrap direction='row' justifyContent='center' spacing="0em" >
-                    <DatePicker value={startDate} isoWeek format="yyyy-MM" placement='auto' ranges={[]}
+                    <DatePicker value={startDate} isoWeek format="yyyy-MM" placement='autoVerticalStart' ranges={[]}
                       onOk={(date) => {
                         if (date) {
                           let end = endDate;
@@ -195,7 +195,7 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
                       }}
                     />
                     <InputGroup.Addon style={{paddingTop: '1em', paddingBottom: '1em'}} >to</InputGroup.Addon>
-                    <DatePicker value={endDate} isoWeek format="yyyy-MM" placement='auto' ranges={[]}
+                    <DatePicker value={endDate} isoWeek format="yyyy-MM" placement='autoVerticalEnd' ranges={[]}
                       onOk={(date) => {
                         if (date) {
                           let start = startDate;
