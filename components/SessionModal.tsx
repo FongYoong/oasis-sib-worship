@@ -16,7 +16,10 @@ import useSWR from 'swr'
 import { Steps, DatePicker, Modal, Form, Stack, Button, IconButton, Animation, InputGroup, AutoComplete, Divider, Loader } from 'rsuite'
 import { PickerInstance } from 'rsuite/Picker'
 import { QuillLoadingContext, ReactQuill, quillModules, quillFormats } from './QuillLoad'
-const SongModal = dynamic(() => import('./SongModal'))
+import ModalLoader from './ModalLoader'
+const SongModal = dynamic(() => import('./SongModal'), {
+    loading: () => <ModalLoader message="Loading song editor" />
+})
 //import SongModal from './SongModal'
 import { json_fetcher } from '../lib/utils'
 import { SuccessMessage, ErrorMessage } from '../lib/messages'
