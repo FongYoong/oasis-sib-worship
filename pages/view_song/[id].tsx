@@ -95,7 +95,7 @@ const ViewSongPage: NextPage = () => {
                                 <FiEdit style={{marginRight: '1em'}} />Edit Song
                             </Button>
                             <Button appearance="primary" color="violet" onClick={() => {
-                                const url = `${domainUrl}/view_song/${song_data.id}`;
+                                const url = `https://${domainUrl}/view_song/${song_data.id}`;
                                 copyToClipboard(url, 'Copied URL to clipboard');
                             }} >
                                 <AiOutlineLink style={{marginRight: '1em'}} />Share Song

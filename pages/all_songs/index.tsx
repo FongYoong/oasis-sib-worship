@@ -84,7 +84,7 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
                 setEditSongId(song_data?.id)
             }
             else if (eventKey == 'share') {
-                const url = `${domainUrl}/view_song/${song_data.id}`;
+                const url = `https://${domainUrl}/view_song/${song_data.id}`;
                 copyToClipboard(url, 'Copied URL to clipboard');
             }
             else if (eventKey == 'export') {

@@ -76,7 +76,7 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
             setEditSessionId(session_data?.id)
         }
         else if (eventKey == 'share') {
-            const url = `${domainUrl}/view_session/${session_data.id}`;
+            const url = `https://${domainUrl}/view_session/${session_data.id}`;
             copyToClipboard(url, 'Copied URL to clipboard');
         }
         else if (eventKey == 'export') {
