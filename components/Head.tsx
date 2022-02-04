@@ -53,7 +53,7 @@ const Head = (props: HeadProps) => {
                 // }
             }}
           >
-            <Image alt="oasis_sib_logo" src="/images/oasis_sib_logo.jpg" layout='fill' />
+            <Image alt="oasis_sib_logo" src="/images/oasis_sib_logo_128px.jpg" layout='fill' />
           </Avatar>
           <Nav activeKey={props.title} appearance='tabs' style={{marginBottom: '1em'}} >
             <Nav.Item as={NavLink} href="/" eventKey={PageName.Home} >Home</Nav.Item>
