@@ -81,7 +81,7 @@ const DeleteSessionModal = (props: DeleteSessionModalProps) => {
                             readOnly={true}
                         />
                     </InputGroup>
-                    <PasswordInput setPassword={setPassword} passwordError={passwordError} setPasswordError={setPasswordError} />
+                    <PasswordInput autoFocus={true} setPassword={setPassword} passwordError={passwordError} setPasswordError={setPasswordError} />
                 </Stack>
                 
             </Modal.Body>

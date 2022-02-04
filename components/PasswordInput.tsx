@@ -1,7 +1,7 @@
 import { Stack, InputGroup, Form, Divider } from 'rsuite'
 import { RiLockPasswordFill } from 'react-icons/ri'
 
-const PasswordInput = ({ setPassword, passwordError, setPasswordError }: { setPassword: (value: string) => void, passwordError: boolean, setPasswordError: (value: boolean) => void }) => {
+const PasswordInput = ({ autoFocus=false, setPassword, passwordError, setPasswordError }: { autoFocus?: boolean, setPassword: (value: string) => void, passwordError: boolean, setPasswordError: (value: boolean) => void }) => {
     return (
         <>
             <Divider style={{marginTop:'1em', marginBottom:'1em', height: '0.2em', width: '100%'}} />
@@ -18,7 +18,7 @@ const PasswordInput = ({ setPassword, passwordError, setPasswordError }: { setPa
                                     setPassword(value);
                                     setPasswordError(false);
                                 }}
-                                name="password" type="password" autoComplete="off" autoFocus
+                                name="password" type="password" autoComplete="off" autoFocus={autoFocus}
                                 placeholder="Password"
                                 readOnly={false}
                                 errorPlacement='bottomStart'

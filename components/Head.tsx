@@ -1,6 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import React from 'react'
+import Image from 'next/image'
 import { Avatar, Stack, Nav } from 'rsuite'
 import { NavItemProps } from 'rsuite'
 import Link from 'next/link'
@@ -35,7 +36,8 @@ const Head = (props: HeadProps) => {
         <Stack direction='row' alignItems='center' spacing='1em' style={{
             marginBottom: '0em'
           }} >
-          <Avatar src={`http://${domainUrl}/images/oasis_sib_logo.jpg`} alt="oasis_sib_logo"
+            {/* src={`https://${domainUrl}/images/oasis_sib_logo.jpg`}  */}
+          <Avatar
               className={hoverStyles.hover_glow}
               style={{
                 cursor: 'pointer',
@@ -45,12 +47,14 @@ const Head = (props: HeadProps) => {
                 outlineColor: "#9e9e9e"
               }}
               onClick={() => {
-                const w = window.open('https://www.facebook.com/theoasissibs2/', '_blank');
-                if(w) {
-                  w.focus()
-                }
+                // const w = window.open('https://www.facebook.com/theoasissibs2/', '_blank');
+                // if(w) {
+                //   w.focus()
+                // }
             }}
-          />
+          >
+            <Image alt="oasis_sib_logo" src="/images/oasis_sib_logo.jpg" layout='fill' />
+          </Avatar>
           <Nav activeKey={props.title} appearance='tabs' style={{marginBottom: '1em'}} >
             <Nav.Item as={NavLink} href="/" eventKey={PageName.Home} >Home</Nav.Item>
             <Nav.Item as={NavLink} href="/all_songs" eventKey={PageName.AllSongs}  >All Songs</Nav.Item>
