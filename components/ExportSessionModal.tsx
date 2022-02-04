@@ -176,7 +176,7 @@ const ExportSessionModal = (props: ExportSessionModalProps) => {
                         }
                     </Dropdown>
                     {noSongs &&
-                        <h4>No songs to export 🗅</h4>
+                        <h4>No songs to export 💤</h4>
                     }
                 </Stack>
             </Modal.Body>
