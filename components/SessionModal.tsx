@@ -1,11 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react'
+import dynamic from 'next/dynamic'
 import CSS from 'csstype';
-import { DragDropContext, DropResult, Droppable, Draggable } from "react-beautiful-dnd";
+//import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
+import { DragDropContextProps, DroppableProps, DraggableProps, DropResult } from 'react-beautiful-dnd'
+const DragDropContext = dynamic<DragDropContextProps>(() =>
+  import("react-beautiful-dnd").then((module) => module.DragDropContext)
+);
+const Droppable = dynamic<DroppableProps>(() =>
+  import("react-beautiful-dnd").then((module) => module.Droppable)
+);
+const Draggable = dynamic<DraggableProps>(() =>
+  import("react-beautiful-dnd").then((module) => module.Draggable)
+);
 import useSWR from 'swr'
 import { Steps, DatePicker, Modal, Form, Stack, Button, IconButton, Animation, InputGroup, AutoComplete, Divider, Loader } from 'rsuite'
 import { PickerInstance } from 'rsuite/Picker'
 import { QuillLoadingContext, ReactQuill, quillModules, quillFormats } from './QuillLoad'
-import SongModal from './SongModal'
+const SongModal = dynamic(() => import('./SongModal'))
+//import SongModal from './SongModal'
 import { json_fetcher } from '../lib/utils'
 import { SuccessMessage, ErrorMessage } from '../lib/messages'
 import { AiFillSound } from 'react-icons/ai'
@@ -75,12 +87,16 @@ const SongListItem = ({ song_id, index, deleteHandler } : { song_id: number, ind
     
     const getItemStyle = (isDragging: boolean, isDropAnimating: boolean, draggableStyle: CSS.Properties) => {
         if (!isDropAnimating) {
-            return draggableStyle;
+            return {
+                ...draggableStyle,
+                background: isDragging ? "#8cffab" : "white",
+                boxShadow: isDragging ? "0px 0px 23px 5px rgba(115,115,115,0.77)" : ''
+            }
         }
         return {
             ...draggableStyle,
-            background: isDragging ? "lightgreen" : "white",
-            transitionDuration: `0.001s`,
+            background: isDragging ? "#d4ffdf" : "white",
+            transitionDuration: `0.1s`,
         };
     };
 
@@ -144,6 +160,7 @@ const SessionModal = (props: SessionModalProps) => {
     const [dutyFormData, setDutyFormData] = useState<Record<string, string>|undefined>(undefined);
     const [sessionInfo, setSessionInfo] = useState<string>(props.editSession ? '' : initialSessionInfo);
     const [addSongShow, setAddSongShow] = useState<boolean>(false);
+    const [songModalLoad, setSongModalLoad] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const handleAddSongClose = () => {
         setAddSongShow(false);
@@ -274,7 +291,7 @@ const SessionModal = (props: SessionModalProps) => {
                         <Steps.Item title="Songs" />
                         <Steps.Item title="Info" />
                     </Steps>
-                    <SongModal visibility={addSongShow} handleClose={handleAddSongClose} />
+                    {songModalLoad && <SongModal visibility={addSongShow} handleClose={handleAddSongClose} /> }
                 </Modal.Header>
                 <Modal.Body>
                     <Animation.Collapse unmountOnExit in={formIndex == 0} >
@@ -370,7 +387,11 @@ const SessionModal = (props: SessionModalProps) => {
                     <Animation.Collapse unmountOnExit in={formIndex == 1} >
                         <Form fluid >
                             <Form.Group>
-                                <IconButton disabled={pauseModal} block appearance="primary" color="green" icon={<Plus />} onClick={() => setAddSongShow(true)} >
+                                <IconButton disabled={pauseModal} block appearance="primary" color="green" icon={<Plus />}
+                                    onClick={() => {
+                                        setSongModalLoad(true);
+                                        setAddSongShow(true);
+                                    }} >
                                     Create New Song
                                 </IconButton>
                             </Form.Group>
@@ -379,7 +400,14 @@ const SessionModal = (props: SessionModalProps) => {
                                     <InputGroup.Addon>
                                         <FaMusic />
                                     </InputGroup.Addon>
-                                    <SongAutocomplete onSelect={(song_id: number) => setSongList([...songList, song_id])}
+                                    <SongAutocomplete onSelect={(song_id: number) => {
+                                        if (songList.includes(song_id)) {
+                                            ErrorMessage("Selected song already in the list.")
+                                        }
+                                        else {
+                                            setSongList([...songList, song_id])
+                                        }
+                                    }}
                                     />
                                 </InputGroup>
                             </Form.Group>
@@ -391,7 +419,7 @@ const SessionModal = (props: SessionModalProps) => {
                                                 {...provided.droppableProps}
                                                 ref={provided.innerRef}
                                                 style={{
-                                                    background: snapshot.isDraggingOver ? "lightblue" : "white",
+                                                    background: snapshot.isDraggingOver ? "#fffad4" : "white",
                                                 }}
                                             >
                                                 {songList.length > 0 && songList.map((song_id: number, index: number) => (

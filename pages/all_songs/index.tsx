@@ -1,13 +1,23 @@
-import React from 'react'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { NextPage } from 'next'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
 import { IconButton, Input, InputGroup, Stack, Divider, Table, Whisper, Popover, Dropdown, Pagination, Animation } from 'rsuite';
-import SongModal from '../../components/SongModal'
-import ExportSongModal from '../../components/ExportSongModal'
-import DeleteSongModal from '../../components/DeleteSongModal'
+import ModalLoader from '../../components/ModalLoader'
+const SongModal = dynamic(() => import('../../components/SongModal'), {
+    loading: () => <ModalLoader message="Loading song editor" />
+})
+const ExportSongModal = dynamic(() => import('../../components/ExportSongModal'), {
+    loading: () => <ModalLoader message="Loading song exporter" />
+})
+const DeleteSongModal = dynamic(() => import('../../components/DeleteSongModal'), {
+    loading: () => <ModalLoader message="Loading song deleter" />
+})
+// import SongModal from '../../components/SongModal'
+// import ExportSongModal from '../../components/ExportSongModal'
+// import DeleteSongModal from '../../components/DeleteSongModal'
 import { SongProps } from '../../lib/types'
 import { domainUrl, copyToClipboard, json_fetcher } from '../../lib/utils'
 import { Plus, Search, More } from '@rsuite/icons'
@@ -64,6 +74,11 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
     const [deleteSongShow, setDeleteSongShow] = useState<boolean>(false);
     const [deleteSongData, setDeleteSongData] = useState<SongProps|undefined>(undefined);
 
+    const [addSongModalLoad, setAddSongModalLoad] = useState<boolean>(false);
+    const [editSongModalLoad, setEditSongModalLoad] = useState<boolean>(false);
+    const [exportSongModalLoad, setExportSongModalLoad] = useState<boolean>(false);
+    const [deleteSongModalLoad, setDeleteSongModalLoad] = useState<boolean>(false);
+
     const handleAddSongClose = () => {
         setAddSongShow(false);
     }
@@ -80,6 +95,7 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
     const handleRowMenuSelect = (eventKey?: string, song_data?: SongProps) => {
         if (song_data) {
             if (eventKey == 'edit') {
+                setEditSongModalLoad(true)
                 setEditSongShow(true)
                 setEditSongId(song_data?.id)
             }
@@ -88,10 +104,12 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
                 copyToClipboard(url, 'Copied URL to clipboard');
             }
             else if (eventKey == 'export') {
+                setExportSongModalLoad(true)
                 setExportSongShow(true)
                 setExportSongData(song_data)
             }
             else if (eventKey == 'delete') {
+                setDeleteSongModalLoad(true)
                 setDeleteSongShow(true)
                 setDeleteSongData(song_data)
             }
@@ -129,15 +147,19 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
 
     return (
         <>
-            <SongModal visibility={addSongShow} handleClose={handleAddSongClose} onSuccess={mutate} />
-            <SongModal editSong={editSongShow} editSongId={editSongId} visibility={editSongShow} handleClose={handleEditSongClose} onSuccess={mutate} />
-            <ExportSongModal songData={exportSongData} visibility={exportSongShow} handleClose={handleExportSongClose} />
-            <DeleteSongModal songData={deleteSongData} visibility={deleteSongShow} handleClose={handleDeleteSongClose} onSuccess={mutate} />
+            {addSongModalLoad && <SongModal visibility={addSongShow} handleClose={handleAddSongClose} onSuccess={mutate} /> }
+            {editSongModalLoad && <SongModal editSong={editSongShow} editSongId={editSongId} visibility={editSongShow} handleClose={handleEditSongClose} onSuccess={mutate} /> }
+            {exportSongModalLoad && <ExportSongModal songData={exportSongData} visibility={exportSongShow} handleClose={handleExportSongClose} /> }
+            {deleteSongModalLoad && <DeleteSongModal songData={deleteSongData} visibility={deleteSongShow} handleClose={handleDeleteSongClose} onSuccess={mutate} /> }
             <main>
                 <Stack wrap direction='row' justifyContent='center' spacing="1em" style={{
                     width: '96vw'
                 }} >
-                    <IconButton appearance="primary" color="green" icon={<Plus />} onClick={() => setAddSongShow(true)} >
+                    <IconButton appearance="primary" color="green" icon={<Plus />}
+                        onClick={() => {
+                            setAddSongModalLoad(true)
+                            setAddSongShow(true)
+                        }} >
                         Add Song
                     </IconButton>
                     <InputGroup>

@@ -1,13 +1,24 @@
 import { useState, useRef } from 'react'
 import { NextPage } from 'next'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
 import { Stack, Divider, IconButton, Loader, Animation, Button, InputGroup, Input, DatePicker } from 'rsuite';
 import AnimateHeight from 'react-animate-height';
+import ModalLoader from '../components/ModalLoader'
+const SessionModal = dynamic(() => import('../components/SessionModal'), {
+  loading: () => <ModalLoader message="Loading session editor" />
+})
+const ExportSessionModal = dynamic(() => import('../components/ExportSessionModal'), {
+  loading: () => <ModalLoader message="Loading session exporter" />
+})
+const DeleteSessionModal = dynamic(() => import('../components/DeleteSessionModal'), {
+  loading: () => <ModalLoader message="Loading session deleter" />
+})
 import SessionCard from '../components/SessionCard'
-import SessionModal from '../components/SessionModal'
-import ExportSessionModal from '../components/ExportSessionModal'
-import DeleteSessionModal from '../components/DeleteSessionModal'
+// import SessionModal from '../components/SessionModal'
+// import ExportSessionModal from '../components/ExportSessionModal'
+// import DeleteSessionModal from '../components/DeleteSessionModal'
 import { SessionProps } from '../lib/types'
 import { domainUrl, copyToClipboard, json_fetcher, isPresentOrFutureDate, dateToISOString, getStartOfMonthDate, getEndOfMonthDate } from '../lib/utils'
 import { Plus, Search } from '@rsuite/icons'
@@ -56,6 +67,11 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
   const [deleteSessionShow, setDeleteSessionShow] = useState<boolean>(false);
   const [deleteSessionData, setDeleteSessionData] = useState<SessionProps|undefined>(undefined);
 
+  const [addSessionModalLoad, setAddSessionModalLoad] = useState<boolean>(false);
+  const [editSessionModalLoad, setEditSessionModalLoad] = useState<boolean>(false);
+  const [exportSessionModalLoad, setExportSessionModalLoad] = useState<boolean>(false);
+  const [deleteSessionModalLoad, setDeleteSessionModalLoad] = useState<boolean>(false);
+
   const handleAddSessionClose = () => {
     setAddSessionShow(false);
 }
@@ -72,6 +88,7 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
   const handleSessionMenuSelect = (eventKey?: string, session_data?: SessionProps) => {
     if (session_data) {
         if (eventKey == 'edit') {
+            setEditSessionModalLoad(true)
             setEditSessionShow(true)
             setEditSessionId(session_data?.id)
         }
@@ -80,10 +97,12 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
             copyToClipboard(url, 'Copied URL to clipboard');
         }
         else if (eventKey == 'export') {
-          setExportSessionShow(true)
-          setExportSessionData(session_data)
+            setExportSessionModalLoad(true)
+            setExportSessionShow(true)
+            setExportSessionData(session_data)
         }
         else if (eventKey == 'delete') {
+            setDeleteSessionModalLoad(true)
             setDeleteSessionShow(true)
             setDeleteSessionData(session_data)
         }
@@ -144,10 +163,10 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
 
   return (
     <>
-      <SessionModal visibility={addSessionShow} handleClose={handleAddSessionClose} onSuccess={mutate} />
-      <SessionModal editSession={editSessionShow} editSessionId={editSessionId} visibility={editSessionShow} handleClose={handleEditSessionClose} onSuccess={mutate} />
-      <ExportSessionModal sessionData={exportSessionData} visibility={exportSessionShow} handleClose={handleExportSessionClose} />
-      <DeleteSessionModal sessionData={deleteSessionData} visibility={deleteSessionShow} handleClose={handleDeleteSessionClose} onSuccess={mutate} />
+      {addSessionModalLoad && <SessionModal visibility={addSessionShow} handleClose={handleAddSessionClose} onSuccess={mutate} /> }
+      {editSessionModalLoad && <SessionModal editSession={editSessionShow} editSessionId={editSessionId} visibility={editSessionShow} handleClose={handleEditSessionClose} onSuccess={mutate} /> }
+      {exportSessionModalLoad && <ExportSessionModal sessionData={exportSessionData} visibility={exportSessionShow} handleClose={handleExportSessionClose} /> }
+      {deleteSessionModalLoad && <DeleteSessionModal sessionData={deleteSessionData} visibility={deleteSessionShow} handleClose={handleDeleteSessionClose} onSuccess={mutate} /> }
       <main>
         <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' style={{
           width: '100vw'
@@ -158,7 +177,11 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
           <Stack direction='column' spacing="1em" alignItems='center' justifyContent='center' >
             <Animation.Slide in placement='top' >
               <Stack wrap direction='row' justifyContent='center' spacing="1em" >
-                  <IconButton disabled={isValidating} appearance="primary" color="green" icon={<Plus />} onClick={() => setAddSessionShow(true)} >
+                  <IconButton disabled={isValidating} appearance="primary" color="green" icon={<Plus />}
+                    onClick={() => {
+                      setAddSessionModalLoad(true)
+                      setAddSessionShow(true)
+                    }} >
                       Add Session
                   </IconButton>
                   <InputGroup>

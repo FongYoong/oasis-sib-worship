@@ -8,10 +8,21 @@ const ReactQuill = dynamic(() => import('react-quill'), {
 });
 import useSWR from 'swr'
 import { Stack, Divider, Button, Panel, InputGroup, Input, Dropdown, Loader, Animation } from 'rsuite';
-import SessionModal from '../../components/SessionModal'
-import ExportSessionModal from '../../components/ExportSessionModal'
-import DeleteSessionModal from '../../components/DeleteSessionModal'
-import NotFound from '../../components/NotFound'
+import ModalLoader from '../../components/ModalLoader'
+const SessionModal = dynamic(() => import('../../components/SessionModal'), {
+    loading: () => <ModalLoader message="Loading session editor" />
+})
+const ExportSessionModal = dynamic(() => import('../../components/ExportSessionModal'), {
+    loading: () => <ModalLoader message="Loading session exporter" />
+})
+const DeleteSessionModal = dynamic(() => import('../../components/DeleteSessionModal'), {
+    loading: () => <ModalLoader message="Loading session deleter" />
+})
+// import SessionModal from '../../components/SessionModal'
+// import ExportSessionModal from '../../components/ExportSessionModal'
+// import DeleteSessionModal from '../../components/DeleteSessionModal'
+//import NotFound from '../../components/NotFound'
+const NotFound = dynamic(() => import('../../components/NotFound'))
 import { SessionProps, SongProps } from '../../lib/types'
 import { domainUrl, copyToClipboard, json_fetcher } from '../../lib/utils'
 import { GrCaretPrevious, GrCaretNext, GrFormNext, GrFormView, GrFormViewHide } from 'react-icons/gr'
@@ -52,6 +63,10 @@ const ViewSessionPage: NextPage = () => {
     const [showSongLyrics, setShowSongLyrics] = useState<boolean>(true);
     const [loaded, setLoaded] = useState<boolean>(false);
 
+    const [editSessionModalLoad, setEditSessionModalLoad] = useState<boolean>(false);
+    const [exportSessionModalLoad, setExportSessionModalLoad] = useState<boolean>(false);
+    const [deleteSessionModalLoad, setDeleteSessionModalLoad] = useState<boolean>(false);
+
     useEffect(() => {
         if (!loaded && !error && data) {
             setLoaded(true)
@@ -91,9 +106,9 @@ const ViewSessionPage: NextPage = () => {
 
     return (
     <>
-        <SessionModal editSession={editSessionShow} editSessionId={session_id} visibility={editSessionShow} handleClose={handleEditSessionClose} onSuccess={mutate} />
-        <ExportSessionModal sessionData={session_data} visibility={exportSessionShow} handleClose={handleExportSessionClose} />
-        <DeleteSessionModal sessionData={session_data} visibility={deleteSessionShow} handleClose={handleDeleteSessionClose} onSuccess={mutate} />
+        {editSessionModalLoad && <SessionModal editSession={editSessionShow} editSessionId={session_id} visibility={editSessionShow} handleClose={handleEditSessionClose} onSuccess={mutate} /> }
+        {exportSessionModalLoad && <ExportSessionModal sessionData={session_data} visibility={exportSessionShow} handleClose={handleExportSessionClose} /> }
+        {deleteSessionModalLoad && <DeleteSessionModal sessionData={session_data} visibility={deleteSessionShow} handleClose={handleDeleteSessionClose} onSuccess={mutate} /> }
         <main>
             <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' style={{
                 width: '100vw'
@@ -127,7 +142,10 @@ const ViewSessionPage: NextPage = () => {
                         />
                         <Divider style={{height: '0.2em', width: '50vw', marginTop:'0em', marginBottom:'0em'}} />
                         <Stack wrap spacing='1em' direction='row' alignItems='center' justifyContent='center' >
-                            <Button appearance="primary" color="blue" onClick={() => setEditSessionShow(true)} >
+                            <Button appearance="primary" color="blue" onClick={() => {
+                                setEditSessionModalLoad(true)
+                                setEditSessionShow(true)
+                            }} >
                                 <FiEdit style={{marginRight: '1em'}} />Edit Session
                             </Button>
                             <Button appearance="primary" color="violet" onClick={() => {
@@ -136,10 +154,16 @@ const ViewSessionPage: NextPage = () => {
                             }} >
                                 <AiOutlineLink style={{marginRight: '1em'}} />Share Session
                             </Button>
-                            <Button appearance="primary" color="orange" onClick={() => setExportSessionShow(true)} >
+                            <Button appearance="primary" color="orange" onClick={() => {
+                                setExportSessionModalLoad(true)
+                                setExportSessionShow(true)
+                            }} >
                                 <BiExport style={{marginRight: '1em'}} />Export Session
                             </Button>
-                            <Button appearance="primary" color="red" onClick={() => setDeleteSessionShow(true)} >
+                            <Button appearance="primary" color="red" onClick={() => {
+                                setDeleteSessionModalLoad(true)
+                                setDeleteSessionShow(true)
+                            }} >
                                 <RiDeleteBin2Fill style={{marginRight: '1em'}} />Delete Session
                             </Button>
                         </Stack>

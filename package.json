@@ -11,6 +11,7 @@
   "dependencies": {
     "@prisma/client": "^3.8.1",
     "@rsuite/icons": "^1.0.2",
+    "@types/file-saver": "^2.0.5",
     "@types/react-beautiful-dnd": "^13.1.2",
     "axios": "^0.25.0",
     "canvas-filters": "^1.0.1",

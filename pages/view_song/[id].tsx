@@ -8,10 +8,21 @@ const ReactQuill = dynamic(() => import('react-quill'), {
 });
 import useSWR from 'swr'
 import { Stack, Divider, Button, Loader, Animation } from 'rsuite';
-import SongModal from '../../components/SongModal'
-import ExportSongModal from '../../components/ExportSongModal'
-import DeleteSongModal from '../../components/DeleteSongModal'
-import NotFound from '../../components/NotFound'
+import ModalLoader from '../../components/ModalLoader'
+const SongModal = dynamic(() => import('../../components/SongModal'), {
+    loading: () => <ModalLoader message="Loading song editor" />
+})
+const ExportSongModal = dynamic(() => import('../../components/ExportSongModal'), {
+    loading: () => <ModalLoader message="Loading song exporter" />
+})
+const DeleteSongModal = dynamic(() => import('../../components/DeleteSongModal'), {
+    loading: () => <ModalLoader message="Loading song deleter" />
+})
+// import SongModal from '../../components/SongModal'
+// import ExportSongModal from '../../components/ExportSongModal'
+// import DeleteSongModal from '../../components/DeleteSongModal'
+//import NotFound from '../../components/NotFound'
+const NotFound = dynamic(() => import('../../components/NotFound'))
 import { domainUrl, copyToClipboard, json_fetcher } from '../../lib/utils'
 import { AiOutlineLink } from 'react-icons/ai'
 import { FiEdit } from 'react-icons/fi'
@@ -53,6 +64,10 @@ const ViewSongPage: NextPage = () => {
     const [deleteSongShow, setDeleteSongShow] = useState<boolean>(false);
     const [loaded, setLoaded] = useState<boolean>(false);
 
+    const [editSongModalLoad, setEditSongModalLoad] = useState<boolean>(false);
+    const [exportSongModalLoad, setExportSongModalLoad] = useState<boolean>(false);
+    const [deleteSongModalLoad, setDeleteSongModalLoad] = useState<boolean>(false);
+
     useEffect(() => {
         if (!loaded && !error && data) {
             setLoaded(true)
@@ -73,9 +88,9 @@ const ViewSongPage: NextPage = () => {
 
     return (
     <>
-        <SongModal editSong={editSongShow} editSongId={song_id} visibility={editSongShow} handleClose={handleEditSongClose} onSuccess={mutate} />
-        <ExportSongModal songData={song_data} visibility={exportSongShow} handleClose={handleExportSongClose} />
-        <DeleteSongModal songData={song_data} visibility={deleteSongShow} handleClose={handleDeleteSongClose} onSuccess={mutate} />
+        {editSongModalLoad && <SongModal editSong={editSongShow} editSongId={song_id} visibility={editSongShow} handleClose={handleEditSongClose} onSuccess={mutate} /> }
+        {exportSongModalLoad && <ExportSongModal songData={song_data} visibility={exportSongShow} handleClose={handleExportSongClose} /> }
+        {deleteSongModalLoad && <DeleteSongModal songData={song_data} visibility={deleteSongShow} handleClose={handleDeleteSongClose} onSuccess={mutate} /> }
         <main>
             <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' style={{
                 width: '100vw'
@@ -91,7 +106,10 @@ const ViewSongPage: NextPage = () => {
                             <h4 style={{textAlign: 'center'}} >{song_data.artist}</h4>
                         </Stack>
                         <Stack wrap spacing='1em' direction='row' alignItems='center' justifyContent='center' >
-                            <Button appearance="primary" color="blue" onClick={() => setEditSongShow(true)} >
+                            <Button appearance="primary" color="blue" onClick={() => {
+                                setEditSongModalLoad(true)
+                                setEditSongShow(true)
+                            }} >
                                 <FiEdit style={{marginRight: '1em'}} />Edit Song
                             </Button>
                             <Button appearance="primary" color="violet" onClick={() => {
@@ -100,10 +118,16 @@ const ViewSongPage: NextPage = () => {
                             }} >
                                 <AiOutlineLink style={{marginRight: '1em'}} />Share Song
                             </Button>
-                            <Button appearance="primary" color="orange" onClick={() => setExportSongShow(true)} >
+                            <Button appearance="primary" color="orange" onClick={() => {
+                                setExportSongModalLoad(true)
+                                setExportSongShow(true)
+                            }} >
                                 <BiExport style={{marginRight: '1em'}} />Export Song
                             </Button>
-                            <Button appearance="primary" color="red" onClick={() => setDeleteSongShow(true)} >
+                            <Button appearance="primary" color="red" onClick={() => {
+                                setDeleteSongModalLoad(true)
+                                setDeleteSongShow(true)
+                            }} >
                                 <RiDeleteBin2Fill style={{marginRight: '1em'}} />Delete Song
                             </Button>
                         </Stack>

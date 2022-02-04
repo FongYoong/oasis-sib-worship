@@ -1,8 +1,16 @@
 import { useState, useRef, useEffect } from 'react'
-import Compressor from 'compressorjs';
-import ImageFilters from 'canvas-filters'
-import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider'
-import Tesseract from 'tesseract.js'
+import dynamic from 'next/dynamic'
+import { ReactCompareSliderProps, ReactCompareSliderImageProps } from 'react-compare-slider'
+const ReactCompareSlider = dynamic<ReactCompareSliderProps>(() =>
+  import("react-compare-slider").then((module) => module.ReactCompareSlider)
+);
+const ReactCompareSliderImage = dynamic<ReactCompareSliderImageProps>(() =>
+  import("react-compare-slider").then((module) => module.ReactCompareSliderImage)
+);
+//import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider'
+//import ImageFilters from 'canvas-filters'
+// import Compressor from 'compressorjs'
+//import Tesseract from 'tesseract.js'
 import useSWR from 'swr'
 import { useFilePicker } from 'use-file-picker'
 import { Modal, Stack, Button, IconButton, Form, Loader, InputGroup, Progress, Animation } from 'rsuite'
@@ -143,8 +151,9 @@ const SongModal = (props: SongModalProps) => {
 
     useEffect(() => {
         if (errors.length <= 0 && filesContent.length > 0) {
-            fetch(filesContent[0].content).then(it => it.blob().then((blob) => {
+            fetch(filesContent[0].content).then(it => it.blob().then(async (blob) => {
                 console.log(blob)
+                const Compressor = (await import('compressorjs')).default;
                 new Compressor(blob, {
                     quality: 0.6,
                     convertSize: 1000000,
@@ -174,18 +183,21 @@ const SongModal = (props: SongModalProps) => {
             if (canvasOCR.current) {
                 const context = canvasOCR.current.getContext('2d');
                 const imageObj = new Image();
-                imageObj.onload = function() {
+                imageObj.onload = async function() {
                     if (context && canvasOCR.current) {
                         canvasOCR.current.width = imageObj.width;
                         canvasOCR.current.height = imageObj.height;
                         context.drawImage(imageObj, 0,0, imageObj.width, imageObj.height);
                         const originalImageData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
+                        //import ImageFilters from 'canvas-filters'
+                        const ImageFilters = (await import('canvas-filters')).default;
                         const filteredData = ImageFilters.BrightnessContrastGimp(ImageFilters.Gamma(ImageFilters.Sharpen(ImageFilters.GrayScale(ImageFilters.Desaturate(originalImageData)), 0), 5), 5, 50);
                         // ImageFilters.Gamma(ImageFilters.Sharpen(ImageFilters.GrayScale(ImageFilters.Desaturate(originalImageData)), 5), 5);
                         // ImageFilters.Binarize(originalImageData, 1);
                         context.putImageData(filteredData, 0, 0);
                         const dataUrl = context.canvas.toDataURL("image/jpeg");
                         setFinalImageDataUrl(dataUrl);
+                        const Tesseract = (await import('tesseract.js')).default;
                         Tesseract.recognize(
                             dataUrl,
                             'eng',

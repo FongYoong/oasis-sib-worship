@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Stack, Divider, Button } from 'rsuite';
+import hoverStyles from '../styles/hover.module.css'
 
 interface NotFoundProps {
     message: string,
@@ -20,7 +21,7 @@ const NotFound = ({message, redirectLink, redirectMessage}: NotFoundProps) => {
             <Divider style={{height: '0.2em', width: '90vw'}} />
             <Stack wrap direction='row' justifyContent='center' spacing="1em" >
                 <Link passHref href={redirectLink}>
-                    <Button appearance="primary" color="blue" >
+                    <Button className={hoverStyles.hover_grow} appearance="primary" color="blue" style={{color: 'white'}} >
                         {redirectMessage}
                     </Button>
                 </Link>
