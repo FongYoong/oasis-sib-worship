@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@prisma/client": "^3.8.1",
+    "@prisma/client": "^3.9.1",
     "@rsuite/icons": "^1.0.2",
     "@types/file-saver": "^2.0.5",
     "@types/react-beautiful-dnd": "^13.1.2",

@@ -43,11 +43,17 @@ interface SessionModalProps {
 
 const songs_fetcher = json_fetcher('GET');
 
-const SongAutocomplete = ({ onSelect }:{ onSelect: (song_id: number)=>void }) => {
+const SongAutocomplete = ({ onSelect, onLoading }:{ onSelect: (song_id: number)=>void, onLoading?: (loading: boolean)=>void}) => {
     const autocompleteRef = useRef<PickerInstance>(null);
     const [searchText, setSearchText] = useState<string>('');
     const { data, isValidating, error } = useSWR(`/api/get_songs?searchText=${searchText}`, songs_fetcher);
     const songs = data ? data.songs.map((song: SongProps) => `${song.title} - ${song.artist}___:${song.id}`) : [];
+
+    useEffect(() => {
+        if (onLoading) {
+            onLoading(isValidating)
+        }
+    }, [isValidating])
 
     return (
         <AutoComplete ref={autocompleteRef} value={searchText} data={songs} placeholder='Search song by title or artist'
@@ -165,6 +171,7 @@ const SessionModal = (props: SessionModalProps) => {
     const [addSongShow, setAddSongShow] = useState<boolean>(false);
     const [songModalLoad, setSongModalLoad] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
+    const [autocompleteLoading, setAutocompleteLoading] = useState<boolean>(false);
     const handleAddSongClose = () => {
         setAddSongShow(false);
     }
@@ -405,14 +412,18 @@ const SessionModal = (props: SessionModalProps) => {
                                         <FaMusic />
                                     </InputGroup.Addon>
                                     <SongAutocomplete onSelect={(song_id: number) => {
-                                        if (songList.includes(song_id)) {
-                                            ErrorMessage("Selected song already in the list.")
-                                        }
-                                        else {
-                                            setSongList([...songList, song_id])
-                                        }
-                                    }}
+                                            if (songList.includes(song_id)) {
+                                                ErrorMessage("Selected song already in the list.")
+                                            }
+                                            else {
+                                                setSongList([...songList, song_id])
+                                            }
+                                        }}
+                                        onLoading={(value) => setAutocompleteLoading(value)}
                                     />
+                                    <InputGroup.Addon>
+                                        {autocompleteLoading && <Loader />}
+                                    </InputGroup.Addon>
                                 </InputGroup>
                             </Form.Group>
                             <Form.Group>
