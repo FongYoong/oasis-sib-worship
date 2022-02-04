@@ -22,7 +22,7 @@ model Session {
   guitar          String?
   drums           String?
   sound_personnel String?
-  info            String?
+  info            String?  @db.Text
 }
 
 model Song {
