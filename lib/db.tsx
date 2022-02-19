@@ -53,7 +53,8 @@ export async function get_multiple_songs(song_ids: number[]) {
             id: { in: song_ids },
         }
     });
-    return songs;
+    const orderedSongs = song_ids.map((id) => songs.find((song) => song.id == id));
+    return orderedSongs;
 }
 
 export async function get_session(session_id: number) {

@@ -22,7 +22,7 @@ import PasswordInput from './PasswordInput'
 import { BsFillPersonFill } from 'react-icons/bs'
 import { MdTitle } from 'react-icons/md'
 import { Image as ImageIcon } from '@rsuite/icons'
-//import hoverStyles from '../styles/hover.module.css'
+import modalStyles from '../styles/modal.module.css'
 
 interface SongModalProps {
     visibility: boolean,
@@ -228,10 +228,11 @@ const SongModal = (props: SongModalProps) => {
 
     return (
         <QuillLoadingContext.Provider value={setLoading}>
-            <Modal overflow={false} backdrop='static' open={props.visibility} onClose={closeModal} >
+            <Modal overflow={false} backdrop={false} open={props.visibility} onClose={closeModal} >
                 {isValidating &&
                     <Loader style={{zIndex: 1000}} backdrop center content="Fetching song..." />
                 }
+                <div className={modalStyles.modalBackground} />
                 <Modal.Header>
                     <canvas ref={canvasOCR} style={{display: 'none'}} />
                     <Stack wrap direction='row' spacing='2em' >

@@ -31,7 +31,8 @@ import { FaDrumSteelpan, FaMusic } from 'react-icons/fa'
 import { IoPersonAdd } from 'react-icons/io5'
 import { Plus, Trash  } from '@rsuite/icons'
 import { SongProps } from '../lib/types'
-//import hoverStyles from '../styles/hover.module.css'
+import hoverStyles from '../styles/hover.module.css'
+import modalStyles from '../styles/modal.module.css'
 
 interface SessionModalProps {
     visibility: boolean,
@@ -213,6 +214,7 @@ const SessionModal = (props: SessionModalProps) => {
     }, [data]);
 
     const pauseModal = loading || isValidating || (props.editSession && !data);
+    const validForm = !pauseModal && dutyFormData?.worship_leader && dutyFormData?.date;
 
     const resetModal = () => {
         setDutyFormData(undefined)
@@ -289,18 +291,29 @@ const SessionModal = (props: SessionModalProps) => {
 
     return (
         <QuillLoadingContext.Provider value={setLoading} >
-            <Modal overflow={false} backdrop='static' open={props.visibility}
-                onClose={closeModal}
-            >
+            <Modal overflow={false} backdrop={false} open={props.visibility} onClose={closeModal} >
                 {isValidating &&
                     <Loader style={{zIndex: 1000}} backdrop center content="Fetching session..." />
                 }
+                <div className={modalStyles.modalBackground} />
                 <Modal.Header>
                     <h4>{props.editSession ? "Edit":"Add"} Session</h4>
                     <Steps current={formIndex}>
-                        <Steps.Item title="Duties" />
-                        <Steps.Item title="Songs" />
-                        <Steps.Item title="Info" />
+                        <Steps.Item title="Duties" className={hoverStyles.hover_grow} onClick={() => {
+                            setFormIndex(0);
+                        }} />
+                        <Steps.Item title="Songs" className={hoverStyles.hover_grow} onClick={() => {
+                            if (validForm)
+                            {
+                                setFormIndex(1);
+                            }
+                        }} />
+                        <Steps.Item title="Info" className={hoverStyles.hover_grow} onClick={() => {
+                            if (validForm)
+                            {
+                                setFormIndex(2);
+                            }
+                        }} />
                     </Steps>
                     {songModalLoad && <SongModal visibility={addSongShow} handleClose={handleAddSongClose} /> }
                 </Modal.Header>
@@ -468,7 +481,7 @@ const SessionModal = (props: SessionModalProps) => {
                         </Button>
                     }
                     {formIndex >= 0 && formIndex < 2 && 
-                        <Button disabled={pauseModal || !dutyFormData?.worship_leader || !dutyFormData?.date} onClick={() => setFormIndex(formIndex + 1)} color="blue" appearance="primary">
+                        <Button disabled={!validForm} onClick={() => setFormIndex(formIndex + 1)} color="blue" appearance="primary">
                             Next
                         </Button>
                     }
