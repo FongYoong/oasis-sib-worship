@@ -1,14 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { INTERNAL_SERVER_ERROR_ERROR_CODE, NOT_ALLOWED_ERROR_CODE } from '../../lib/status_codes'
 import { get_song, convertHTMLToWord } from '../../lib/db'
-import { convertSongToPPTX, convertPPTXtoFileBuffer } from '../../lib/powerpoint'
+import { convertSongToPPTX, convertPPTXtoFileBuffer, PPTSettings } from '../../lib/powerpoint'
 
-async function export_song({exportType, id}:{exportType: string, id: number}) {
+async function export_song({exportType, id, pptSettings}:{exportType: string, id: number, pptSettings: PPTSettings | undefined}) {
     const song = await get_song(id);
     if (song?.lyrics) {
         let fileBuffer: Buffer;
         if (exportType == 'ppt') {
-            const slides = await convertSongToPPTX(song.title, song.artist ? song.artist: '', song.lyrics);
+            const slides = await convertSongToPPTX(song.title, song.artist ? song.artist: '', song.lyrics, pptSettings);
             fileBuffer = (await convertPPTXtoFileBuffer(slides)) as Buffer;
         }
         else if (exportType == 'word') {

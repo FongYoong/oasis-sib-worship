@@ -5,10 +5,13 @@ import { jsPDF } from "jspdf"
 let jspdfInstance = new jsPDF();
 import FileSaver from 'file-saver'
 import useSWR from 'swr'
-import { Modal, Stack, Button, Dropdown } from 'rsuite'
+import { Modal, Stack, Button, IconButton, Dropdown, Animation } from 'rsuite'
+import ExportPPTSettings from './ExportPPTSettings'
+import { PPTSettings, defaultPPTSettings } from '../lib/powerpoint'
 import { json_fetcher, exportPDFParseOptions, mergeSessiontoHTML, getFileExtension } from '../lib/utils'
 import { SessionProps, SongProps } from '../lib/types'
 import { SuccessMessage, ErrorMessage } from '../lib/messages';
+import { AiFillSetting } from 'react-icons/ai'
 import { SiMicrosoftpowerpoint, SiMicrosoftword } from 'react-icons/si'
 import { GrDocumentPdf } from 'react-icons/gr'
 import { BsGlobe } from 'react-icons/bs'
@@ -61,6 +64,8 @@ const ExportSessionModal = (props: ExportSessionModalProps) => {
     const songArray: SongProps[] = data ? data : [];
     const mergedLyrics = mergeSessiontoHTML(props.sessionData, songArray);
     const parsedLyrics = data ? parse(mergedLyrics, exportPDFParseOptions) : <></>;
+    const [showPPTSettings, setShowPPTSettings] = useState<boolean>(false);
+    const [pptSettings, setPPTSettings] = useState<PPTSettings>(defaultPPTSettings);
 
     const [exportType, setExportType] = useState<ExportType>('ppt');
     const exportTypeDetails = getExportDetails(exportType);
@@ -121,7 +126,8 @@ const ExportSessionModal = (props: ExportSessionModalProps) => {
         const body = JSON.stringify({
             exportType,
             id: props.sessionData?.id,
-            song_ids: props.sessionData?.songs
+            song_ids: props.sessionData?.songs,
+            pptSettings: exportType == 'ppt' ? pptSettings : undefined
         });
         fetch('/api/export_session', {
             method: 'POST',
@@ -155,26 +161,50 @@ const ExportSessionModal = (props: ExportSessionModalProps) => {
                 <Modal.Title>Export Session</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <Stack direction='column' spacing='1em' >
-                    <Dropdown title={exportTypeDetails?.title} icon={exportTypeDetails?.icon}
-                        onSelect={(eventKey: string, event: unknown) => {
-                            const type = ((event as React.MouseEvent<Element, MouseEvent>).target as Element).getAttribute('export-type');
-                            setExportType(type as ExportType)
-                        }}
-                    >
-                        {
-                            ["ppt", "word", "pdf", "html"].map((type: string, index: number) => {
-                                const detail = getExportDetails(type as ExportType);
-                                if (detail) {
-                                    return (
-                                        <Dropdown.Item key={index} export-type={type} eventKey={detail.title} icon={detail.icon}>
-                                            &nbsp;&nbsp;{detail.title}
-                                        </Dropdown.Item>
-                                    );
-                                }
-                            })
+                <Stack direction='column' spacing='1em' alignItems='center' justifyContent='center' >
+                    <Stack direction='row' spacing='1em' alignItems='center' justifyContent='center' >
+                        <Dropdown title={exportTypeDetails?.title} icon={exportTypeDetails?.icon}
+                            onSelect={(eventKey: string, event: unknown) => {
+                                const type = ((event as React.MouseEvent<Element, MouseEvent>).target as Element).getAttribute('export-type');
+                                setExportType(type as ExportType)
+                            }}
+                        >
+                            {
+                                ["ppt", "word", "pdf", "html"].map((type: string, index: number) => {
+                                    const detail = getExportDetails(type as ExportType);
+                                    if (detail) {
+                                        return (
+                                            <Dropdown.Item key={index} export-type={type} eventKey={detail.title} icon={detail.icon}>
+                                                &nbsp;&nbsp;{detail.title}
+                                            </Dropdown.Item>
+                                        );
+                                    }
+                                })
+                            }
+                        </Dropdown>
+                        {!noSongs && 
+                            <Animation.Slide in={exportType=='ppt'} placement='left' >
+                                <IconButton appearance={showPPTSettings ? 'primary' : undefined} icon={<AiFillSetting />}
+                                    onClick={() => {
+                                        setShowPPTSettings(!showPPTSettings)
+                                    }}
+                                />
+                            </Animation.Slide>
                         }
-                    </Dropdown>
+                        {showPPTSettings && 
+                            <Animation.Slide in={showPPTSettings} placement='left' >
+                                <Button
+                                    appearance='primary' color='orange'
+                                    onClick={() => {
+                                        setPPTSettings(defaultPPTSettings)
+                                    }}
+                                >
+                                    Reset
+                                </Button>
+                            </Animation.Slide>
+                        }
+                    </Stack>
+                    <ExportPPTSettings show={showPPTSettings} settings={pptSettings} setSettings={setPPTSettings} />
                     {noSongs &&
                         <h4>No songs to export 💤</h4>
                     }

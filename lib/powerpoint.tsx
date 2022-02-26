@@ -1,20 +1,40 @@
 import parse,{ Node, DOMNode, Element as ReactParserElement, Text as ReactParserText } from 'html-react-parser';
+import { FaLessThanEqual } from 'react-icons/fa';
 //import { Node, DataNode } from 'domhandler';
 import {
   Presentation, Slide, Text,
   Shape, render as pptxRender
 } from "react-pptx";
 
-const fontFace = "Trebuchet MS"; // https://blog.hubspot.com/website/web-safe-html-css-fonts
+export interface PPTSettings {
+  overlayHeight: number
+  fontFace: string
+  fontSize: number
+  bold: boolean
+}
+
+export const defaultPPTSettings = {
+  overlayHeight: 1.4,
+  fontFace: 'Trebuchet MS',
+  fontSize: 36,
+  bold: false,
+}
+
+export const defaultGreenBackground = "#00FF00";
+export const defaultOverlayBackground = "rgba(0, 0, 0, 0.5)";
+
+export const webSafeFonts = ["Arial", "Verdana ", "Helvetica", "Tahoma", "Trebuchet MS", "Times New Roman", "Georgia", "Garamond", "Courier New", "Brush Script MT"];
+// https://blog.hubspot.com/website/web-safe-html-css-fonts
+// LEMON MILK
 
 export const TitleSlide = (title: string, artist: string) => {
   return (
-    <Slide style={{ backgroundColor: "#00FF00" }} >
+    <Slide style={{ backgroundColor: defaultGreenBackground }} >
       <Shape
         type="rect"
         style={{
           x: 0, y: 0, w: 10, h: 1.4,
-          backgroundColor: "rgba(0, 0, 0, 0.5)"
+          backgroundColor: defaultOverlayBackground
         }}
       />
       <Text style={{
@@ -22,7 +42,8 @@ export const TitleSlide = (title: string, artist: string) => {
         align: 'center',
         verticalAlign: 'middle',
         x: 0, y: 0, w: 10, h: 0.8,
-        fontFace, fontSize: 36, bold: true
+        fontFace: defaultPPTSettings['fontFace'],
+        fontSize: 36, bold: true
       }}>
         {title.toUpperCase()}
       </Text>
@@ -31,7 +52,8 @@ export const TitleSlide = (title: string, artist: string) => {
         align: 'center',
         verticalAlign: 'middle',
         x: 0, y: 0.6, w: 10, h: 0.8,
-        fontFace, fontSize: 24, bold: false, italic:true
+        fontFace: defaultPPTSettings['fontFace'],
+        fontSize: 24, bold: false, italic:true
       }}>
         {artist.toUpperCase()}
       </Text>
@@ -41,27 +63,38 @@ export const TitleSlide = (title: string, artist: string) => {
 
 export const BlankSlide = () => {
   return (
-    <Slide style={{ backgroundColor: "#00FF00" }} >
+    <Slide style={{ backgroundColor: defaultGreenBackground }} >
     </Slide>
   )
 }
 
-export const NormalSlide = (text: string) => {
+export const NormalSlide = (text: string,
+    overlayHeight=defaultPPTSettings['overlayHeight'],
+    fontFace=defaultPPTSettings['fontFace'],
+    fontSize=defaultPPTSettings['fontSize'],
+    bold=defaultPPTSettings['bold']) => {
+  // Default aspect ratio is 16:9
+  // Max width is 10
+  // Max height is 5.625
+  // Font face should be a web-safe one
+  // Font size measured in pt or point
   return (
-    <Slide style={{ backgroundColor: "#00FF00" }} >
+    <Slide style={{ backgroundColor: defaultGreenBackground }} >
       <Shape
         type="rect"
         style={{
-          x: 0, y: 0, w: 10, h: 1.4,
-          backgroundColor: "rgba(0, 0, 0, 0.5)"
+          x: 0, y: 0, w: 10, h: overlayHeight,
+          backgroundColor: defaultOverlayBackground
         }}
       />
       <Text style={{
         color: 'white',
         align: 'center',
         verticalAlign: 'middle',
-        x: 0, y: 0, w: 10, h: 1.4,
-        fontFace, fontSize: 36, bold: false
+        x: 0, y: 0, w: 10, h: overlayHeight,
+        fontFace,
+        fontSize,
+        bold
       }}>
         {text.toUpperCase()}
       </Text>
@@ -76,7 +109,7 @@ export const SectionSlide = (text: string) => {
         type="rect"
         style={{
           x: 0, y: 3.8, w: 10, h: 1.4,
-          backgroundColor: "rgba(0, 0, 0, 0.5)"
+          backgroundColor: defaultOverlayBackground
         }}
       />
       <Text style={{
@@ -84,7 +117,8 @@ export const SectionSlide = (text: string) => {
         align: 'center',
         verticalAlign: 'middle',
         x: 0, y: 3.8, w: 10, h: 1.4,
-        fontFace, fontSize: 36, bold: false
+        fontFace: defaultPPTSettings['fontFace'],
+        fontSize: 36, bold: false
       }}>
         {text.toUpperCase()}
       </Text>
@@ -104,7 +138,7 @@ export const getTextFromNodes = (nodes: Node[]) => {
   return concatString;
 }
 
-export async function convertSongToPPTX(title: string, artist: string, lyrics: string) {
+export async function convertSongToPPTX(title: string, artist: string, lyrics: string, pptSettings: (PPTSettings | undefined)) {
   const slides = [BlankSlide(), TitleSlide(title, artist)];
   let slideType : "Section" | "Normal" = "Normal";
   let normalTextTemp: string[] = [];
@@ -126,7 +160,14 @@ export async function convertSongToPPTX(title: string, artist: string, lyrics: s
             text = normalTextTemp[index];
           }
         }
-        slides.push(NormalSlide(text));
+        let normalSlide;
+        if (pptSettings) {
+          normalSlide = NormalSlide(text, pptSettings['overlayHeight'], pptSettings['fontFace'], pptSettings['fontSize'], pptSettings['bold'])
+        }
+        else {
+          normalSlide = NormalSlide(text);
+        }
+        slides.push(normalSlide);
         index += 1;
         if (index >= normalTextTemp.length) {
           break;
