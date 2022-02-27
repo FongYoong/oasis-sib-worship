@@ -35,14 +35,14 @@ export async function convertHTMLToPDF(htmlString: string) {
     }
     else if (process.platform === "linux") {
         // INSTALL COMMAND: npm install && yum install ./wkhtmltopdf/wkhtmltox.rpm -y
-        //console.log(process.env)
+        console.log(process.env)
         //const processOutput = execSync(`wkhtmltopdf -d 300 - ${outputFilePath}`, { input: htmlString });
-        const executablePath = path.join(process.cwd(), 'wkhtmltopdf', 'Linux', 'bin', 'wkhtmltopdf');
-        const processOutput = execSync(`"${executablePath}" -d 300 - ${outputFilePath}`, {
-            cwd: path.join(process.cwd(), 'wkhtmltopdf', 'Linux', 'bin'),
-            input: htmlString
-        });
-        //const processOutput = execSync(`wkhtmltopdf ---version`);
+        //const executablePath = path.join(process.cwd(), 'wkhtmltopdf', 'Linux', 'bin', 'wkhtmltopdf');
+        // const processOutput = execSync(`"${executablePath}" -d 300 - ${outputFilePath}`, {
+        //     cwd: path.join(process.cwd(), 'wkhtmltopdf', 'Linux', 'bin'),
+        //     input: htmlString
+        // });
+        const processOutput = execSync(`/opt/bin/wkhtmltopdf -d 300 - ${outputFilePath}`, { input: htmlString });
     }
     else {
         throw `${process.platform} is not a supported platform.`;
