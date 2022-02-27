@@ -49,7 +49,8 @@ export async function convertHTMLToPDF(htmlString: string) {
     // }
     //const fileBuffer: Buffer = fs.readFileSync(outputFilePath);
     const fileBuffer: Buffer = await new Promise(function(resolve,reject){
-        htmlPDF.create(htmlString).toBuffer(function(err, buffer: Buffer){
+        htmlPDF.create(htmlString).toBuffer(function(err: any, buffer: Buffer){
+            console.log(err);
             resolve(buffer);
         });
      });
