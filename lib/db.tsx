@@ -32,14 +32,18 @@ export async function convertHTMLToPDF(htmlString: string) {
     if (process.platform === "win32") {
         const executablePath = path.join(process.cwd(), 'wkhtmltopdf', 'wkhtmltopdf.exe');
         const processOutput = execSync(`"${executablePath}" -d 300 - ${outputFilePath}`, { input: htmlString });
-        console.log(processOutput);
+        console.log('bruh1')
+        console.log(processOutput.toString());
+        console.log('bruh2')
     }
     else if (process.platform === "linux") {
         const all = execSync('ls /usr/local/bin');
-        console.log(all)
+        console.log('bruh1')
+        console.log(all.toString())
+        console.log('bruh2')
         //const processOutput = execSync(`wkhtmltopdf -d 300 - ${outputFilePath}`, { input: htmlString });
         const processOutput = execSync(`wkhtmltopdf ---version`);
-        console.log(processOutput);
+        console.log(processOutput.toString());
     }
     else {
         throw `${process.platform} is not a supported platform.`;
