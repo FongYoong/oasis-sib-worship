@@ -191,8 +191,8 @@ const ExportSessionModal = (props: ExportSessionModalProps) => {
                                 />
                             </Animation.Slide>
                         }
-                        {showPPTSettings && 
-                            <Animation.Slide in={showPPTSettings} placement='left' >
+                        {exportType=='ppt' && showPPTSettings && 
+                            <Animation.Slide in={exportType=='ppt' && showPPTSettings} placement='left' >
                                 <Button
                                     appearance='primary' color='orange'
                                     onClick={() => {
@@ -204,7 +204,7 @@ const ExportSessionModal = (props: ExportSessionModalProps) => {
                             </Animation.Slide>
                         }
                     </Stack>
-                    <ExportPPTSettings show={showPPTSettings} settings={pptSettings} setSettings={setPPTSettings} />
+                    <ExportPPTSettings show={exportType=='ppt' && showPPTSettings} settings={pptSettings} setSettings={setPPTSettings} />
                     {noSongs &&
                         <h4>No songs to export 💤</h4>
                     }

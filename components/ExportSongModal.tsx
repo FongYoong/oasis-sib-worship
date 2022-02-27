@@ -183,8 +183,8 @@ const ExportSongModal = (props: ExportSongModalProps) => {
                                 }}
                             />
                         </Animation.Slide>
-                        {showPPTSettings && 
-                            <Animation.Slide in={showPPTSettings} placement='left' >
+                        {exportType=='ppt' && showPPTSettings && 
+                            <Animation.Slide in={exportType=='ppt' && showPPTSettings} placement='left' >
                                 <Button
                                     appearance='primary' color='orange'
                                     onClick={() => {
@@ -196,7 +196,7 @@ const ExportSongModal = (props: ExportSongModalProps) => {
                             </Animation.Slide>
                         }
                     </Stack>
-                    <ExportPPTSettings show={showPPTSettings} settings={pptSettings} setSettings={setPPTSettings} />
+                    <ExportPPTSettings show={exportType=='ppt' && showPPTSettings} settings={pptSettings} setSettings={setPPTSettings} />
                 </Stack>
             </Modal.Body>
             <Modal.Footer>

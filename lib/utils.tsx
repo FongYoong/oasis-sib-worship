@@ -30,6 +30,13 @@ export const resolvePageRoute = (path: string) => {
     }
 }
 
+export const rgbaAlphaToHex = (alpha: number) => {
+    let a = Math.round(alpha * 255).toString(16)
+    if (a.length == 1)
+    a = "0" + a;
+    return a;
+}
+
 export const isPresentOrFutureDate = (date: Date) => {
     const today = new Date();
     return date.setHours(0, 0, 0, 0) >= today.setHours(0, 0, 0, 0);

@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Stack, AutoComplete, Slider, Form, InputGroup, Input, Checkbox } from 'rsuite'
 import AnimateHeight from 'react-animate-height';
-import { defaultPPTSettings, defaultGreenBackground, defaultOverlayBackground, webSafeFonts, PPTSettings } from '../lib/powerpoint'
+import { defaultPPTSettings, defaultGreenBackground, defaultFonts, PPTSettings } from '../lib/powerpoint'
+import { rgbaAlphaToHex } from '../lib/utils'
 
 const ExportPPTSettings = ({ show, settings, setSettings }: { show: boolean, settings: PPTSettings, setSettings: (newSettings: PPTSettings) => void }) => {
 
@@ -19,13 +20,14 @@ const ExportPPTSettings = ({ show, settings, setSettings }: { show: boolean, set
                         width: '40vh',
                         height: '22.5vh',
                         backgroundColor: defaultGreenBackground,
-                        pointerEvents:'none'
+                        pointerEvents:'none',
+                        overflow: 'hidden'
                     }}>
                         <div style={{
                             position: 'absolute',
                             width: '40vh',
                             height: `${settings['overlayHeight'] / 5.625 * 22.5}vh`,
-                            backgroundColor: defaultOverlayBackground,
+                            backgroundColor: settings['overlayColor'] + rgbaAlphaToHex(settings['overlayAlpha']),
                         }}>
                             <p style={{
                                 fontFamily: `${settings['fontFace']}, ${defaultPPTSettings['fontFace']}`,
@@ -54,7 +56,7 @@ const ExportPPTSettings = ({ show, settings, setSettings }: { show: boolean, set
                         <InputGroup.Addon>
                             Font Name:
                         </InputGroup.Addon>
-                        <AutoComplete data={webSafeFonts as any} value={settings['fontFace']}
+                        <AutoComplete data={defaultFonts as any} value={settings['fontFace']}
                             onChange={(value) => setSettings({
                                 ...settings,
                                 fontFace: value
@@ -67,23 +69,10 @@ const ExportPPTSettings = ({ show, settings, setSettings }: { show: boolean, set
                         <InputGroup.Addon>
                             Font Size: {settings['fontSize']} pt
                         </InputGroup.Addon>
-                        <Slider progress style={{width: '20vh'}} value={settings['fontSize']} min={1} max={70}
+                        <Slider progress style={{width: '20vh'}} value={settings['fontSize']} min={1} max={100}
                             onChange={(value) => setSettings({
                                 ...settings,
                                 fontSize: value
-                            })}
-                        />
-                    </Stack>
-                </Form.Group>
-                <Form.Group>
-                    <Stack direction='row' spacing='1em'>
-                        <InputGroup.Addon>
-                            Shape Height: {(settings['overlayHeight'] / 5.625 * 100).toFixed(2)} %
-                        </InputGroup.Addon>
-                        <Slider progress style={{width: '20vh'}} value={settings['overlayHeight'] / 5.625 * 100} min={0} max={100}
-                            onChange={(value) => setSettings({
-                                ...settings,
-                                overlayHeight: value / 100 * 5.625
                             })}
                         />
                     </Stack>
@@ -100,6 +89,45 @@ const ExportPPTSettings = ({ show, settings, setSettings }: { show: boolean, set
                             })}
                         />
                     </InputGroup>
+                </Form.Group>
+                <Form.Group>
+                    <Stack direction='row' spacing='1em'>
+                        <InputGroup.Addon>
+                            Shape Height: {("0" + Math.round(settings['overlayHeight'] / 5.625 * 100)).slice(-2)} %
+                        </InputGroup.Addon>
+                        <Slider progress style={{width: '20vh'}} value={Math.round(settings['overlayHeight'] / 5.625 * 100)} min={0} max={100}
+                            onChange={(value) => setSettings({
+                                ...settings,
+                                overlayHeight: value / 100 * 5.625
+                            })}
+                        />
+                    </Stack>
+                </Form.Group>
+                <Form.Group>
+                    <Stack direction='row' spacing='1em'>
+                        <InputGroup.Addon>
+                            Shape Color:
+                        </InputGroup.Addon>
+                        <input type="color" value={settings['overlayColor']}
+                            onChange={(event) => setSettings({
+                                ...settings,
+                                overlayColor: event.target.value
+                            })}
+                        />
+                    </Stack>
+                </Form.Group>
+                <Form.Group>
+                    <Stack direction='row' spacing='1em'>
+                        <InputGroup.Addon>
+                            Shape Transparency: {settings['overlayAlpha'].toFixed(2)}
+                        </InputGroup.Addon>
+                        <Slider progress style={{width: '20vh'}} value={settings['overlayAlpha']} min={0} max={1} step={0.01}
+                            onChange={(value) => setSettings({
+                                ...settings,
+                                overlayAlpha: value
+                            })}
+                        />
+                    </Stack>
                 </Form.Group>
                 <Form.Group>
                     <InputGroup style={{width: '100%'}} >

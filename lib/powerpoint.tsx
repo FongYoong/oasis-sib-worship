@@ -1,31 +1,33 @@
 import parse,{ Node, DOMNode, Element as ReactParserElement, Text as ReactParserText } from 'html-react-parser';
-import { FaLessThanEqual } from 'react-icons/fa';
 //import { Node, DataNode } from 'domhandler';
 import {
   Presentation, Slide, Text,
   Shape, render as pptxRender
 } from "react-pptx";
+import { rgbaAlphaToHex } from './utils'
+
+export const defaultGreenBackground = "#00FF00";
+export const defaultFonts = ["LEMON MILK", "Arial", "Verdana ", "Helvetica", "Tahoma", "Trebuchet MS", "Times New Roman", "Georgia", "Garamond", "Courier New", "Brush Script MT"];
+// https://blog.hubspot.com/website/web-safe-html-css-fonts
+// LEMON MILK
 
 export interface PPTSettings {
   overlayHeight: number
+  overlayColor: string // hex // #rrggbb
+  overlayAlpha: number
   fontFace: string
   fontSize: number
   bold: boolean
 }
 
-export const defaultPPTSettings = {
+export const defaultPPTSettings: PPTSettings = {
   overlayHeight: 1.4,
+  overlayColor: "#000000",
+  overlayAlpha: 0.5,
   fontFace: 'Trebuchet MS',
   fontSize: 36,
   bold: false,
 }
-
-export const defaultGreenBackground = "#00FF00";
-export const defaultOverlayBackground = "rgba(0, 0, 0, 0.5)";
-
-export const webSafeFonts = ["Arial", "Verdana ", "Helvetica", "Tahoma", "Trebuchet MS", "Times New Roman", "Georgia", "Garamond", "Courier New", "Brush Script MT"];
-// https://blog.hubspot.com/website/web-safe-html-css-fonts
-// LEMON MILK
 
 export const TitleSlide = (title: string, artist: string) => {
   return (
@@ -34,7 +36,7 @@ export const TitleSlide = (title: string, artist: string) => {
         type="rect"
         style={{
           x: 0, y: 0, w: 10, h: 1.4,
-          backgroundColor: defaultOverlayBackground
+          backgroundColor: defaultPPTSettings['overlayColor'] + rgbaAlphaToHex(defaultPPTSettings['overlayAlpha'])
         }}
       />
       <Text style={{
@@ -70,6 +72,8 @@ export const BlankSlide = () => {
 
 export const NormalSlide = (text: string,
     overlayHeight=defaultPPTSettings['overlayHeight'],
+    overlayColor=defaultPPTSettings['overlayColor'],
+    overlayAlpha=defaultPPTSettings['overlayAlpha'],
     fontFace=defaultPPTSettings['fontFace'],
     fontSize=defaultPPTSettings['fontSize'],
     bold=defaultPPTSettings['bold']) => {
@@ -84,7 +88,7 @@ export const NormalSlide = (text: string,
         type="rect"
         style={{
           x: 0, y: 0, w: 10, h: overlayHeight,
-          backgroundColor: defaultOverlayBackground
+          backgroundColor: overlayColor + rgbaAlphaToHex(overlayAlpha)
         }}
       />
       <Text style={{
@@ -109,7 +113,7 @@ export const SectionSlide = (text: string) => {
         type="rect"
         style={{
           x: 0, y: 3.8, w: 10, h: 1.4,
-          backgroundColor: defaultOverlayBackground
+          backgroundColor: defaultPPTSettings['overlayColor'] + rgbaAlphaToHex(defaultPPTSettings['overlayAlpha'])
         }}
       />
       <Text style={{
@@ -162,7 +166,8 @@ export async function convertSongToPPTX(title: string, artist: string, lyrics: s
         }
         let normalSlide;
         if (pptSettings) {
-          normalSlide = NormalSlide(text, pptSettings['overlayHeight'], pptSettings['fontFace'], pptSettings['fontSize'], pptSettings['bold'])
+          normalSlide = NormalSlide(text, pptSettings['overlayHeight'], pptSettings['overlayColor'], pptSettings['overlayAlpha'],
+                                          pptSettings['fontFace'], pptSettings['fontSize'], pptSettings['bold'])
         }
         else {
           normalSlide = NormalSlide(text);
