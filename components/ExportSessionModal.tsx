@@ -156,7 +156,7 @@ const ExportSessionModal = (props: ExportSessionModalProps) => {
                         width: '21cm', height: '29.7cm',
                         fontFamily: 'serif',
                         fontSize: '1rem',
-                        wordSpacing: 10,
+                        //wordSpacing: 10,
                         //letterSpacing: '0.15rem',
                     }} >
                         {parsedLyrics}
