@@ -4,6 +4,12 @@ import prisma from './prisma'
 import HTMLtoDOCX from 'html-to-docx'
 import type { NextApiResponse } from 'next'
 
+import os from "os"
+import path from "path"
+import { execSync } from 'child_process'
+import fs from "fs"
+const tempDir = os.tmpdir();
+
 // export async function convertHTMLToPDF(htmlString: string) {
 //     const body = {
 //         htmlCode: htmlString
@@ -20,6 +26,24 @@ import type { NextApiResponse } from 'next'
 //     fs.writeFileSync('C:/Users/ACER NITRO5/Desktop/oasis-sib-worship/out2.pdf', fileBuffer);
 //     return fileBuffer
 // }
+
+export async function convertHTMLToPDF(htmlString: string) {
+    const outputFilePath = path.join(tempDir, 'output.pdf');
+    if (process.platform === "win32") {
+        const executablePath = path.join(process.cwd(), 'wkhtmltopdf', 'wkhtmltopdf.exe');
+        const processOutput = execSync(`"${executablePath}" -d 300 - ${outputFilePath}`, { input: htmlString });
+        console.log(processOutput);
+    }
+    else if (process.platform === "linux") {
+        const processOutput = execSync(`wkhtmltopdf -d 300 - ${outputFilePath}`, { input: htmlString });
+        console.log(processOutput);
+    }
+    else {
+        throw `${process.platform} is not a supported platform.`;
+    }
+    const fileBuffer: Buffer = fs.readFileSync(outputFilePath);
+    return fileBuffer
+}
 
 export async function convertHTMLToWord(htmlString: string) {
     const fileBuffer: Buffer = await HTMLtoDOCX(htmlString, null, {

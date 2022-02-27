@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import parse from 'html-react-parser';
 import slugify from 'slugify'
-import { jsPDF } from "jspdf"
-let jspdfInstance = new jsPDF();
+//import { jsPDF } from "jspdf"
+//let jspdfInstance = new jsPDF();
 import FileSaver from 'file-saver'
 import useSWR from 'swr'
 import { Modal, Stack, Button, IconButton, Dropdown, Animation } from 'rsuite'
@@ -86,30 +86,30 @@ const ExportSongModal = (props: ExportSongModalProps) => {
         setExportLoading(true);
         const file_name = slugify(`${data.title} - ${data.artist}`, '_');
         const file_extension = getFileExtension(exportType);
-        if(exportType == 'pdf') {
-            if (lyricsDivRef.current) {
-                jspdfInstance.html(lyricsDivRef.current, {
-                    callback: function (doc: jsPDF) {
-                        const blob = doc.output('blob');
-                        FileSaver.saveAs(blob, `${file_name}.pdf`);
-                        jspdfInstance = new jsPDF();
-                        onSuccess();
-                    },
-                    filename: `${file_name}.pdf`,
-                    autoPaging: 'text',
-                    margin: 10,
-                    x: 0,
-                    y: 0,
-                    html2canvas: {
-                        scale: 0.3
-                    }
-                });
-            }
-            else {
-                onFailure();
-            }
-        }
-        else if (exportType == 'html') {
+        // if(exportType == 'pdf') {
+        //     if (lyricsDivRef.current) {
+        //         jspdfInstance.html(lyricsDivRef.current, {
+        //             callback: function (doc: jsPDF) {
+        //                 const blob = doc.output('blob');
+        //                 FileSaver.saveAs(blob, `${file_name}.pdf`);
+        //                 jspdfInstance = new jsPDF();
+        //                 onSuccess();
+        //             },
+        //             filename: `${file_name}.pdf`,
+        //             autoPaging: 'text',
+        //             margin: 10,
+        //             x: 0,
+        //             y: 0,
+        //             html2canvas: {
+        //                 scale: 0.3
+        //             }
+        //         });
+        //     }
+        //     else {
+        //         onFailure();
+        //     }
+        // }
+        if (exportType == 'html') {
             const blob = new Blob([data.lyrics], {type: "text/plain;charset=utf-8"});
             FileSaver.saveAs(blob, `${file_name}.${file_extension}`);
             onSuccess();
