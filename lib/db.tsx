@@ -35,7 +35,7 @@ export async function convertHTMLToPDF(htmlString: string) {
         console.log(processOutput);
     }
     else if (process.platform === "linux") {
-        const all = execSync('yum list');
+        const all = execSync('ls /usr/local/bin');
         console.log(all)
         //const processOutput = execSync(`wkhtmltopdf -d 300 - ${outputFilePath}`, { input: htmlString });
         const processOutput = execSync(`wkhtmltopdf ---version`);
