@@ -35,9 +35,10 @@ export async function convertHTMLToPDF(htmlString: string) {
         console.log(processOutput);
     }
     else if (process.platform === "linux") {
-        const all = execSync('compgen -ac | grep searchstr');
-        console.log(all)
-        const processOutput = execSync(`wkhtmltopdf -d 300 - ${outputFilePath}`, { input: htmlString });
+        //const all = execSync('compgen -ac | grep searchstr');
+        //console.log(all)
+        //const processOutput = execSync(`wkhtmltopdf -d 300 - ${outputFilePath}`, { input: htmlString });
+        const processOutput = execSync(`wkhtmltopdf ---version`);
         console.log(processOutput);
     }
     else {
