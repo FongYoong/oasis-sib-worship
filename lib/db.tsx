@@ -38,7 +38,10 @@ export async function convertHTMLToPDF(htmlString: string) {
         //console.log(process.env)
         //const processOutput = execSync(`wkhtmltopdf -d 300 - ${outputFilePath}`, { input: htmlString });
         const executablePath = path.join(process.cwd(), 'wkhtmltopdf', 'Linux', 'bin', 'wkhtmltopdf');
-        const processOutput = execSync(`"${executablePath}" -d 300 - ${outputFilePath}`, { input: htmlString });
+        const processOutput = execSync(`"${executablePath}" -d 300 - ${outputFilePath}`, {
+            cwd: path.join(process.cwd(), 'wkhtmltopdf', 'Linux', 'bin'),
+            input: htmlString
+        });
         //const processOutput = execSync(`wkhtmltopdf ---version`);
     }
     else {
