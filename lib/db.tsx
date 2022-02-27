@@ -3,6 +3,7 @@ import { UNAUTHORISED_ERROR_CODE } from './status_codes'
 import prisma from './prisma'
 import HTMLtoDOCX from 'html-to-docx'
 import type { NextApiResponse } from 'next'
+import htmlPDF from 'html-pdf'
 
 import os from "os"
 import path from "path"
@@ -29,24 +30,29 @@ const tempDir = os.tmpdir();
 
 export async function convertHTMLToPDF(htmlString: string) {
     const outputFilePath = path.join(tempDir, 'output.pdf');
-    if (process.platform === "win32") {
-        const executablePath = path.join(process.cwd(), 'wkhtmltopdf', 'wkhtmltopdf.exe');
-        const processOutput = execSync(`"${executablePath}" -d 300 - ${outputFilePath}`, { input: htmlString });
-    }
-    else if (process.platform === "linux") {
-        // INSTALL COMMAND: npm install && yum install ./wkhtmltopdf/wkhtmltox.rpm -y
-        console.log(process.env)
-        //const processOutput = execSync(`/opt/bin/wkhtmltopdf -d 300 - ${outputFilePath}`, { input: htmlString });
-        const executablePath = path.join(process.cwd(), 'wkhtmltopdf', 'Linux', 'bin', 'wkhtmltopdf');
-        const processOutput = execSync(`"${executablePath}" -d 300 - ${outputFilePath}`, {
-            cwd: path.join(process.cwd(), 'wkhtmltopdf', 'Linux', 'bin'),
-            input: htmlString
+    // if (process.platform === "win32") {
+    //     const executablePath = path.join(process.cwd(), 'wkhtmltopdf', 'wkhtmltopdf.exe');
+    //     const processOutput = execSync(`"${executablePath}" -d 300 - ${outputFilePath}`, { input: htmlString });
+    // }
+    // else if (process.platform === "linux") {
+    //     // INSTALL COMMAND: npm install && yum install ./wkhtmltopdf/wkhtmltox.rpm -y
+    //     console.log(process.env)
+    //     //const processOutput = execSync(`/opt/bin/wkhtmltopdf -d 300 - ${outputFilePath}`, { input: htmlString });
+    //     const executablePath = path.join(process.cwd(), 'wkhtmltopdf', 'Linux', 'bin', 'wkhtmltopdf');
+    //     const processOutput = execSync(`"${executablePath}" -d 300 - ${outputFilePath}`, {
+    //         cwd: path.join(process.cwd(), 'wkhtmltopdf', 'Linux', 'bin'),
+    //         input: htmlString
+    //     });
+    // }
+    // else {
+    //     throw `${process.platform} is not a supported platform.`;
+    // }
+    //const fileBuffer: Buffer = fs.readFileSync(outputFilePath);
+    const fileBuffer: Buffer = await new Promise(function(resolve,reject){
+        htmlPDF.create(htmlString).toBuffer(function(err, buffer: Buffer){
+            resolve(buffer);
         });
-    }
-    else {
-        throw `${process.platform} is not a supported platform.`;
-    }
-    const fileBuffer: Buffer = fs.readFileSync(outputFilePath);
+     });
     return fileBuffer
 }
 
