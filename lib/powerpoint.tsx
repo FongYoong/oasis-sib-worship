@@ -142,6 +142,8 @@ export const getTextFromNodes = (nodes: Node[]) => {
   return concatString;
 }
 
+const maxCharactersInALine = 37; // 27
+
 export async function convertSongToPPTX(title: string, artist: string, lyrics: string, pptSettings: (PPTSettings | undefined)) {
   const slides = [BlankSlide(), TitleSlide(title, artist)];
   let slideType : "Section" | "Normal" = "Normal";
@@ -156,23 +158,28 @@ export async function convertSongToPPTX(title: string, artist: string, lyrics: s
           text = normalTextTemp[index];
         }
         else {
-          if ((normalTextTemp[index].length <= 27) && (normalTextTemp[index + 1].length <= 27)) {
-            text = normalTextTemp[index] + '\n' + normalTextTemp[index + 1];
+          if ((normalTextTemp[index].length <= maxCharactersInALine)
+            && (normalTextTemp[index + 1].length <= maxCharactersInALine)
+            && (normalTextTemp[index].trim() != '')
+            && (normalTextTemp[index + 1].trim() != '')) {
+            text = normalTextTemp[index].trim() + '\n' + normalTextTemp[index + 1].trim();
             index += 1;
           }
           else {
-            text = normalTextTemp[index];
+            text = normalTextTemp[index].trim();
           }
         }
-        let normalSlide;
-        if (pptSettings) {
-          normalSlide = NormalSlide(text, pptSettings['overlayHeight'], pptSettings['overlayColor'], pptSettings['overlayAlpha'],
-                                          pptSettings['fontFace'], pptSettings['fontSize'], pptSettings['bold'])
+        if (text.length > 0) {
+          let normalSlide;
+          if (pptSettings) {
+            normalSlide = NormalSlide(text, pptSettings['overlayHeight'], pptSettings['overlayColor'], pptSettings['overlayAlpha'],
+                                            pptSettings['fontFace'], pptSettings['fontSize'], pptSettings['bold'])
+          }
+          else {
+            normalSlide = NormalSlide(text);
+          }
+          slides.push(normalSlide);
         }
-        else {
-          normalSlide = NormalSlide(text);
-        }
-        slides.push(normalSlide);
         index += 1;
         if (index >= normalTextTemp.length) {
           break;

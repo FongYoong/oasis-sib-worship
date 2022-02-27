@@ -152,7 +152,13 @@ const ExportSessionModal = (props: ExportSessionModalProps) => {
         <Modal overflow={false} open={props.visibility} onClose={props.handleClose}>
             { data &&
                 <div style={{ display: 'none'}} >
-                    <div ref={lyricsDivRef} style={{ width: '100vw', height: '100vh', wordSpacing: 10 }} >
+                    <div ref={lyricsDivRef} style={{
+                        width: '21cm', height: '29.7cm',
+                        fontFamily: 'serif',
+                        fontSize: '1rem',
+                        wordSpacing: 10,
+                        //letterSpacing: '0.15rem',
+                    }} >
                         {parsedLyrics}
                     </div>
                 </div>

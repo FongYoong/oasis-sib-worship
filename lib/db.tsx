@@ -3,13 +3,13 @@ import { UNAUTHORISED_ERROR_CODE } from './status_codes'
 import prisma from './prisma'
 import HTMLtoDOCX from 'html-to-docx'
 import type { NextApiResponse } from 'next'
-import htmlPDF from 'html-pdf'
 
-import os from "os"
-import path from "path"
-import { execSync } from 'child_process'
-import fs from "fs"
-const tempDir = os.tmpdir();
+//import htmlPDF from 'html-pdf'
+//import os from "os"
+//import path from "path"
+// import { execSync } from 'child_process'
+// import fs from "fs"
+//const tempDir = os.tmpdir();
 
 // export async function convertHTMLToPDF(htmlString: string) {
 //     const body = {
@@ -28,8 +28,8 @@ const tempDir = os.tmpdir();
 //     return fileBuffer
 // }
 
-export async function convertHTMLToPDF(htmlString: string) {
-    const outputFilePath = path.join(tempDir, 'output.pdf');
+// export async function convertHTMLToPDF(htmlString: string) {
+    //const outputFilePath = path.join(tempDir, 'output.pdf');
     // if (process.platform === "win32") {
     //     const executablePath = path.join(process.cwd(), 'wkhtmltopdf', 'wkhtmltopdf.exe');
     //     const processOutput = execSync(`"${executablePath}" -d 300 - ${outputFilePath}`, { input: htmlString });
@@ -48,14 +48,16 @@ export async function convertHTMLToPDF(htmlString: string) {
     //     throw `${process.platform} is not a supported platform.`;
     // }
     //const fileBuffer: Buffer = fs.readFileSync(outputFilePath);
-    const fileBuffer: Buffer = await new Promise(function(resolve,reject){
-        htmlPDF.create(htmlString).toBuffer(function(err: any, buffer: Buffer){
-            console.log(err);
-            resolve(buffer);
-        });
-     });
-    return fileBuffer
-}
+    
+    // html-pdf library (Phantomjs)
+    // const fileBuffer: Buffer = await new Promise(function(resolve,reject){
+    //     htmlPDF.create(htmlString).toBuffer(function(err: any, buffer: Buffer){
+    //         console.log(err);
+    //         resolve(buffer);
+    //     });
+    //  });
+    //return fileBuffer
+// }
 
 export async function convertHTMLToWord(htmlString: string) {
     const fileBuffer: Buffer = await HTMLtoDOCX(htmlString, null, {

@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { INTERNAL_SERVER_ERROR_ERROR_CODE, NOT_ALLOWED_ERROR_CODE } from '../../lib/status_codes'
-import { get_song, convertHTMLToWord, convertHTMLToPDF } from '../../lib/db'
+import { get_song, convertHTMLToWord } from '../../lib/db'
 import { convertSongToPPTX, convertPPTXtoFileBuffer, PPTSettings } from '../../lib/powerpoint'
 
 async function export_song({exportType, id, pptSettings}:{exportType: string, id: number, pptSettings: PPTSettings | undefined}) {
@@ -14,9 +14,9 @@ async function export_song({exportType, id, pptSettings}:{exportType: string, id
         else if (exportType == 'word') {
             fileBuffer = await convertHTMLToWord(song.lyrics);
         }
-        else if (exportType == 'pdf') {
-            fileBuffer = await convertHTMLToPDF(song.lyrics);
-        }
+        // else if (exportType == 'pdf') {
+        //     fileBuffer = await convertHTMLToPDF(song.lyrics);
+        // }
         else {
             throw Error("Unknown export type");
         }
