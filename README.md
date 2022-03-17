@@ -3,9 +3,9 @@
 ### 🎵 [View the website here.](http://oasis-sib-worship.vercel.app/)
 
 This website is intended for:
-🎵 Worship team to add songs to a centralized database which serves as a reference.
-📝 Worship leaders to specify the order of songs and also additional info for each worship session which can be viewed by everyone.
-💻 Media streamers to export these songs into coherent Powerpoint lyrics automatically with minimal effort.
+* 🎵 Worship team to add songs to a centralized database which serves as a reference.
+* 📝 Worship leaders to specify the order of songs and also additional info for each worship session which can be viewed by everyone.
+* 💻 Media streamers to export these songs into coherent Powerpoint lyrics automatically with minimal effort.
 
 ***
 
