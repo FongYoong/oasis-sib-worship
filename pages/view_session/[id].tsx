@@ -149,7 +149,7 @@ const ViewSessionPage: NextPage = () => {
                                 <FiEdit style={{marginRight: '1em'}} />Edit Session
                             </Button>
                             <Button appearance="primary" color="violet" onClick={() => {
-                                const url = `https://${domainUrl}/view_song/${session_data.id}`;
+                                const url = `https://${domainUrl}/view_session/${session_data.id}`;
                                 copyToClipboard(url, 'Copied URL to clipboard');
                             }} >
                                 <AiOutlineLink style={{marginRight: '1em'}} />Share Session
