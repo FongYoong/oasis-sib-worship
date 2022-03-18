@@ -17,7 +17,10 @@ export interface PPTSettings {
   overlayAlpha: number
   fontFace: string
   fontSize: number
+  fontCharacterSpacing: number
   bold: boolean
+  uppercase: boolean
+  lineThreshold: number
 }
 
 export const defaultPPTSettings: PPTSettings = {
@@ -26,7 +29,10 @@ export const defaultPPTSettings: PPTSettings = {
   overlayAlpha: 0.5,
   fontFace: 'Trebuchet MS',
   fontSize: 36,
+  fontCharacterSpacing: 0,
   bold: false,
+  uppercase: true,
+  lineThreshold: 37
 }
 
 export const TitleSlide = (title: string, artist: string) => {
@@ -76,7 +82,10 @@ export const NormalSlide = (text: string,
     overlayAlpha=defaultPPTSettings['overlayAlpha'],
     fontFace=defaultPPTSettings['fontFace'],
     fontSize=defaultPPTSettings['fontSize'],
-    bold=defaultPPTSettings['bold']) => {
+    fontCharacterSpacing=defaultPPTSettings['fontCharacterSpacing'],
+    bold=defaultPPTSettings['bold'],
+    uppercase=defaultPPTSettings['uppercase'],
+  ) => {
   // Default aspect ratio is 16:9
   // Max width is 10
   // Max height is 5.625
@@ -98,9 +107,10 @@ export const NormalSlide = (text: string,
         x: 0, y: 0, w: 10, h: overlayHeight,
         fontFace,
         fontSize,
-        bold
+        charSpacing: fontCharacterSpacing,
+        bold,
       }}>
-        {text.toUpperCase()}
+        { uppercase ? text.toUpperCase() : text }
       </Text>
     </Slide>
   )
@@ -142,12 +152,14 @@ export const getTextFromNodes = (nodes: Node[]) => {
   return concatString;
 }
 
-const maxCharactersInALine = 37; // 27
+//const maxCharactersInALine = 37; // 27
 
 export async function convertSongToPPTX(title: string, artist: string, lyrics: string, pptSettings: (PPTSettings | undefined)) {
   const slides = [BlankSlide(), TitleSlide(title, artist)];
   let slideType : "Section" | "Normal" = "Normal";
   let normalTextTemp: string[] = [];
+
+  const lineThreshold = pptSettings ? pptSettings['lineThreshold'] : defaultPPTSettings['lineThreshold'];
 
   const processNormalText = () => {
     if (normalTextTemp.length > 0) {
@@ -158,8 +170,8 @@ export async function convertSongToPPTX(title: string, artist: string, lyrics: s
           text = normalTextTemp[index];
         }
         else {
-          if ((normalTextTemp[index].length <= maxCharactersInALine)
-            && (normalTextTemp[index + 1].length <= maxCharactersInALine)
+          if ((normalTextTemp[index].length <= lineThreshold)
+            && (normalTextTemp[index + 1].length <= lineThreshold)
             && (normalTextTemp[index].trim() != '')
             && (normalTextTemp[index + 1].trim() != '')) {
             text = normalTextTemp[index].trim() + '\n' + normalTextTemp[index + 1].trim();
@@ -173,7 +185,7 @@ export async function convertSongToPPTX(title: string, artist: string, lyrics: s
           let normalSlide;
           if (pptSettings) {
             normalSlide = NormalSlide(text, pptSettings['overlayHeight'], pptSettings['overlayColor'], pptSettings['overlayAlpha'],
-                                            pptSettings['fontFace'], pptSettings['fontSize'], pptSettings['bold'])
+                                            pptSettings['fontFace'], pptSettings['fontSize'], pptSettings['fontCharacterSpacing'], pptSettings['bold'], pptSettings['uppercase'])
           }
           else {
             normalSlide = NormalSlide(text);
