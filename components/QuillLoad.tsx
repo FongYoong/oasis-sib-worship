@@ -1,4 +1,5 @@
 import { useEffect, createContext, useContext } from 'react'
+import { useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { Loader } from 'rsuite'
 
@@ -39,3 +40,10 @@ export const quillFormats = [
     'list', 'bullet',
     'link', 'image'
 ];
+
+export function useQuillToolbar() {
+    const quillToolbar = useRef<Element|undefined>(undefined);
+    quillToolbar.current = document.getElementsByClassName('ql-toolbar ql-snow')[0];
+  
+    return quillToolbar.current;
+}

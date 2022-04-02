@@ -32,7 +32,6 @@ import { IoPersonAdd } from 'react-icons/io5'
 import { Plus, Trash  } from '@rsuite/icons'
 import { SongProps } from '../lib/types'
 import hoverStyles from '../styles/hover.module.css'
-import modalStyles from '../styles/modal.module.css'
 
 interface SessionModalProps {
     visibility: boolean,
@@ -165,6 +164,7 @@ const session_fetcher = json_fetcher('GET');
 const initialSessionInfo = 'Additional info here'
 
 const SessionModal = (props: SessionModalProps) => {
+
     const [formIndex, setFormIndex] = useState<number>(0);
     const [dateValue, setDateValue] = useState<Date|null>(null);
     const [dutyFormData, setDutyFormData] = useState<Record<string, string>|undefined>(undefined);
@@ -291,11 +291,14 @@ const SessionModal = (props: SessionModalProps) => {
 
     return (
         <QuillLoadingContext.Provider value={setLoading} >
-            <Modal overflow={false} backdrop={false} open={props.visibility} onClose={closeModal} >
+            <Modal
+                style={{
+                    backgroundColor: 'rgba(0,0,0,0.2)'
+                }}
+                overflow={false} backdrop={false} open={props.visibility} onClose={closeModal} >
                 {isValidating &&
                     <Loader style={{zIndex: 1000}} backdrop center content="Fetching session..." />
                 }
-                <div className={modalStyles.modalBackground} />
                 <Modal.Header>
                     <h4>{props.editSession ? "Edit":"Add"} Session</h4>
                     <Steps current={formIndex}>
@@ -467,8 +470,11 @@ const SessionModal = (props: SessionModalProps) => {
                         </Form>
                     </Animation.Collapse>
                     <Animation.Collapse unmountOnExit in={formIndex == 2} >
-                        <div>
-                            <ReactQuill readOnly={pauseModal} theme="snow" modules={quillModules} formats={quillFormats}
+                        <div style={{
+                            border: '3px solid #150080',
+                        }}  >
+                            <ReactQuill
+                                readOnly={pauseModal} theme="snow" modules={quillModules} formats={quillFormats}
                                 value={sessionInfo} onChange={setSessionInfo}
                             />
                         </div>

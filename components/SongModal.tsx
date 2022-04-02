@@ -14,7 +14,7 @@ const ReactCompareSliderImage = dynamic<ReactCompareSliderImageProps>(() =>
 import useSWR from 'swr'
 import { useFilePicker } from 'use-file-picker'
 import { Modal, Stack, Button, IconButton, Form, Loader, InputGroup, Progress, Animation } from 'rsuite'
-import { QuillLoadingContext, ReactQuill, quillModules, quillFormats } from './QuillLoad'
+import { QuillLoadingContext, ReactQuill, quillModules, quillFormats, useQuillToolbar } from './QuillLoad'
 import { json_fetcher } from '../lib/utils'
 import { SuccessMessage, ErrorMessage } from '../lib/messages'
 import { SUCCESS_CODE } from '../lib/status_codes'
@@ -22,7 +22,6 @@ import PasswordInput from './PasswordInput'
 import { BsFillPersonFill } from 'react-icons/bs'
 import { MdTitle } from 'react-icons/md'
 import { Image as ImageIcon } from '@rsuite/icons'
-import modalStyles from '../styles/modal.module.css'
 
 interface SongModalProps {
     visibility: boolean,
@@ -37,6 +36,8 @@ const initialLyrics = "<h2>Verse 1</h2><p>Type something here</p><h2>Verse 2</h2
 const song_fetcher = json_fetcher('GET');
 
 const SongModal = (props: SongModalProps) => {
+
+    const quillToolbarElement = useQuillToolbar();
 
     const [formData, setFormData] = useState<Record<string, string>|undefined>(undefined);
     const [songLyrics, setSongLyrics] = useState<string>(props.editSong ? '' : initialLyrics);
@@ -228,11 +229,14 @@ const SongModal = (props: SongModalProps) => {
 
     return (
         <QuillLoadingContext.Provider value={setLoading}>
-            <Modal overflow={false} backdrop={false} open={props.visibility} onClose={closeModal} >
+            <Modal
+                style={{
+                    backgroundColor: 'rgba(0,0,0,0.2)'
+                }}
+                overflow={false} backdrop={false} open={props.visibility} onClose={closeModal} >
                 {isValidating &&
                     <Loader style={{zIndex: 1000}} backdrop center content="Fetching song..." />
                 }
-                <div className={modalStyles.modalBackground} />
                 <Modal.Header>
                     <canvas ref={canvasOCR} style={{display: 'none'}} />
                     <Stack wrap direction='row' spacing='2em' >
@@ -277,9 +281,18 @@ const SongModal = (props: SongModalProps) => {
                             </InputGroup>
                         </Form.Group>
                     </Form>
-                    <ReactQuill readOnly={pauseModal} theme="snow" modules={quillModules} formats={quillFormats}
-                        value={songLyrics} onChange={setSongLyrics}
-                    />
+                    <div style={{
+                        height: '50vh',
+                        border: '3px solid #150080',
+                    }} >
+                        <ReactQuill
+                            style={{
+                                height: `calc(100% - ${quillToolbarElement ? quillToolbarElement.clientHeight : 0}px)`,
+                            }}
+                            readOnly={pauseModal} theme="snow" modules={quillModules} formats={quillFormats}
+                            value={songLyrics} onChange={setSongLyrics}
+                        />
+                    </div>
                     {props.editSong &&
                         <PasswordInput setPassword={setPassword} passwordError={passwordError} setPasswordError={setPasswordError} />
                     }
