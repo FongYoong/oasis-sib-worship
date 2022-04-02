@@ -72,7 +72,7 @@ const renderSessionMenu = (props: SessionCardProps) => ({ onClose, className }: 
         </Dropdown.Menu>
       </Popover>
     );
-  };
+};
 
 const SessionCard = ({sessionProps, ...rest}: {sessionProps: SessionCardProps}) => {
     return (

@@ -108,7 +108,12 @@ const ViewSessionPage: NextPage = () => {
     <>
         {editSessionModalLoad && <SessionModal editSession={editSessionShow} editSessionId={session_id} visibility={editSessionShow} handleClose={handleEditSessionClose} onSuccess={mutate} /> }
         {exportSessionModalLoad && <ExportSessionModal sessionData={session_data} visibility={exportSessionShow} handleClose={handleExportSessionClose} /> }
-        {deleteSessionModalLoad && <DeleteSessionModal sessionData={session_data} visibility={deleteSessionShow} handleClose={handleDeleteSessionClose} onSuccess={mutate} /> }
+        {deleteSessionModalLoad && <DeleteSessionModal sessionData={session_data} visibility={deleteSessionShow} handleClose={handleDeleteSessionClose}
+            onSuccess={() => {
+                router.replace('/');
+                mutate();
+            }}
+        /> }
         <main>
             <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' style={{
                 width: '100vw'

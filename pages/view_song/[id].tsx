@@ -90,7 +90,12 @@ const ViewSongPage: NextPage = () => {
     <>
         {editSongModalLoad && <SongModal editSong={editSongShow} editSongId={song_id} visibility={editSongShow} handleClose={handleEditSongClose} onSuccess={mutate} /> }
         {exportSongModalLoad && <ExportSongModal songData={song_data} visibility={exportSongShow} handleClose={handleExportSongClose} /> }
-        {deleteSongModalLoad && <DeleteSongModal songData={song_data} visibility={deleteSongShow} handleClose={handleDeleteSongClose} onSuccess={mutate} /> }
+        {deleteSongModalLoad && <DeleteSongModal songData={song_data} visibility={deleteSongShow} handleClose={handleDeleteSongClose}
+            onSuccess={() => {
+                router.replace('/all_songs');
+                mutate();
+            }}
+        /> }
         <main>
             <Stack spacing='1em' direction='column' alignItems='center' justifyContent='center' style={{
                 width: '100vw'

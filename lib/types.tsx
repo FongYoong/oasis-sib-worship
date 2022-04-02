@@ -32,3 +32,11 @@ export enum PageName {
     None = "",
     Error = "Page Not Found"
 }
+
+export interface GeniusSong {
+    albumArt: string
+    id: number
+    title: string
+    lyrics: string
+    url: string
+}

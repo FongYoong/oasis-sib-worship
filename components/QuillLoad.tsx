@@ -1,5 +1,4 @@
-import { useEffect, createContext, useContext } from 'react'
-import { useRef } from 'react'
+import { useState, useEffect, createContext, useContext } from 'react'
 import dynamic from 'next/dynamic'
 import { Loader } from 'rsuite'
 
@@ -42,8 +41,11 @@ export const quillFormats = [
 ];
 
 export function useQuillToolbar() {
-    const quillToolbar = useRef<Element|undefined>(undefined);
-    quillToolbar.current = document.getElementsByClassName('ql-toolbar ql-snow')[0];
+    const [quillToolbar, setQuillToolbar] = useState<Element|undefined>(undefined);
+    setTimeout(() => {
+        const el = document.getElementsByClassName('ql-toolbar ql-snow')[0];
+        setQuillToolbar(el);
+    }, 0);
   
-    return quillToolbar.current;
+    return quillToolbar;
 }

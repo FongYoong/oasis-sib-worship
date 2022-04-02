@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import dynamic from 'next/dynamic'
+import AnimateHeight from 'react-animate-height';
 import { ReactCompareSliderProps, ReactCompareSliderImageProps } from 'react-compare-slider'
 const ReactCompareSlider = dynamic<ReactCompareSliderProps>(() =>
   import("react-compare-slider").then((module) => module.ReactCompareSlider)
@@ -13,14 +14,18 @@ const ReactCompareSliderImage = dynamic<ReactCompareSliderImageProps>(() =>
 //import Tesseract from 'tesseract.js'
 import useSWR from 'swr'
 import { useFilePicker } from 'use-file-picker'
-import { Modal, Stack, Button, IconButton, Form, Loader, InputGroup, Progress, Animation } from 'rsuite'
+import { Modal, Stack, Button, IconButton, Form, Loader, InputGroup, Progress, Animation, Divider, Whisper, Popover } from 'rsuite'
+import { WhisperInstance } from 'rsuite/cjs/Whisper'
 import { QuillLoadingContext, ReactQuill, quillModules, quillFormats, useQuillToolbar } from './QuillLoad'
+import { GeniusSong } from '../lib/types'
+import { geniusLyricsToHTML } from '../lib/genius'
 import { json_fetcher } from '../lib/utils'
 import { SuccessMessage, ErrorMessage } from '../lib/messages'
 import { SUCCESS_CODE } from '../lib/status_codes'
 import PasswordInput from './PasswordInput'
 import { BsFillPersonFill } from 'react-icons/bs'
 import { MdTitle } from 'react-icons/md'
+import { SiGenius } from 'react-icons/si'
 import { Image as ImageIcon } from '@rsuite/icons'
 
 interface SongModalProps {
@@ -35,10 +40,97 @@ const initialLyrics = "<h2>Verse 1</h2><p>Type something here</p><h2>Verse 2</h2
 
 const song_fetcher = json_fetcher('GET');
 
+interface renderGeniusSongProps {
+    title: string
+    artist: string
+    onConfirm: (newLyrics: string)=>void
+}
+
+// eslint-disable-next-line react/display-name
+const renderGeniusSong = (props : renderGeniusSongProps) => ({ onClose, className }: {onClose: ()=>void, className: string} , ref: React.RefObject<HTMLDivElement>) => {
+
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<boolean>(false);
+    const [songData, setSongData] = useState<GeniusSong|undefined>(undefined);
+
+    const getGeniusSong = () => {
+        setLoading(true);
+        fetch('/api/genius/get_song', {
+            method: 'POST',
+            body: JSON.stringify({
+                title: props.title,
+                artist: props.artist
+            }),
+        }).then((res) => {
+            if (res.status == SUCCESS_CODE) {
+                res.json().then((res_data) => {
+                    console.log(res_data);
+                    setLoading(false);
+                    if (res_data.song) {
+                        setSongData(res_data.song);
+                    }
+                    else {
+                        setError(true);
+                    }
+                });
+            }
+            else {
+                setError(true);
+                setLoading(false);
+                throw new Error()
+            }
+        }).catch((error) => {
+            setError(true);
+            setLoading(false);
+            console.log(error);
+        });
+    }
+
+    useEffect(() => {
+        getGeniusSong();
+    }, []);
+
+    const htmlLyrics = !loading && !error ? geniusLyricsToHTML(songData?.lyrics) : '';
+
+    const onConfirm = () => {
+        props.onConfirm(htmlLyrics);
+        onClose();
+    }
+
+    return (
+      <Popover ref={ref} className={className} >
+        <Stack spacing='1em' direction='column' justifyContent='center' >
+            {loading && <Loader content="Searching GENIUS..." />}
+            {error && <p>Could not find song. 😥</p>}
+            <AnimateHeight
+                animateOpacity
+                duration={300}
+                height={!loading && !error ? "auto" : 0}
+            >
+                <h5>{songData?.title}</h5>
+                <Divider />
+                <ReactQuill style={{
+                    border: '5px solid rgba(28,110,164,0.12)',
+                    height: '50vh'
+                }}
+                readOnly={true} theme="bubble" value={htmlLyrics} />
+            </AnimateHeight>
+            <Stack spacing='1em' direction='row' justifyContent='center' >
+                <Button disabled={loading || error} onClick={onConfirm} color="cyan" appearance="primary">
+                    Add
+                </Button>
+                <Button onClick={onClose} color='red' appearance="primary">
+                    Cancel
+                </Button>
+            </Stack>
+        </Stack>
+      </Popover>
+    );
+};
+
 const SongModal = (props: SongModalProps) => {
 
     const quillToolbarElement = useQuillToolbar();
-
     const [formData, setFormData] = useState<Record<string, string>|undefined>(undefined);
     const [songLyrics, setSongLyrics] = useState<string>(props.editSong ? '' : initialLyrics);
     const [password, setPassword] = useState<string>('')
@@ -50,6 +142,8 @@ const SongModal = (props: SongModalProps) => {
     const [OCRProgress, setOCRProgress] = useState<number>(0);
     const OCRProgressRef = useRef<number>(0);
     OCRProgressRef.current = OCRProgress
+
+    const geniusWhisperRef = useRef<WhisperInstance>();
 
     const { data, isValidating, error, mutate } = useSWR(props.editSong ? `/api/get_song/${props.editSongId}` : null, song_fetcher, {
         revalidateIfStale: false,
@@ -281,7 +375,43 @@ const SongModal = (props: SongModalProps) => {
                             </InputGroup>
                         </Form.Group>
                     </Form>
+                    <AnimateHeight
+                        animateOpacity
+                        duration={300}
+                        height={formData?.title && formData?.artist ? "auto" : 0}
+                    >
+                        <Whisper placement="bottomStart" ref={geniusWhisperRef} trigger="none" speaker={renderGeniusSong({
+                                title: formData?.title ? formData?.title : '',
+                                artist: formData?.artist ? formData?.artist : '',
+                                onConfirm: (newLyrics: string) => {
+                                    setSongLyrics(newLyrics)
+                                }
+                            })}
+                        >
+                            <Button appearance="primary" style={{
+                                color: 'black',
+                                backgroundColor: '#ffff7d'
+                            }} onClick={(e) => {
+                                if (geniusWhisperRef.current) {
+                                    geniusWhisperRef.current.open();
+                                }
+                            }} >
+                                    <SiGenius style={{marginRight: '1em'}} />
+                                    Get Lyrics From &nbsp;
+                                    <strong style={{
+                                        color: '#ffff38',
+                                        textShadow: '-1px 1px 1px black',
+                                        letterSpacing: 4,
+                                        marginBottom: 4
+                                    }}>
+                                        GENIUS
+                                    </strong>
+                            </Button>
+                        </Whisper>
+                     
+                    </AnimateHeight>
                     <div style={{
+                        marginTop: '1em',
                         height: '50vh',
                         border: '3px solid #150080',
                     }} >
