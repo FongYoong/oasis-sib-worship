@@ -51,6 +51,7 @@ const renderGeniusSong = (props : renderGeniusSongProps) => ({ onClose, classNam
 
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<boolean>(false);
+    const [close, setClose] = useState<boolean>(false);
     const [songData, setSongData] = useState<GeniusSong|undefined>(undefined);
 
     const getGeniusSong = () => {
@@ -94,7 +95,14 @@ const renderGeniusSong = (props : renderGeniusSongProps) => ({ onClose, classNam
 
     const onConfirm = () => {
         props.onConfirm(htmlLyrics);
-        onClose();
+        smoothClose();
+    }
+
+    const smoothClose = () => {
+        setClose(true);
+        setTimeout(() => {
+            onClose();
+        }, 500);
     }
 
     return (
@@ -105,7 +113,7 @@ const renderGeniusSong = (props : renderGeniusSongProps) => ({ onClose, classNam
             <AnimateHeight
                 animateOpacity
                 duration={300}
-                height={!loading && !error ? "auto" : 0}
+                height={!loading && !error && !close ? "auto" : 0}
             >
                 <h5>{songData?.title}</h5>
                 <Divider />
@@ -119,7 +127,7 @@ const renderGeniusSong = (props : renderGeniusSongProps) => ({ onClose, classNam
                 <Button disabled={loading || error} onClick={onConfirm} color="cyan" appearance="primary">
                     Add
                 </Button>
-                <Button onClick={onClose} color='red' appearance="primary">
+                <Button onClick={smoothClose} color='red' appearance="primary">
                     Cancel
                 </Button>
             </Stack>
