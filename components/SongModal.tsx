@@ -598,7 +598,8 @@ const SongModal = (props: SongModalProps) => {
                                 artist: formData?.artist ? formData?.artist : '',
                                 onConfirm: (newLyrics: string) => {
                                     if(quillInstance.current) {
-                                        quillInstance.current.clipboard.dangerouslyPasteHTML(newLyrics)
+                                        //quillInstance.current.clipboard.dangerouslyPasteHTML(newLyrics);
+                                        quillInstance.current.root.innerHTML = newLyrics;
                                     }
                                 }
                             })}

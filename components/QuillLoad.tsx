@@ -220,7 +220,8 @@ export const ReactQuill = ({style, initQuill, initQuillInstance, onQuillChange, 
     useEffect(() => {
         if (quill && initialReady) {
             if (initialText != undefined) {
-                quill.clipboard.dangerouslyPasteHTML(initialText);
+                //quill.clipboard.dangerouslyPasteHTML(initialText);
+                quill.root.innerHTML = initialText;
             }
         }
     }, [quill, initialReady]);
@@ -230,7 +231,8 @@ export const ReactQuill = ({style, initQuill, initQuillInstance, onQuillChange, 
             if (onQuillChange) {
                 onQuillChange(quill, Quill);
             }
-            quill.clipboard.dangerouslyPasteHTML(text);
+            //quill.clipboard.dangerouslyPasteHTML(text);
+            quill.root.innerHTML = text;
         }
     }, [quill, text]);
 
