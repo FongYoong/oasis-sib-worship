@@ -44,6 +44,26 @@ This website is intended for:
 </details>
 
 <details>
+<summary>Genius Song Search</summary>
+
+![Genius_Song_Search1](https://i.imgur.com/Pv8otOz.png)
+
+***
+
+![Genius_Song_Search2](https://i.imgur.com/2l5xRK0.png)
+
+</details>
+
+<details>
+<summary>Chord Annotations</summary>
+
+![Chord_Annotations1](https://i.imgur.com/A0t6F9K.png)
+![Chord_Annotations2](https://i.imgur.com/GnJ8R9o.png)
+![Chord_Annotations3](https://i.imgur.com/zGBJavx.png)
+
+</details>
+
+<details>
 <summary>Adding Sessions</summary>
 
 ![Add_Session1](https://i.imgur.com/DRkG9jB.png)
