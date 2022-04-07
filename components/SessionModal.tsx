@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import CSS from 'csstype';
+import AnimateHeight from 'react-animate-height';
 //import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd";
 import { DragDropContextProps, DroppableProps, DraggableProps, DropResult } from 'react-beautiful-dnd'
 const DragDropContext = dynamic<DragDropContextProps>(() =>
@@ -169,6 +170,7 @@ const SessionModal = (props: SessionModalProps) => {
     const [dateValue, setDateValue] = useState<Date|null>(null);
     const [dutyFormData, setDutyFormData] = useState<Record<string, string>|undefined>(undefined);
     const [sessionInfo, setSessionInfo] = useState<string>(props.editSession ? '' : initialSessionInfo);
+    const [sessionReady, setSessionReady] = useState<boolean>(!props.editSession);
     const [addSongShow, setAddSongShow] = useState<boolean>(false);
     const [songModalLoad, setSongModalLoad] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
@@ -210,8 +212,18 @@ const SessionModal = (props: SessionModalProps) => {
             setDutyFormData(data)
             setSongList(data.songs)
             setSessionInfo(data.info)
+            setSessionReady(true)
+        }
+        else if(props.editSession) {
+            setSessionReady(false);
         }
     }, [data]);
+
+    useEffect(() => {
+        if(!sessionReady && !props.editSession) {
+            setSessionReady(true);
+        }
+    }, [sessionReady]);
 
     const pauseModal = loading || isValidating || (props.editSession && !data);
     const validForm = !pauseModal && dutyFormData?.worship_leader && dutyFormData?.date;
@@ -219,6 +231,7 @@ const SessionModal = (props: SessionModalProps) => {
     const resetModal = () => {
         setDutyFormData(undefined)
         setFormIndex(0);
+        setSessionReady(false);
     }
     const onSuccess = (message: string) => {
         if (props.onSuccess) {
@@ -476,19 +489,26 @@ const SessionModal = (props: SessionModalProps) => {
                             </Form.Group>
                         </Form>
                     </Animation.Collapse>
-                    <Animation.Collapse unmountOnExit in={formIndex == 2} >
-                        <ReactQuill
-                            style={{
-                                height: `calc(100% - 40px)`,
-                            }}
-                            initQuillInstance={initQuillInstance}
-                            initialText={sessionInfo}
-                            options={{theme: 'snow', formats: quillFormats, modules: quillModules}}
-                        />
+                    <Animation.Collapse in={formIndex == 2} >
+                        <AnimateHeight
+                            animateOpacity
+                            duration={300}
+                            height={formIndex == 2 ? "auto" : 0}
+                        >
+                            <ReactQuill
+                                style={{
+                                    height: `calc(100% - 40px)`,
+                                }}
+                                initQuillInstance={initQuillInstance}
+                                initialReady={sessionReady}
+                                initialText={sessionInfo}
+                                options={{theme: 'snow', formats: quillFormats, modules: quillModules}}
+                            />
                             {/* <ReactQuill
                                 readOnly={pauseModal} theme="snow" modules={quillModules} formats={quillFormats}
                                 value={sessionInfo} onChange={setSessionInfo}
                             /> */}
+                        </AnimateHeight>
 
                     </Animation.Collapse>
                 </Modal.Body>

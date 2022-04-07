@@ -338,7 +338,6 @@ const SongModal = (props: SongModalProps) => {
             }
         });
     }
-    console.log(lyricsReady)
     useEffect(() => {
         if(data) {
             setFormData(data);
@@ -355,14 +354,6 @@ const SongModal = (props: SongModalProps) => {
             setLyricsReady(true);
         }
     }, [lyricsReady]);
-
-    // useEffect(() => {
-    //     if(!props.editSong) {
-    //         console.log("add");
-    //         setSongLyrics(initialLyrics);
-    //         setLyricsReady(true);
-    //     }
-    // }, [props.editSong]);
 
     const pauseModal = loading || isValidating || OCRLoading || (props.editSong && !data);
 
