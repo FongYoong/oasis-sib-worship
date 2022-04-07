@@ -12,7 +12,6 @@ export function geniusLyricsToHTML(lyrics?: string) {
             else {
                 const matches = line.match(/\[(.*)\]/);
                 if(matches) {
-                    console.log(matches)
                     finalLyrics += `<h2>${matches[1]}</h2>`;
                 }
                 else {

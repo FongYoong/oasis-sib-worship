@@ -142,3 +142,25 @@ export function getStartOfMonthDate(date: Date) {
 export function getEndOfMonthDate(date: Date) {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0);
 }
+
+export const htmlExportStyles = `
+<style>
+.quill-chord {
+    display: inline-block;
+    position: relative;
+    padding-top: 1.5em;
+    text-decoration: overline;
+    /* background-color: yellow; */
+}
+
+.quill-chord:after {
+    content: attr(data-chord);
+    color: red;
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-weight: bold;
+}
+
+</style>
+`;

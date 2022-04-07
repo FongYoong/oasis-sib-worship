@@ -15,7 +15,7 @@ const Draggable = dynamic<DraggableProps>(() =>
 import useSWR from 'swr'
 import { Steps, DatePicker, Modal, Form, Stack, Button, IconButton, Animation, InputGroup, AutoComplete, Divider, Loader } from 'rsuite'
 import { PickerInstance } from 'rsuite/Picker'
-import { QuillLoadingContext, ReactQuill, quillModules, quillFormats } from './QuillLoad'
+import { ReactQuill, quillModules, quillFormats } from './QuillLoad'
 import ModalLoader from './ModalLoader'
 const SongModal = dynamic(() => import('./SongModal'), {
     loading: () => <ModalLoader message="Loading song editor" />
@@ -289,8 +289,15 @@ const SessionModal = (props: SessionModalProps) => {
         props.handleClose();
     }
 
+    const initQuillInstance = (quill: any) => {
+        // Handle text change
+        quill.on('text-change', () => {
+            setSessionInfo(quill.root.innerHTML);
+        });
+    }
+
     return (
-        <QuillLoadingContext.Provider value={setLoading} >
+        // <QuillLoadingContext.Provider value={setLoading} >
             <Modal
                 style={{
                     backgroundColor: 'rgba(0,0,0,0.2)'
@@ -470,14 +477,19 @@ const SessionModal = (props: SessionModalProps) => {
                         </Form>
                     </Animation.Collapse>
                     <Animation.Collapse unmountOnExit in={formIndex == 2} >
-                        <div style={{
-                            border: '3px solid #150080',
-                        }}  >
-                            <ReactQuill
+                        <ReactQuill
+                            style={{
+                                height: `calc(100% - 40px)`,
+                            }}
+                            initQuillInstance={initQuillInstance}
+                            initialText={sessionInfo}
+                            options={{theme: 'snow', formats: quillFormats, modules: quillModules}}
+                        />
+                            {/* <ReactQuill
                                 readOnly={pauseModal} theme="snow" modules={quillModules} formats={quillFormats}
                                 value={sessionInfo} onChange={setSessionInfo}
-                            />
-                        </div>
+                            /> */}
+
                     </Animation.Collapse>
                 </Modal.Body>
                 <Modal.Footer>
@@ -501,7 +513,7 @@ const SessionModal = (props: SessionModalProps) => {
                     </Button>
                 </Modal.Footer>
             </Modal>
-        </QuillLoadingContext.Provider>
+        // </QuillLoadingContext.Provider>
     )
 }
 

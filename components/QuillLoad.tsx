@@ -2,66 +2,108 @@ import { useState, useRef, useEffect, createContext, useContext } from 'react'
 import dynamic from 'next/dynamic'
 import AnimateHeight from 'react-animate-height';
 import { Loader, Stack, Input, Button } from 'rsuite'
-import { ReactQuillProps } from 'react-quill'
+import { useQuill } from 'react-quilljs';
+import { QuillOptionsStatic } from 'quill';
+import Delta from 'quill-delta'
 
-export type QuillProps = ReactQuillProps;
+export const quillModules = {
+    toolbar: {
+        container: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline','strike'],
+            [{'list': 'ordered'}, {'list': 'bullet'}],
+            ['link'],
+            ['clean']
+        ]
+    },
+    history: {
+        userOnly: true
+    },
+};
 
-export const QuillLoadingContext = createContext<((value: boolean) => void) | undefined>(undefined);
-const QuillLoader = () => {
-    const setLoading = useContext(QuillLoadingContext);
-    useEffect(() => {
-        if (setLoading) {
-            setLoading(true);
-            return () => setLoading(false);
-        }
-    }, [setLoading]);
+export const quillFormats = [
+    'header',
+    'bold', 'italic', 'underline',
+    'list', 'bullet',
+    'link'
+];
 
-    return (
-        <Loader content="Loading lyrics..." />
-    )
-}
-export const ReactQuill = dynamic(() => import('react-quill'), {
-    ssr: false,
-    loading: () => <QuillLoader />
-});
+// Song Editor
+export const quillSongModules = {
+    toolbar: {
+        container: [
+            [{ 'header': [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline'],
+            [{'list': 'ordered'}, {'list': 'bullet'}],
+            ['chord'],
+            ['clean']
+        ],
+    },
+    history: {
+        userOnly: true
+    },
+    clipboard: {
+        matchers: [
+            ['SPAN', function(node: HTMLElement, delta: any) {
+                const chord = node.getAttribute('data-chord');
+                const index = node.getAttribute('data-range-index');
+                const length = node.getAttribute('data-range-length');
+                if(chord && index && length) {
+                    const newDelta = delta.compose(new Delta().retain(delta.length(), {
+                        chord: { chord, index, length }
+                    }));
+                    //newDelta = newDelta.compose(new Delta().retain(delta.length()).delete(1))
+                    //console.log(delta.length())
+                    return newDelta;
+                }
+            }],
+            // [3, function(node: HTMLElement, delta: any) {
+            //     //console.log(delta.length())
+            //     //console.log("TEXTT")
+            //     //console.log(delta)
+            //     //console.log(node.data)
+            //     //console.log(node.wholeText)
+            //     return new Delta().insert(node.data);
+            // }]
+        ]
+    }
+};
+export const quillSongFormats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list', 'bullet',
+    'chord', 'chordHighlight', 's'
+];
 
-export function useQuillElements() {
+export function useQuillElements(quillInstance: any) {
     const [quillToolbar, setQuillToolbar] = useState<Element|undefined>(undefined);
     const [quillEditor, setQuillEditor] = useState<Element|undefined>(undefined);
     const [chordToolbarButton, setChordToolbarButton] = useState<Element|undefined>(undefined);
 
-    setTimeout(() => {
-        setQuillToolbar(document.getElementsByClassName('ql-toolbar ql-snow')[0]);
-        setQuillEditor(document.getElementsByClassName('ql-editor')[0]);
-        setChordToolbarButton(document.getElementsByClassName('ql-chord')[0]);
-    }, 0);
+    // setTimeout(() => {
+    //     setQuillToolbar(document.getElementsByClassName('ql-toolbar ql-snow')[0]);
+    //     setQuillEditor(document.getElementsByClassName('ql-editor')[0]);
+    //     setChordToolbarButton(document.getElementsByClassName('ql-chord')[0]);
+    // }, 0);
+    const update = () => {
+        if(quillInstance.current) {
+            const toolbar = quillInstance.current.getModule('toolbar').container as HTMLElement;
+            setQuillToolbar(toolbar)
+            setQuillEditor(quillInstance.current.container.getElementsByClassName('ql-editor')[0]);
+            setChordToolbarButton(toolbar.getElementsByClassName('ql-chord')[0]);
+        }
+    }
+
+    useEffect(() => {
+        update();
+    }, [quillInstance.current])
   
-    return {quillToolbar, quillEditor, chordToolbarButton};
+    return {update, quillToolbar, quillEditor, chordToolbarButton};
 }
 
 export const generateChordId = (chord: string, index: number, length: number) => `chord-id-${chord}-${index}-${length}`;
 
 export const addChordFormat = (Quill: any) => {
-    // Create style class
-    const Parchment = Quill.import('parchment');
-    const dataChord = new Parchment.Attributor.Attribute("data-chord", "data-chord", {
-        scope: Parchment.Scope.INLINE,
-        whitelist: null
-    });
-    Quill.register({ "attributors/attribute/data-chord": dataChord }, true);
-
-    const chordStyleClass = new Parchment.Attributor.Class("quill-chord", "quill-chord", {
-        scope: Parchment.Scope.INLINE,
-        whitelist: null
-      });
-    Quill.register({ "attributors/class/quill-chord": chordStyleClass }, true);
-
-    // const chordHighlightStyleClass = new Parchment.Attributor.Class("ql-chordHighlight", "ql-chordHighlight", {
-    //     scope: Parchment.Scope.INLINE,
-    //     whitelist: ["span"]
-    //   });
-    // Quill.register({ "attributors/class/ql-chordHighlight": chordHighlightStyleClass }, true);
-
     // Create blot/format class
     const Inline = Quill.import('blots/inline');
     class ChordBlot extends Inline {
@@ -129,60 +171,76 @@ export const addChordFormat = (Quill: any) => {
     ChordHighlightBlot.tagName = 'span';
     Quill.register('formats/chordHighlight', ChordHighlightBlot);
 
-    class SBlot extends Inline { }
-    SBlot.blotName = 's';
-    SBlot.tagName = 'span';
-    Quill.register('formats/s', SBlot);
-
     // For toolbar icon
     const icons = Quill.import('ui/icons');
     icons['chord'] = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-music-note" viewBox="0 0 16 16"><path d="M9 13c0 1.105-1.12 2-2.5 2S4 14.105 4 13s1.12-2 2.5-2 2.5.895 2.5 2z"/><path fill-rule="evenodd" d="M9 3v10H8V3h1z"/><path d="M8 2.82a1 1 0 0 1 .804-.98l3-.6A1 1 0 0 1 13 2.22V4L8 5V2.82z"/></svg>`;
 }
 
-// export const generateChordModule = () => {
+export const fixChordFormat = (quill: any) => {
+    setTimeout(() => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        const allChordSpans = Array.from((quill.container as HTMLElement).getElementsByClassName('quill-chord'));
+        const encountered: string[] = [];
+        allChordSpans.forEach((el) => {
+            if (encountered.includes(el.className)) {
+                el.outerHTML = el.innerHTML;
+            }
+            else {
+                encountered.push(el.className);
+            }
+        })
+    }, 0);
+}
 
-// }
+export interface ReactQuillProps {
+    style?: React.CSSProperties
+    initQuill?: (Quill: any) => void
+    initQuillInstance?: (quill: any) => void
+    onQuillChange?: (quill: any, Quill: any) => void
+    initialText?: string
+    text?: string
+    options?: QuillOptionsStatic
+}
 
-export const quillModules = {
-    toolbar: {
-        container: [
-            [{ 'header': [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline','strike'],
-            [{'list': 'ordered'}, {'list': 'bullet'}],
-            ['link'],
-            ['clean']
-        ]
-    },
-};
+export const ReactQuill = ({style, initQuill, initQuillInstance, onQuillChange, initialText, text, options}: ReactQuillProps) => {
+    const { quill, quillRef, Quill } = useQuill(options);
 
-export const quillFormats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
-    'link'
-];
-
-// Song Editor
-export const quillSongModules = {
-    toolbar: {
-        container: [
-            [{ 'header': [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline','strike'],
-            [{'list': 'ordered'}, {'list': 'bullet'}],
-            ['chord'],
-            ['clean']
-        ],
-        history: {
-            userOnly: true
+    if (Quill && !quill) {
+        if (initQuill) {
+            initQuill(Quill);
         }
-    },
-};
-export const quillSongFormats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
-    'chord', 'chordHighlight', 'span', 'data-chord', 's'
-];
+    }
+
+    useEffect(() => {
+        if (quill) {
+            quill.root.setAttribute("spellcheck", "false");
+            if (initQuillInstance) {
+                initQuillInstance(quill)
+            }
+            if (initialText) {
+                quill.clipboard.dangerouslyPasteHTML(initialText);
+            }
+        }
+    }, [quill]);
+
+    useEffect(() => {
+        if (quill && text) {
+            if (onQuillChange) {
+                onQuillChange(quill, Quill);
+            }
+            quill.clipboard.dangerouslyPasteHTML(text);
+        }
+    }, [quill, text]);
+
+
+    return (
+        <div ref={quillRef}
+            style={style}
+        />
+    )
+
+}
 
 interface QuillSelectToolTipProps {
     show: boolean
@@ -335,6 +393,26 @@ export const QuillChordToolTip = ({show, onConfirm, onClose, style, ...props}: Q
     )
 }
 
+    // Create style class
+    // const Parchment = Quill.import('parchment');
+    // const dataChord = new Parchment.Attributor.Attribute("data-chord", "data-chord", {
+    //     scope: Parchment.Scope.INLINE,
+    //     whitelist: null
+    // });
+    // Quill.register({ "attributors/attribute/data-chord": dataChord }, true);
+
+    // const chordStyleClass = new Parchment.Attributor.Class("quill-chord", "quill-chord", {
+    //     scope: Parchment.Scope.INLINE,
+    //     whitelist: null
+    //   });
+    // Quill.register({ "attributors/class/quill-chord": chordStyleClass }, true);
+
+    // const chordHighlightStyleClass = new Parchment.Attributor.Class("ql-chordHighlight", "ql-chordHighlight", {
+    //     scope: Parchment.Scope.INLINE,
+    //     whitelist: ["span"]
+    //   });
+    // Quill.register({ "attributors/class/ql-chordHighlight": chordHighlightStyleClass }, true);
+
     // const toolbar = Quill.import('toolbar');
     // toolbar.addHandler('chord', (value) => {
     //     console.log(123);
@@ -382,3 +460,24 @@ export const QuillChordToolTip = ({show, onConfirm, onClose, style, ...props}: Q
     // Quill.register('modules/chord', () => {
     //     alert(1);
     // });
+
+    //export const QuillLoadingContext = createContext<((value: boolean) => void) | undefined>(undefined);
+
+// const QuillLoader = () => {
+//     const setLoading = useContext(QuillLoadingContext);
+//     useEffect(() => {
+//         if (setLoading) {
+//             setLoading(true);
+//             return () => setLoading(false);
+//         }
+//     }, [setLoading]);
+
+//     return (
+//         <Loader content="Loading lyrics..." />
+//     )
+// }
+
+// export const ReactQuill = dynamic(() => import('react-quill'), {
+//     ssr: false,
+//     loading: () => <QuillLoader />
+// });

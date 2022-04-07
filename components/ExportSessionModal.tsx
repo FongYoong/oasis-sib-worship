@@ -8,7 +8,7 @@ import useSWR from 'swr'
 import { Modal, Stack, Button, IconButton, Dropdown, Animation } from 'rsuite'
 import ExportPPTSettings from './ExportPPTSettings'
 import { PPTSettings, defaultPPTSettings } from '../lib/powerpoint'
-import { json_fetcher, exportPDFParseOptions, mergeSessiontoHTML, getFileExtension } from '../lib/utils'
+import { json_fetcher, exportPDFParseOptions, mergeSessiontoHTML, getFileExtension, htmlExportStyles } from '../lib/utils'
 import { SessionProps, SongProps } from '../lib/types'
 import { SuccessMessage, ErrorMessage } from '../lib/messages';
 import { AiFillSetting } from 'react-icons/ai'
@@ -113,7 +113,7 @@ const ExportSessionModal = (props: ExportSessionModalProps) => {
             }
         }
         else if (exportType == 'html') {
-            const blob = new Blob([mergedLyrics], {type: "text/plain;charset=utf-8"});
+            const blob = new Blob([mergedLyrics + htmlExportStyles], {type: "text/plain;charset=utf-8"});
             FileSaver.saveAs(blob, `${file_name}.${file_extension}`);
             onSuccess();
         }

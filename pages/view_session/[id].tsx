@@ -2,10 +2,6 @@ import { useState, useRef, useEffect } from 'react'
 import { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic'
-const ReactQuill = dynamic(() => import('react-quill'), {
-    ssr: false,
-    loading: () => <Loader content="Loading lyrics..." />
-});
 import useSWR from 'swr'
 import { Stack, Divider, Button, Panel, InputGroup, Input, Dropdown, Loader, Animation } from 'rsuite';
 import ModalLoader from '../../components/ModalLoader'
@@ -25,6 +21,7 @@ const DeleteSessionModal = dynamic(() => import('../../components/DeleteSessionM
 const NotFound = dynamic(() => import('../../components/NotFound'))
 import { SessionProps, SongProps } from '../../lib/types'
 import { domainUrl, copyToClipboard, json_fetcher } from '../../lib/utils'
+import { ReactQuill, addChordFormat, fixChordFormat, quillSongFormats, quillSongModules } from '../../components/QuillLoad'
 import { GrCaretPrevious, GrCaretNext, GrFormNext, GrFormView, GrFormViewHide } from 'react-icons/gr'
 import { AiOutlineLink, AiOutlineDownCircle, AiOutlineUpCircle } from 'react-icons/ai'
 import { FiEdit } from 'react-icons/fi'
@@ -91,6 +88,14 @@ const ViewSessionPage: NextPage = () => {
         date: new Date(data.date)
     } : undefined;
 
+    const initQuill = (Quill: any) => {
+        addChordFormat(Quill);
+    }
+
+    const onQuillChange = (quill: any) => {
+        fixChordFormat(quill);
+    }
+
     // useEffect(() => {
     //     if (showSongLyrics) {
     //         setTimeout(() => {
@@ -142,8 +147,12 @@ const ViewSessionPage: NextPage = () => {
                                 </Stack>
                             </Panel>
                         </Stack>
-                        <ReactQuill style={{border: '5px solid rgba(28,110,164,0.12)'}} readOnly={true} theme="bubble"
-                            value={`<h2><u>Additional Info: </u></h2><hr />${session_data.info ? session_data.info : ''}`}
+                        <ReactQuill
+                            style={{
+                                border: '5px solid rgba(28,110,164,0.12)'
+                            }}
+                            text={`<h2><u>Additional Info: </u></h2><hr />${session_data.info ? session_data.info : ''}`}
+                            options={{theme: 'bubble', readOnly: true}}
                         />
                         <Divider style={{height: '0.2em', width: '50vw', marginTop:'0em', marginBottom:'0em'}} />
                         <Stack wrap spacing='1em' direction='row' alignItems='center' justifyContent='center' >
@@ -213,9 +222,18 @@ const ViewSessionPage: NextPage = () => {
                                         </Stack>
                                         <Animation.Collapse in={showSongLyrics} >
                                             <div>
-                                            <div ref={quillEditorRef} >
+                                            {/* <div ref={quillEditorRef} >
                                                 <ReactQuill style={{border: '5px solid rgba(28,110,164,0.12)'}} readOnly={true} theme="bubble" value={currentSong.lyrics} />
-                                            </div>
+                                            </div> */}
+                                                <ReactQuill
+                                                    style={{
+                                                        border: '5px solid rgba(28,110,164,0.12)'
+                                                    }}
+                                                    initQuill={initQuill}
+                                                    onQuillChange={onQuillChange}
+                                                    text={currentSong.lyrics}
+                                                    options={{theme: 'bubble', readOnly: true, formats: quillSongFormats, modules: quillSongModules}}
+                                                />
                                             </div>
                                         </Animation.Collapse>
                                     </Stack>
