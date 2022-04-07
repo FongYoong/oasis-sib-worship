@@ -16,7 +16,9 @@ import useSWR from 'swr'
 import { useFilePicker } from 'use-file-picker'
 import { Modal, Stack, Button, IconButton, Form, Loader, InputGroup, Progress, Animation, Divider, Whisper, Popover } from 'rsuite'
 import { WhisperInstance } from 'rsuite/cjs/Whisper'
-import { QuillLoadingContext, ReactQuill, quillModules, quillFormats, useQuillToolbar } from './QuillLoad'
+import { QuillLoadingContext, ReactQuill, QuillProps, quillSongModules, quillSongFormats, useQuillElements,
+    addChordFormat, QuillSelectToolTip, QuillChordToolTip, generateChordId
+} from './QuillLoad'
 import { GeniusSong } from '../lib/types'
 import { geniusLyricsToHTML } from '../lib/genius'
 import { json_fetcher } from '../lib/utils'
@@ -138,7 +140,27 @@ const renderGeniusSong = (props : renderGeniusSongProps) => ({ onClose, classNam
 
 const SongModal = (props: SongModalProps) => {
 
-    const quillToolbarElement = useQuillToolbar();
+    const quillRef = useRef();
+    console.log(quillRef.current)
+    const { quillToolbar: quillToolbarElement, chordToolbarButton } = useQuillElements();
+    const [quillModules, setQuillModules] = useState(quillSongModules);
+    const quillEditorScrollTop = useRef<number>(0);
+
+    const [chordToolTipPosition, setChordToolTipPosition] = useState({
+        top: 0,
+        left: 0
+    });
+    const [showChordToolTip, setShowChordToolTip] = useState(false);
+    const chordToolTipOnConfirm = useRef<(value: string) => void>((value: string) => value);
+    const chordToolTipOnClose = useRef<() => void>(() => {return});
+    const updateChordToolTip = useRef<boolean>(true);
+
+    const [selectToolTipPosition, setSelectToolTipPosition] = useState({
+        top: 0,
+        left: 0
+    });
+    const [showSelectToolTip, setShowSelectToolTip] = useState(false);
+
     const [formData, setFormData] = useState<Record<string, string>|undefined>(undefined);
     const [songLyrics, setSongLyrics] = useState<string>(props.editSong ? '' : initialLyrics);
     const [password, setPassword] = useState<string>('')
@@ -158,6 +180,97 @@ const SongModal = (props: SongModalProps) => {
         revalidateOnFocus: false,
         revalidateOnReconnect: false
     });
+
+    useEffect(() => {
+        import('react-quill').then((mod) => {
+            const { Quill } = mod.default;
+            addChordFormat(Quill);
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            setQuillModules({
+                toolbar: {
+                    container: quillModules.toolbar.container,
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    handlers: {
+                        'chord': function (this: {quill:any}) {
+                            const range = this.quill.getSelection();
+                            const selectedText = this.quill.getText(range);
+                            if (!selectedText.includes('\n')) {
+                                const bounds = this.quill.getBounds(this.quill.getSelection());
+                                const format = this.quill.getFormat(range);
+                                if (('chord' in format)) {
+                                    const value = format.chord;
+                                    const chordId = generateChordId(value.chord, value.index, value.length);
+                                    // this.quill.formatText(range, {
+                                    //     ...format,
+                                    //     chord: null
+                                    // });
+                                    //this.quill.removeFormat(range);
+                                    const chordElement = document.getElementsByClassName(chordId)[0];
+                                    chordElement.outerHTML = chordElement.innerHTML;
+                                }
+                                else {
+                                    // highlight selected text
+                                    if (('chordHighlight' in format)) {
+                                        this.quill.formatText(range, {
+                                            chordHighlight: null
+                                        });
+                                    }
+                                    else {
+                                        this.quill.formatText(range, {
+                                            chordHighlight: true,
+                                        });
+                                    }
+                                    chordToolTipOnClose.current = () => {
+                                        this.quill.formatText(range, {
+                                            chordHighlight: null
+                                        });
+                                    }
+                                    // open tooltip and get input
+                                    const toolbar = document.getElementsByClassName('ql-toolbar ql-snow')[0];
+                                    const editor = Array.from(document.getElementsByClassName('ql-editor')).filter((e) => e.getAttribute("contenteditable") == "true")[0] as HTMLElement;
+                                    editor.onscroll = function (e) {
+                                        if (updateChordToolTip.current) {
+                                            window.requestAnimationFrame(function() {
+                                                const diff = editor.scrollTop - quillEditorScrollTop.current;
+                                                quillEditorScrollTop.current = editor.scrollTop;
+                                                setChordToolTipPosition((previousValue) => { return {
+                                                    ...previousValue,
+                                                    top: previousValue.top - diff,
+                                                }})
+                                                updateChordToolTip.current = true;
+                                            });
+                                            updateChordToolTip.current = false;
+                                        }
+                                    }
+                                    setShowChordToolTip(true);
+                                    setChordToolTipPosition({
+                                        top: 5 + bounds.top + bounds.height + (toolbar ? toolbar.clientHeight : 0),
+                                        left: bounds.left
+                                    })
+                                    chordToolTipOnConfirm.current = (chord: string) => {
+                                        this.quill.removeFormat(range);
+                                        this.quill.formatText(range, {
+                                            chord: {
+                                                chord,
+                                                index: range.index,
+                                                length: range.length
+                                            }
+                                        });
+                                    };
+                                }
+                            }
+                            else {
+                                setShowChordToolTip(false);
+                            }
+                        }
+                    }
+                }
+            });
+
+        });
+    }, []);
 
     useEffect(() => {
         if(data) {
@@ -255,7 +368,6 @@ const SongModal = (props: SongModalProps) => {
     useEffect(() => {
         if (errors.length <= 0 && filesContent.length > 0) {
             fetch(filesContent[0].content).then(it => it.blob().then(async (blob) => {
-                console.log(blob)
                 const Compressor = (await import('compressorjs')).default;
                 new Compressor(blob, {
                     quality: 0.6,
@@ -419,16 +531,84 @@ const SongModal = (props: SongModalProps) => {
                      
                     </AnimateHeight>
                     <div style={{
+                        position: 'relative',
                         marginTop: '1em',
                         height: '50vh',
                         border: '3px solid #150080',
+                        //overflow: 'hidden',
                     }} >
                         <ReactQuill
                             style={{
                                 height: `calc(100% - ${quillToolbarElement ? quillToolbarElement.clientHeight : 0}px)`,
                             }}
-                            readOnly={pauseModal} theme="snow" modules={quillModules} formats={quillFormats}
-                            value={songLyrics} onChange={setSongLyrics}
+                            readOnly={pauseModal} theme="snow" modules={quillModules} formats={quillSongFormats}
+                            value={songLyrics} onChange={(content, delta, source, editor) => {
+                                console.log('change')
+                                console.log(songLyrics)
+                                console.log(content)
+                                setSongLyrics(content);
+                                // When entering a newline, the chord formatting will cause bugs and crashes.
+                                // Hence, the chord formatting is removed for the new empty line.
+                                if (delta.ops && delta.ops.filter((op) => {
+                                        return "insert" in op && op.insert == '\n'
+                                    }).length > 0)
+                                {
+                                    const removeChordSpan = () => {
+                                        setTimeout(() => {
+                                            const parent = window.getSelection()?.anchorNode?.parentElement?.parentElement;
+                                            if (parent && parent.tagName == 'SPAN' && parent.hasAttribute('data-chord')) {
+                                                parent.outerHTML = parent.innerHTML;
+                                                removeChordSpan();
+                                            }
+                                        }, 0);
+                                    }
+                                    removeChordSpan();
+                                }
+                                // When deleting a newline, a ql-cursor may appear if there's a chord formatting enabled.
+                                // When a space is pressed, a crash will occur. Hence, ql-cursor must be removed.
+                                if (delta.ops && delta.ops.filter((op) => {
+                                    return "delete" in op
+                                }).length > 0)
+                                {
+                                    Array.from(document.getElementsByClassName('ql-cursor')).forEach((el) => {
+                                        el.remove();
+                                    })
+                                }
+                            }}
+                            onChangeSelection={(range: {index: number, length: number}, source, editor) => {
+                                if (range && range.length > 0 && !editor.getText(range.index, range.length).includes('\n')) {
+                                    const bounds = editor.getBounds(range.index, range.length);
+                                    setShowSelectToolTip(true);
+                                    setSelectToolTipPosition({
+                                        top: 8 + bounds.top + bounds.height + (quillToolbarElement ? quillToolbarElement.clientHeight : 0),
+                                        left: bounds.left
+                                    });
+                                }
+                                else {
+                                    setShowSelectToolTip(false);
+                                }
+                            }}
+                        />
+                        <QuillSelectToolTip show={showSelectToolTip}
+                            style={{
+                                ...selectToolTipPosition
+                            }}
+                            onConfirm={() => {
+                                //selectToolTipOnConfirm.current(value);
+                                (chordToolbarButton as HTMLButtonElement).click();
+                            }}
+                        />
+                        <QuillChordToolTip show={showChordToolTip}
+                            style={{
+                                ...chordToolTipPosition
+                            }}
+                            onConfirm={(value) => {
+                                chordToolTipOnConfirm.current(value);
+                            }}
+                            onClose={() => {
+                                setShowChordToolTip(false);
+                                chordToolTipOnClose.current();
+                            }}
                         />
                     </div>
                     {props.editSong &&

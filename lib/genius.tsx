@@ -21,6 +21,5 @@ export function geniusLyricsToHTML(lyrics?: string) {
             }
         })
     }
-    console.log(finalLyrics)
     return finalLyrics;
 }

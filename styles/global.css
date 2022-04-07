@@ -24,3 +24,30 @@ a:not(.actualAnchor) {
     text-decoration: inherit; /* no underline */
 }
 
+.quill-chord-selected {
+    background-color: yellow;
+}
+
+.quill-chord {
+    display: inline-block;
+    position: relative;
+    padding-top: 1.5em;
+    text-decoration: overline;
+    /* background-color: yellow; */
+}
+
+.quill-chord:after {
+    content: attr(data-chord);
+    color: red;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.triangle-up {
+	width: 0;
+	height: 0;
+	border-left: 5px solid transparent;
+	border-right: 5px solid transparent;
+	border-bottom: 10px solid #9012ff;
+}

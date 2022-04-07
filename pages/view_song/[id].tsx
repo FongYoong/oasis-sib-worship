@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 import { NextPage } from 'next'
 import { useRouter } from 'next/router'
 import dynamic from 'next/dynamic'
-const ReactQuill = dynamic(() => import('react-quill'), {
-    ssr: false,
-    loading: () => <Loader content="Loading lyrics..." />
-});
+// const ReactQuill = dynamic(() => import('react-quill'), {
+//     ssr: false,
+//     loading: () => <Loader content="Loading lyrics..." />
+// });
+import { ReactQuill, quillSongFormats, addChordFormat, quillSongModules } from '../../components/QuillLoad'
+
 import useSWR from 'swr'
 import { Stack, Divider, Button, Loader, Animation } from 'rsuite';
 import ModalLoader from '../../components/ModalLoader'
@@ -59,14 +61,24 @@ const ViewSongPage: NextPage = () => {
     const { id } = router.query;
     const song_id = typeof id == 'string' ? parseInt(id) : -1;
     const { data, isValidating, error, mutate } = useSWR(`/api/get_song/${song_id}`, song_fetcher);
+    console.log(data)
     const [editSongShow, setEditSongShow] = useState<boolean>(false);
     const [exportSongShow, setExportSongShow] = useState<boolean>(false);
     const [deleteSongShow, setDeleteSongShow] = useState<boolean>(false);
     const [loaded, setLoaded] = useState<boolean>(false);
+    const [loadingQuillStyles, setLoadingQuillStyles] = useState<boolean>(true);
 
     const [editSongModalLoad, setEditSongModalLoad] = useState<boolean>(false);
     const [exportSongModalLoad, setExportSongModalLoad] = useState<boolean>(false);
     const [deleteSongModalLoad, setDeleteSongModalLoad] = useState<boolean>(false);
+
+    useEffect(() => {
+        import('react-quill').then((mod) => {
+            const { Quill } = mod.default;
+            addChordFormat(Quill);
+            setLoadingQuillStyles(false);
+        });
+    }, []);
 
     useEffect(() => {
         if (!loaded && !error && data) {
@@ -136,7 +148,10 @@ const ViewSongPage: NextPage = () => {
                                 <RiDeleteBin2Fill style={{marginRight: '1em'}} />Delete Song
                             </Button>
                         </Stack>
-                        <ReactQuill style={{border: '5px solid rgba(28,110,164,0.12)'}} readOnly={true} theme="bubble" value={song_data.lyrics} />
+                        <ReactQuill style={{border: '5px solid rgba(28,110,164,0.12)'}} readOnly={true}
+                             value={loadingQuillStyles ? 'Loading...' : song_data.lyrics}
+                            //value={`<p data-chord="123" > Hey <span data-chord="A" data-range-index="37" data-range-length="5" class="quill-chord"> bruh </span> </p>`}
+                            theme="bubble" formats={quillSongFormats} />
                         <YouTubeSong keyword={`${song_data.title} - ${song_data.artist}`} />
                     </Stack>
                 }
