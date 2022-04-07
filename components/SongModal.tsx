@@ -169,8 +169,6 @@ const SongModal = (props: SongModalProps) => {
 
     const geniusWhisperRef = useRef<WhisperInstance>();
 
-    console.log(songLyrics)
-
     const { data, isValidating, error, mutate } = useSWR(props.editSong ? `/api/get_song/${props.editSongId}` : null, song_fetcher, {
         revalidateIfStale: false,
         revalidateOnFocus: false,
@@ -178,7 +176,7 @@ const SongModal = (props: SongModalProps) => {
     });
 
     const quillInstance = useRef<any>();
-    const { chordToolbarButton } = useQuillElements(quillInstance);
+    const { quillToolbar, chordToolbarButton } = useQuillElements(quillInstance);
     const quillEditorScrollTop = useRef<number>(0);
     const [chordToolTipPosition, setChordToolTipPosition] = useState({
         top: 0,
@@ -194,6 +192,16 @@ const SongModal = (props: SongModalProps) => {
         left: 0
     });
     const [showSelectToolTip, setShowSelectToolTip] = useState(false);
+
+    const updateQuillSizing = () => {
+        if(quillInstance.current) {
+            setTimeout(() => {
+                const quillOffset = quillInstance.current ? quillInstance.current.getModule('toolbar').container.clientHeight : 40;
+                const editorElement = quillInstance.current.container as HTMLElement;
+                editorElement.style.height = `calc(100% - ${quillOffset}px)`;
+            }, 0)
+        }
+    }
 
     const initQuill = (Quill: any) => {
         addChordFormat(Quill);
@@ -218,7 +226,7 @@ const SongModal = (props: SongModalProps) => {
         quill.getModule('toolbar').addHandler('chord', function (this: {quill:any}) {
             const range = this.quill.getSelection();
             const selectedText = this.quill.getText(range);
-            if (!selectedText.includes('\n')) {
+            if (!selectedText.includes('\n') && range.length > 0) {
                 const bounds = this.quill.getBounds(this.quill.getSelection());
                 const format = this.quill.getFormat(range);
 
@@ -337,12 +345,15 @@ const SongModal = (props: SongModalProps) => {
                 setShowSelectToolTip(false);
             }
         });
+        updateQuillSizing();
     }
+
     useEffect(() => {
         if(data) {
             setFormData(data);
             setSongLyrics(data.lyrics);
             setLyricsReady(true);
+            console.log("ready");
         }
         else if(props.editSong) {
             setLyricsReady(false);
@@ -352,6 +363,9 @@ const SongModal = (props: SongModalProps) => {
     useEffect(() => {
         if(!lyricsReady && !props.editSong) {
             setLyricsReady(true);
+        }
+        if (lyricsReady) {
+            updateQuillSizing();
         }
     }, [lyricsReady]);
 
@@ -368,9 +382,11 @@ const SongModal = (props: SongModalProps) => {
     });
 
     const resetModal = () => {
-        setFormData(undefined);
-        setSongLyrics(initialLyrics);
-        setLyricsReady(false);
+        if (!props.editSong) {
+            setFormData(undefined);
+            setSongLyrics(initialLyrics);
+            setLyricsReady(false);
+        }
         setPassword('');
     }
 
@@ -617,9 +633,9 @@ const SongModal = (props: SongModalProps) => {
                         //overflow: 'hidden',
                     }} >
                         <ReactQuill
-                            style={{
-                                height: `calc(100% - 40px)`,
-                            }}
+                            // style={{
+                            //     height: `calc(100% - ${quillOffset}px)`,
+                            // }}
                             initQuill={initQuill}
                             initQuillInstance={initQuillInstance}
                             initialReady={lyricsReady}
