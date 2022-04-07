@@ -155,9 +155,11 @@ const SongModal = (props: SongModalProps) => {
 
     const [formData, setFormData] = useState<Record<string, string>|undefined>(undefined);
     const [songLyrics, setSongLyrics] = useState<string>(props.editSong ? '' : initialLyrics);
+    const [lyricsReady, setLyricsReady] = useState<boolean>(!props.editSong);
     const [password, setPassword] = useState<string>('')
     const [passwordError, setPasswordError] = useState<boolean>(false)
     const [loading, setLoading] = useState<boolean>(false);
+
 
     const canvasOCR = useRef<HTMLCanvasElement>(null);
     const [OCRLoading, setOCRLoading] = useState<boolean>(false);
@@ -166,6 +168,8 @@ const SongModal = (props: SongModalProps) => {
     OCRProgressRef.current = OCRProgress
 
     const geniusWhisperRef = useRef<WhisperInstance>();
+
+    console.log(songLyrics)
 
     const { data, isValidating, error, mutate } = useSWR(props.editSong ? `/api/get_song/${props.editSongId}` : null, song_fetcher, {
         revalidateIfStale: false,
@@ -334,13 +338,31 @@ const SongModal = (props: SongModalProps) => {
             }
         });
     }
-
+    console.log(lyricsReady)
     useEffect(() => {
         if(data) {
             setFormData(data);
             setSongLyrics(data.lyrics);
+            setLyricsReady(true);
+        }
+        else if(props.editSong) {
+            setLyricsReady(false);
         }
     }, [data]);
+
+    useEffect(() => {
+        if(!lyricsReady && !props.editSong) {
+            setLyricsReady(true);
+        }
+    }, [lyricsReady]);
+
+    // useEffect(() => {
+    //     if(!props.editSong) {
+    //         console.log("add");
+    //         setSongLyrics(initialLyrics);
+    //         setLyricsReady(true);
+    //     }
+    // }, [props.editSong]);
 
     const pauseModal = loading || isValidating || OCRLoading || (props.editSong && !data);
 
@@ -357,6 +379,7 @@ const SongModal = (props: SongModalProps) => {
     const resetModal = () => {
         setFormData(undefined);
         setSongLyrics(initialLyrics);
+        setLyricsReady(false);
         setPassword('');
     }
 
@@ -567,7 +590,6 @@ const SongModal = (props: SongModalProps) => {
                                 title: formData?.title ? formData?.title : '',
                                 artist: formData?.artist ? formData?.artist : '',
                                 onConfirm: (newLyrics: string) => {
-                                    //setSongLyrics(newLyrics)
                                     if(quillInstance.current) {
                                         quillInstance.current.clipboard.dangerouslyPasteHTML(newLyrics)
                                     }
@@ -609,6 +631,7 @@ const SongModal = (props: SongModalProps) => {
                             }}
                             initQuill={initQuill}
                             initQuillInstance={initQuillInstance}
+                            initialReady={lyricsReady}
                             initialText={songLyrics}
                             options={{theme: 'snow', formats: quillSongFormats, modules: quillSongModules}}
                         />

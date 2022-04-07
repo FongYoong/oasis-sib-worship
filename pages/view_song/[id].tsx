@@ -97,6 +97,8 @@ const ViewSongPage: NextPage = () => {
 
     const song_data = data;
 
+    //console.log(song_id)
+
     return (
     <>
         {editSongModalLoad && <SongModal editSong={editSongShow} editSongId={song_id} visibility={editSongShow} handleClose={handleEditSongClose} onSuccess={mutate} /> }

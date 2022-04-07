@@ -143,12 +143,14 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
             updatedAt: `${dateString}, ${timeString}`
         }
     }) : [];
-    console.log(error);
+    //console.log(error);
+
+    //console.log(editSongId);
 
     return (
         <>
             {addSongModalLoad && <SongModal visibility={addSongShow} handleClose={handleAddSongClose} onSuccess={mutate} /> }
-            {editSongModalLoad && <SongModal editSong={editSongShow} editSongId={editSongId} visibility={editSongShow} handleClose={handleEditSongClose} onSuccess={mutate} /> }
+            {editSongModalLoad && <SongModal editSong={true} editSongId={editSongId} visibility={editSongShow} handleClose={handleEditSongClose} onSuccess={mutate} /> }
             {exportSongModalLoad && <ExportSongModal songData={exportSongData} visibility={exportSongShow} handleClose={handleExportSongClose} /> }
             {deleteSongModalLoad && <DeleteSongModal songData={deleteSongData} visibility={deleteSongShow} handleClose={handleDeleteSongClose} onSuccess={mutate} /> }
             <main>

@@ -80,11 +80,6 @@ export function useQuillElements(quillInstance: any) {
     const [quillEditor, setQuillEditor] = useState<Element|undefined>(undefined);
     const [chordToolbarButton, setChordToolbarButton] = useState<Element|undefined>(undefined);
 
-    // setTimeout(() => {
-    //     setQuillToolbar(document.getElementsByClassName('ql-toolbar ql-snow')[0]);
-    //     setQuillEditor(document.getElementsByClassName('ql-editor')[0]);
-    //     setChordToolbarButton(document.getElementsByClassName('ql-chord')[0]);
-    // }, 0);
     const update = () => {
         if(quillInstance.current) {
             const toolbar = quillInstance.current.getModule('toolbar').container as HTMLElement;
@@ -198,12 +193,13 @@ export interface ReactQuillProps {
     initQuill?: (Quill: any) => void
     initQuillInstance?: (quill: any) => void
     onQuillChange?: (quill: any, Quill: any) => void
+    initialReady?: boolean
     initialText?: string
     text?: string
     options?: QuillOptionsStatic
 }
 
-export const ReactQuill = ({style, initQuill, initQuillInstance, onQuillChange, initialText, text, options}: ReactQuillProps) => {
+export const ReactQuill = ({style, initQuill, initQuillInstance, onQuillChange, initialReady, initialText, text, options}: ReactQuillProps) => {
     const { quill, quillRef, Quill } = useQuill(options);
 
     if (Quill && !quill) {
@@ -218,11 +214,16 @@ export const ReactQuill = ({style, initQuill, initQuillInstance, onQuillChange, 
             if (initQuillInstance) {
                 initQuillInstance(quill)
             }
-            if (initialText) {
+        }
+    }, [quill]);
+
+    useEffect(() => {
+        if (quill && initialReady) {
+            if (initialText != undefined) {
                 quill.clipboard.dangerouslyPasteHTML(initialText);
             }
         }
-    }, [quill]);
+    }, [quill, initialReady]);
 
     useEffect(() => {
         if (quill && text) {
