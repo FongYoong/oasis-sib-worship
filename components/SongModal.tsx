@@ -176,7 +176,7 @@ const SongModal = (props: SongModalProps) => {
     });
 
     const quillInstance = useRef<any>();
-    const { quillToolbar, chordToolbarButton } = useQuillElements(quillInstance);
+    const { chordToolbarButton } = useQuillElements(quillInstance);
     const quillEditorScrollTop = useRef<number>(0);
     const [chordToolTipPosition, setChordToolTipPosition] = useState({
         top: 0,
@@ -358,7 +358,7 @@ const SongModal = (props: SongModalProps) => {
         else if(props.editSong) {
             setLyricsReady(false);
         }
-    }, [data]);
+    }, [data, props.visibility]);
 
     useEffect(() => {
         if(!lyricsReady && !props.editSong) {

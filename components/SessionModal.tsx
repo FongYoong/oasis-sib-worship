@@ -217,7 +217,7 @@ const SessionModal = (props: SessionModalProps) => {
         else if(props.editSession) {
             setSessionReady(false);
         }
-    }, [data]);
+    }, [data, props.visibility]);
 
     useEffect(() => {
         if(!sessionReady && !props.editSession) {
