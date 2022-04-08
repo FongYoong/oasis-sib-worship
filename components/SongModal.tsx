@@ -353,7 +353,6 @@ const SongModal = (props: SongModalProps) => {
             setFormData(data);
             setSongLyrics(data.lyrics);
             setLyricsReady(true);
-            console.log("ready");
         }
         else if(props.editSong) {
             setLyricsReady(false);

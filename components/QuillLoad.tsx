@@ -210,7 +210,17 @@ export const ReactQuill = ({style, initQuill, initQuillInstance, onQuillChange, 
 
     useEffect(() => {
         if (quill) {
-            quill.root.setAttribute("spellcheck", "false");
+            quill.root.setAttribute("spellcheck", "false"); // Disable spellcheck
+            (quill.getModule('toolbar').container.childNodes as HTMLElement[]).forEach((qlFormatGroup) => {
+                qlFormatGroup.childNodes.forEach((child) => {
+                    if (child.nodeName == "BUTTON") {
+                        const name = (child as HTMLElement).className.split('-')[1];
+                        const title = name[0].toUpperCase() + name.substring(1);
+                        (child as HTMLElement).setAttribute('title', title);
+                    }
+                })
+
+            })
             if (initQuillInstance) {
                 initQuillInstance(quill)
             }
