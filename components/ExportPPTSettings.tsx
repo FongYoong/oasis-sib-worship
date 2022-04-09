@@ -79,12 +79,22 @@ const ExportPPTSettings = ({ show, settings, setSettings }: { show: boolean, set
                             <InputGroup.Addon>
                                 Font Name:
                             </InputGroup.Addon>
-                            <AutoComplete data={defaultFonts as any} value={settings['fontFace']}
+                            {/* <AutoComplete data={defaultFonts as any} value={settings['fontFace']}
+                                onChange={(value) => setSettings({
+                                    ...settings,
+                                    fontFace: value
+                                })}
+                            /> */}
+                            <Input list="defaultFonts" value={settings['fontFace']}
+                                style={{resize: 'none'}}
                                 onChange={(value) => setSettings({
                                     ...settings,
                                     fontFace: value
                                 })}
                             />
+                            <datalist id="defaultFonts">
+                                {defaultFonts.map((font) => <option key="font" value={font} />)}
+                            </datalist>
                         </InputGroup>
                     </Form.Group>
                     <Form.Group>
