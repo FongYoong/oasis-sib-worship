@@ -7,7 +7,7 @@ import {
 import { rgbaAlphaToHex } from './utils'
 
 export const defaultGreenBackground = "#00FF00";
-export const defaultFonts = ["LEMON MILK", "Arial", "Verdana ", "Helvetica", "Tahoma", "Trebuchet MS", "Times New Roman", "Georgia", "Garamond", "Courier New", "Brush Script MT"];
+export const defaultFonts = ["LEMON MILK", "Arial", "Verdana", "Helvetica", "Tahoma", "Trebuchet MS", "Times New Roman", "Georgia", "Garamond", "Courier New", "Brush Script MT"].sort();
 // https://blog.hubspot.com/website/web-safe-html-css-fonts
 // LEMON MILK
 
@@ -26,7 +26,7 @@ export interface PPTSettings {
 export const defaultPPTSettings: PPTSettings = {
   overlayHeight: 1.4,
   overlayColor: "#000000",
-  overlayAlpha: 0.5,
+  overlayAlpha: 0.7,
   fontFace: 'Trebuchet MS',
   fontSize: 36,
   fontCharacterSpacing: 0,

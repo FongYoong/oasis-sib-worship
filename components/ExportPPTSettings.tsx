@@ -1,12 +1,24 @@
-import { useState } from 'react'
-import { Stack, AutoComplete, Slider, Form, InputGroup, Input, Checkbox } from 'rsuite'
-import AnimateHeight from 'react-animate-height';
+import { useState, useRef, useEffect } from 'react'
+import { Stack, Slider, Form, InputGroup, Input, Checkbox } from 'rsuite'
+import AnimateHeight from 'react-animate-height'
+import FastLevenshtein from 'fast-levenshtein'
 import { defaultPPTSettings, defaultGreenBackground, defaultFonts, PPTSettings } from '../lib/powerpoint'
 import { rgbaAlphaToHex } from '../lib/utils'
+import hoverStyles from '../styles/hover.module.css'
 
 const ExportPPTSettings = ({ show, settings, setSettings }: { show: boolean, settings: PPTSettings, setSettings: (newSettings: PPTSettings) => void }) => {
 
     const [sampleText, setSampleText] = useState<string>("I know breakthrough is coming\nBy faith I see a miracle");
+    const [fontFaceInputBlur, setFontFaceInputBlur] = useState<boolean>(true);
+    const [fontListBlur, setFontListBlur] = useState<boolean>(true);
+    const [showFontList, setShowFontList] = useState<boolean>(false);
+
+    useEffect(() => {
+        if (fontFaceInputBlur && fontListBlur) {
+            setShowFontList(false);
+        }
+
+    }, [fontFaceInputBlur, fontListBlur])
 
     return (
         <AnimateHeight
@@ -85,16 +97,66 @@ const ExportPPTSettings = ({ show, settings, setSettings }: { show: boolean, set
                                     fontFace: value
                                 })}
                             /> */}
-                            <Input list="defaultFonts" value={settings['fontFace']}
-                                style={{resize: 'none'}}
-                                onChange={(value) => setSettings({
-                                    ...settings,
-                                    fontFace: value
-                                })}
-                            />
-                            <datalist id="defaultFonts">
+                            <div style={{
+                                position: 'relative'
+                            }}>
+                                <Input list="defaultFonts" value={settings['fontFace']}
+                                    style={{resize: 'none'}}
+                                    onChange={(value) => setSettings({
+                                        ...settings,
+                                        fontFace: value
+                                    })}
+                                    onFocus={() => {
+                                        setFontFaceInputBlur(false);
+                                        setShowFontList(true);
+                                    }}
+                                    onBlur={() => {
+                                        setFontFaceInputBlur(true);
+                                    }}
+                                />
+                                <div style={{
+                                        visibility: showFontList ? 'visible' : 'hidden',
+                                        zIndex: 1,
+                                        position: 'absolute',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        top: 34,
+                                        bottom: 'auto',
+                                        left: 0,
+                                        width: '100%',
+                                    }}
+                                >
+                                    {defaultFonts.slice().sort((a, b) => {
+                                        const aDist = FastLevenshtein.get(a.toLowerCase(), settings['fontFace'].toLowerCase());
+                                        const bDist = FastLevenshtein.get(b.toLowerCase(), settings['fontFace'].toLowerCase());
+                                        return aDist - bDist;
+                                    }).map((font) =>
+                                        <div key={font} className={hoverStyles.hover_glow} tabIndex={0} style={{
+                                            cursor: 'pointer',
+                                            width: '100%',
+                                            position: 'relative',
+                                            padding: '0.5em',
+                                            background: 'white',
+                                            border: '2px solid #94ffc2',
+                                        }}
+                                            onFocus={() => {
+                                                setSettings({
+                                                    ...settings,
+                                                    fontFace: font
+                                                })
+                                                setFontListBlur(true);
+                                            }}
+                                        >
+                                            {font}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            {/* <datalist id="defaultFonts">
                                 {defaultFonts.map((font) => <option key="font" value={font} />)}
-                            </datalist>
+                            </datalist> */}
                         </InputGroup>
                     </Form.Group>
                     <Form.Group>
