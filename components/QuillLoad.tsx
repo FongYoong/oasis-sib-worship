@@ -56,6 +56,10 @@ export const quillSongModules = {
                     //console.log(delta.length())
                     return newDelta;
                 }
+                else {
+                    const newDelta = delta.compose(new Delta().retain(delta.length()));
+                    return newDelta;
+                }
             }],
             // [3, function(node: HTMLElement, delta: any) {
             //     //console.log(delta.length())

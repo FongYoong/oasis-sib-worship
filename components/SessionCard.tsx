@@ -20,11 +20,12 @@ const songs_fetcher = json_fetcher('GET');
 
 const SongItem = ({songData, index} : {songData: SongProps, index: number}) => {
     //const { data, isValidating, error } = useSWR(`/api/get_song/${song_id}`, song_fetcher);
+
     return (
         <div>
             <Stack spacing='1em' >
                 <h6 style={{wordWrap: 'break-word'}} >
-                    {index + 1}.&nbsp;  {songData ? `${songData.title} - ${songData.artist}` : ''}
+                    {index + 1}.&nbsp;  {songData ? `${songData.title} - ${songData.artist ? songData.artist : 'No Artist'}` : ''}
                 </h6>
                 {!songData && <Loader />}
             </Stack>
@@ -44,9 +45,11 @@ const SongList = React.forwardRef(({song_ids, ...rest}: {song_ids: number[]}, re
             <List bordered hover>
                 { songsData && songsData.map((songData: SongProps, index: number) => 
                         <Link key={index} passHref href={`/view_song/${songData.id}`}>
-                            <List.Item index={index}>
-                                <SongItem songData={songData} index={index} />
-                            </List.Item>
+                            <a>
+                                <List.Item index={index}>
+                                    <SongItem songData={songData} index={index} />
+                                </List.Item>
+                            </a>
                         </Link>
                     )
                 }
