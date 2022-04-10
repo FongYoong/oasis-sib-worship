@@ -160,6 +160,7 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
   }) : [];
   const upcoming_sessions = processed_data.filter((session: SessionProps) => isPresentOrFutureDate(session.date));
   const past_sessions = processed_data.filter((session: SessionProps) => !isPresentOrFutureDate(session.date));
+  console.log(past_sessions.length);
 
   return (
     <>
@@ -260,12 +261,17 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
                 duration={300}
                 height={past_sessions && past_sessions.length > 0 ? "auto" : 0}
               >
+              {/* <div style={{
+                position: 'relative',
+                transition: 'width 2s, height 4s'
+              }}> */}
                 <Stack wrap direction='row' alignItems='flex-start' justifyContent='center' spacing="2em" >
                   {past_sessions.map((session: SessionProps) =>
                     <GenerateSessionCard key={session.id} session={session} />
                   )}
                   {previousSessionPages.map((page) => page)}
                 </Stack>
+              {/* </div> */}
                </AnimateHeight>
             </Animation.Bounce> 
             { (pageIndex < totalPages) && 
@@ -277,12 +283,12 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
                     ...router.query,
                     pageIndex: pageIndex + 1
                   },
-                });
-                setTimeout(() => {
-                  if (bottomRef.current) {
-                    bottomRef.current.scrollIntoView({ block: 'nearest'})
-                  }
-                }, 100)
+                },  undefined, {scroll: false});
+                // setTimeout(() => {
+                //   if (bottomRef.current) {
+                //     bottomRef.current.scrollIntoView({ behavior: "smooth", block: 'nearest'})
+                //   }
+                // }, 100)
               }} >
                     <MdExpandMore style={{marginRight: '1em'}} />
                     More

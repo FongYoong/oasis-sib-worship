@@ -121,7 +121,7 @@ const ViewSongPage: NextPage = () => {
                         <Stack direction='column' alignItems='center' justifyContent='center' >
                             <h2 style={{textAlign: 'center'}} >{song_data.title}</h2>
                             <Divider style={{height: '0.2em', width: '50vw', marginTop:'0.3em', marginBottom:'0.3em'}} />
-                            <h4 style={{textAlign: 'center'}} >{song_data.artist}</h4>
+                            <h4 style={{textAlign: 'center'}} >{song_data.artist ? song_data.artist : 'No Artist'}</h4>
                         </Stack>
                         <Stack wrap spacing='1em' direction='row' alignItems='center' justifyContent='center' >
                             <Button appearance="primary" color="blue" onClick={() => {
