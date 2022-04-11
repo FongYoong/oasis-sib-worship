@@ -211,7 +211,7 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
                                 children
                         )
                     }}
-                    >
+                >
                     <Table.Column align="center" fixed sortable flexGrow={1} >
                         <Table.HeaderCell>Updated</Table.HeaderCell>
                         <Table.Cell dataKey="updatedAt" />

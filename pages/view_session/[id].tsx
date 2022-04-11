@@ -201,7 +201,7 @@ const ViewSessionPage: NextPage = () => {
                                         </Button>
                                     </Stack>
                                     <Stack spacing='0.5em' direction='column' alignItems='center' justifyContent='center' >
-                                        <h2 style={{textAlign: 'center'}} >{currentSong.title} - {currentSong.artist ? currentSong.artist : 'No Author'}</h2>
+                                        <h2 style={{textAlign: 'center'}} >{currentSong.title} - {currentSong.artist ? currentSong.artist : 'No Artist'}</h2>
                                         <Stack wrap spacing='1em' direction='row' alignItems='center' justifyContent='center' >
                                             <Button appearance="ghost" onClick={() => router.push(`/view_song/${currentSong.id}`)} >
                                                 <GrFormNext style={{marginRight: '1em'}} />More Details

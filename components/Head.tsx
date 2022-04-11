@@ -53,11 +53,19 @@ const Head = (props: HeadProps) => {
                 // }
             }}
           >
-            <Image priority alt="oasis_sib_logo" src="/images/oasis_sib_logo_128px.jpg" layout='fill' />
+            <Image alt="oasis_sib_logo" src="/images/oasis_sib_logo_128px.jpg" layout='fill' />
           </Avatar>
-          <Nav activeKey={props.title} appearance='tabs' style={{marginBottom: '1em'}} >
+          <Nav activeKey={props.title} appearance='tabs'
+            style={{
+              marginBottom: '1em',
+              width: '60vw',
+              display: "flex",
+              flexWrap: "wrap",
+            }}
+          >
             <Nav.Item as={NavLink} href="/" eventKey={PageName.Home} >Home</Nav.Item>
             <Nav.Item as={NavLink} href="/all_songs" eventKey={PageName.AllSongs}  >All Songs</Nav.Item>
+            <Nav.Item as={NavLink} href="/stats" eventKey={PageName.Stats} >Stats</Nav.Item>
             <Nav.Item as={NavLink} href="/about" eventKey={PageName.About} >About</Nav.Item>
           </Nav>
         </Stack>

@@ -22,6 +22,9 @@ export const resolvePageRoute = (path: string) => {
     else if (path.includes('/view_session')) {
         return PageName.ViewSession
     }
+    else if (path.includes('/stats')) {
+        return PageName.Stats
+    }
     else if (path == undefined) {
         return PageName.None
     }
