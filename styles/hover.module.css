@@ -1,3 +1,4 @@
+/* Hover grow */
 .hover_grow {
     -webkit-transform: perspective(1px) translateZ(0);
     transform: perspective(1px) translateZ(0);
@@ -11,9 +12,8 @@
     transform: scale(1.05);
 }
 
+/* Hover glow */
 .hover_glow {
-  display: inline-block;
-  vertical-align: middle;
   -webkit-transform: perspective(1px) translateZ(0);
   transform: perspective(1px) translateZ(0);
   box-shadow: 0 0 1px rgba(0, 0, 0, 0);
