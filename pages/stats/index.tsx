@@ -141,7 +141,7 @@ const StatsPage: NextPage = () => {
 
     const { data, isValidating, error } = useSWR(`/api/stats/songs`, fetcher, {
         revalidateIfStale: false,
-        revalidateOnFocus: false,
+        revalidateOnFocus: true,
         revalidateOnReconnect: false
     });
 
@@ -180,7 +180,7 @@ const StatsPage: NextPage = () => {
     }, [searchText]);
 
     useEffect(() => {
-        if(songsData) {
+        if(songsData.length > 0) {
             setSongsData(sortSongs(songsData, listType));
         }
     }, [listType])
