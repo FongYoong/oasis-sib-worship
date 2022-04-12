@@ -25,6 +25,7 @@ import { AiOutlineLink } from 'react-icons/ai'
 import { FiEdit } from 'react-icons/fi'
 import { BiExport } from 'react-icons/bi'
 import { RiDeleteBin2Fill } from 'react-icons/ri'
+import { GrClose } from 'react-icons/gr'
 
 // eslint-disable-next-line react/display-name
 const renderRowMenu = (row_data: SongProps, handleRowMenuSelect: (eventKey?: string, row_data?: SongProps)=>void) => ({ onClose, className }: {onClose: ()=>void, className: string}, ref: React.RefObject<HTMLDivElement>) => {
@@ -179,7 +180,22 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
                                   pageIndex: 1
                                 },
                             });
-                            }} placeholder="Search song" />
+                            }} placeholder="Search song"
+                        />
+                        <InputGroup.Button appearance='ghost' onClick={() => {
+                            setSearchText('');
+                            setPageIndex(1);
+                            router.replace({
+                                pathname: router.pathname,
+                                query: {
+                                  ...router.query,
+                                  searchText: '',
+                                  pageIndex: 1
+                                },
+                            });
+                        }}>
+                            <GrClose />
+                        </InputGroup.Button>
                     </InputGroup>
                 </Stack>
                 

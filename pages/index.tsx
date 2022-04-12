@@ -23,6 +23,7 @@ import { SessionProps } from '../lib/types'
 import { domainUrl, copyToClipboard, json_fetcher, isPresentOrFutureDate, dateToISOString, getStartOfMonthDate, getEndOfMonthDate } from '../lib/utils'
 import { Plus, Search } from '@rsuite/icons'
 import { MdExpandMore } from 'react-icons/md'
+import { GrClose } from 'react-icons/gr'
 import hoverStyles from '../styles/hover.module.css'
 
 const sessions_fetcher = json_fetcher('GET');
@@ -160,7 +161,6 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
   }) : [];
   const upcoming_sessions = processed_data.filter((session: SessionProps) => isPresentOrFutureDate(session.date));
   const past_sessions = processed_data.filter((session: SessionProps) => !isPresentOrFutureDate(session.date));
-  console.log(past_sessions.length);
 
   return (
     <>
@@ -201,6 +201,20 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
                           },
                         });
                       }} placeholder="Search session" />
+                    <InputGroup.Button appearance='ghost' onClick={() => {
+                          setSearchText('');
+                          setPageIndex(1);
+                          router.replace({
+                              pathname: router.pathname,
+                              query: {
+                                ...router.query,
+                                searchText: '',
+                                pageIndex: 1
+                              },
+                          });
+                      }}>
+                      <GrClose />
+                    </InputGroup.Button>
                   </InputGroup>
                   <Stack wrap direction='row' justifyContent='center' spacing="0em" >
                     <DatePicker value={startDate} isoWeek format="yyyy-MM" placement='bottomStart' ranges={[]}

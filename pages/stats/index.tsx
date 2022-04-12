@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic'
 import AnimateHeight from 'react-animate-height';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import useSWR from 'swr'
-import { Stack, Whisper, Tooltip, Divider, Timeline, Button, Popover, InputGroup, Input, Animation } from 'rsuite';
+import { Stack, Whisper, Tooltip, Divider, Timeline, Button, Popover, InputGroup, Input, Dropdown, Loader, Animation } from 'rsuite';
 // import SongModal from '../../components/SongModal'
 // import ExportSongModal from '../../components/ExportSongModal'
 // import DeleteSongModal from '../../components/DeleteSongModal'
@@ -18,13 +18,11 @@ import { AiFillInfoCircle } from 'react-icons/ai'
 import { BsCalendarDate } from 'react-icons/bs'
 import { GoPrimitiveDot } from 'react-icons/go'
 import { FaDotCircle } from 'react-icons/fa'
+import { GrClose } from 'react-icons/gr'
 import hoverStyles from '../../styles/hover.module.css'
 
 
 const fetcher = json_fetcher('GET');
-
-const oneMonthAgoDate = new Date();
-oneMonthAgoDate.setMonth(oneMonthAgoDate.getMonth() - 1);
 
 const InfoTooltip = ({tooltip, children, color} : {tooltip: JSX.Element, children: JSX.Element, color: string}) => {
 
@@ -51,7 +49,8 @@ const InfoTooltip = ({tooltip, children, color} : {tooltip: JSX.Element, childre
     )
 }
 
-//const StatCell
+const oneMonthAgoDate = new Date();
+oneMonthAgoDate.setMonth(oneMonthAgoDate.getMonth() - 1);
 
 const SongRow = ({index, rowData, oldestSessionDate} : {index: number, rowData: any, oldestSessionDate: Date}) => {
 
@@ -59,7 +58,7 @@ const SongRow = ({index, rowData, oldestSessionDate} : {index: number, rowData: 
 
     return (
         <div style={{
-            width: '90vw',
+            width: '100%',
             display: 'flex',
             flexDirection: 'row',
         }} >
@@ -81,9 +80,7 @@ const SongRow = ({index, rowData, oldestSessionDate} : {index: number, rowData: 
                 }}
             >
                 <InfoTooltip color='#ff890a' tooltip={<p>No. of times sung since {oneMonthAgoDate.toLocaleDateString('en-GB')}</p>} >
-                    <h6>Past month: {rowData.dates.filter((date: string) => {
-                            return oneMonthAgoDate > new Date(date);
-                        }).length} sessions</h6>
+                    <h6>Past month: {rowData.sessionsPastMonth} sessions</h6>
                 </InfoTooltip>
                 <Stack spacing='0.5em' >
                     <Whisper
@@ -109,10 +106,9 @@ const SongRow = ({index, rowData, oldestSessionDate} : {index: number, rowData: 
                         </Button>
                     </Whisper>
                     <InfoTooltip color='#1c9dff' tooltip={<p>No. of times sung since {oldestSessionDate.toLocaleDateString('en-GB')}</p>} >
-                        <h6>All-time: {rowData.count} sessions</h6> 
+                        <h6>All-time: {rowData.sessionsAllTime} sessions</h6> 
                     </InfoTooltip>
                 </Stack>
-                {/* <p>{rowData.percent}</p> */}
             </Stack>
         </div>
     )
@@ -120,8 +116,25 @@ const SongRow = ({index, rowData, oldestSessionDate} : {index: number, rowData: 
 
 const MAX_SONGS = 10;
 
+type ListType = 'Past Month'|'All-Time'
+
+const sortSongs = (songs: any, type: ListType) => {
+    if (type == 'Past Month') {
+        return songs.sort((a: any, b: any) => 
+            b.sessionsPastMonth - a.sessionsPastMonth
+        )
+    }
+    else if (type == 'All-Time') {
+        return songs.sort((a: any, b: any) => 
+            b.sessionsAllTime - a.sessionsAllTime
+        )
+    }
+}
+
 const StatsPage: NextPage = () => {
     //const router = useRouter();
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const [listType, setListType] = useState<ListType>('Past Month');
     const [searchText, setSearchText] = useState<string>('');
     const [songsData, setSongsData] = useState<any>([]);
     const [songsScrollData, setSongsScrollData] = useState<any>([]);
@@ -134,7 +147,7 @@ const StatsPage: NextPage = () => {
 
     useEffect(() => {
         if (data) {
-            setSongsData(data.orderedSongs);
+            setSongsData(sortSongs(data.orderedSongs, listType));
         }
     }, [data])
 
@@ -143,7 +156,8 @@ const StatsPage: NextPage = () => {
             if (searchText) {
                 const filtered = data.orderedSongs.filter((song: any) => {
                     if (searchText) {
-                        if (song.title && (song.title.toLowerCase().includes(searchText)) || (song.artist && song.artist.toLowerCase().includes(searchText))) {
+                        const search = searchText.toLowerCase();
+                        if (song.title && (song.title.toLowerCase().includes(search)) || (song.artist && song.artist.toLowerCase().includes(search))) {
                             return true;
                         }
                         else {
@@ -154,13 +168,22 @@ const StatsPage: NextPage = () => {
                         return true;
                     }
                 })
-                setSongsData(filtered);
+                setSongsData(sortSongs(filtered, listType));
             }
             else {
-                setSongsData(data.orderedSongs);
+                setSongsData(sortSongs(data.orderedSongs, listType));
+            }
+            if (scrollContainerRef.current) {
+                scrollContainerRef.current.scrollTo(0, 0);
             }
         }
     }, [searchText]);
+
+    useEffect(() => {
+        if(songsData) {
+            setSongsData(sortSongs(songsData, listType));
+        }
+    }, [listType])
 
     useEffect(() => {
         if (songsData) {
@@ -169,7 +192,6 @@ const StatsPage: NextPage = () => {
     }, [songsData])
 
     const fetchMoreSongs = () => {
-        //setSongsScrollData([...songsScrollData, ...songsData.slice(songsScrollData.length, songsScrollData.length + MAX_SONGS)]);
         setSongsScrollData(songsScrollData.concat(songsData.slice(songsScrollData.length, songsScrollData.length + MAX_SONGS)));
     }
 
@@ -179,18 +201,43 @@ const StatsPage: NextPage = () => {
     <main>
         <Stack direction='column' justifyContent='center' alignItems='center' spacing="1em" >
             <h2 style={{textAlign: 'center'}} >Song Rankings</h2>
-            <InputGroup>
-                <InputGroup.Addon>
-                    <Search />
-                </InputGroup.Addon>
-                <Input value={searchText} onChange={(text)=>{
-                        setSearchText(text);
-                    }} placeholder="Search song" />
-            </InputGroup>
-            <div id="songsScrollableDiv" style={{
+            <Stack wrap direction='row' justifyContent='center' alignItems='center' spacing="1em" >
+                <InputGroup>
+                    <InputGroup.Addon>
+                        <Search />
+                    </InputGroup.Addon>
+                    <Input value={searchText} onChange={(text)=>{
+                            setSearchText(text);
+                        }} placeholder="Search song"
+                    />
+                    <InputGroup.Button appearance='ghost' onClick={() => {
+                        setSearchText('');
+                    }}>
+                        <GrClose />
+                    </InputGroup.Button>
+                </InputGroup>
+                <Stack direction='column' justifyContent='center' alignItems='center' spacing="0.5em" >
+                    <h6>Sort by:</h6>
+                    <Dropdown title={listType}
+                        onSelect={(eventKey: string, event: unknown) => {
+                            setListType(eventKey as ListType)
+                        }}
+                    >
+                        {
+                            ["Past Month", "All-Time"].map((type: string, index: number) => 
+                                <Dropdown.Item key={index} eventKey={type}>
+                                    {type}
+                                </Dropdown.Item>
+                            )
+                        }
+                    </Dropdown>
+                </Stack>
+            </Stack>
+            {data && <h5 style={{textAlign: 'center'}} >{songsData.length} songs</h5>}
+            <div id="songsScrollableDiv" ref={scrollContainerRef} style={{
                 height: '60vh',
+                width: '95vw',
                 overflowY: 'auto',
-                marginTop: '2em',
                 padding: '1em',
                 border: '2px solid #00648f',
                 borderRadius: '0.5em'
@@ -199,21 +246,25 @@ const StatsPage: NextPage = () => {
                     dataLength={songsScrollData.length}
                     next={fetchMoreSongs}
                     hasMore={songsScrollData.length < songsData.length}
-                    loader={<h4>Loading...</h4>}
+                    loader={<Loader size='md' />}
                     endMessage={
-                        <p style={{ textAlign: 'center' }}>
-                        <b>You&apos;ve reached the end of this list. 😊</b>
-                        </p>
+                        isValidating ? null :
+                            <p style={{ textAlign: 'center' }}>
+                            <   b>You&apos;ve reached the end of this list. 😊</b>
+                            </p>
                     }
                     scrollableTarget="songsScrollableDiv"
                     >
-                    {songsScrollData.map((song: any, index: number) => 
-                        <>
-                            <SongRow key={song.id} rowData={song} index={index} oldestSessionDate={oldestSessionDate} />
-                            <Divider />
-                        </>
-
-                    )}
+                    { isValidating ?
+                        <Loader size='md' content="Fetching stats..." />
+                        :
+                        songsScrollData.map((song: any, index: number) => 
+                            <>
+                                <SongRow key={song.id} rowData={song} index={index} oldestSessionDate={oldestSessionDate} />
+                                <Divider />
+                            </>
+                        )
+                    }
                 </InfiniteScroll>
             </div>
             <Divider style={{width: '90vw'}} />

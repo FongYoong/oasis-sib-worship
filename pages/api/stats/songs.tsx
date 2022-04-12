@@ -18,7 +18,10 @@ const MAX_SONGS = 20; // Show top 20 songs
 // Can show the sessions which use this song in a calendar or time series or a table.
 // Can show count and percentage (among all session)
 
-// 
+//
+
+const oneMonthAgoDate = new Date();
+oneMonthAgoDate.setMonth(oneMonthAgoDate.getMonth() - 1);
 
 async function get_top_songs() {
     const allSessions: SessionProps[] = (await prisma.session.findMany({
@@ -45,13 +48,13 @@ async function get_top_songs() {
             if (!(songId in songs)) {
                 songs[songId] = {
                     dates: [session.date],
-                    count: 1
+                    sessionsAllTime: 1
                 };
             }
             else {
                 songs[songId] = {
                     dates: [...songs[songId].dates, session.date],
-                    count: songs[songId].count + 1
+                    sessionsAllTime: songs[songId].sessionsAllTime + 1
                 }
             }
         })
@@ -70,11 +73,16 @@ async function get_top_songs() {
 
     const allSongs = Object.keys(songs).map((songId) => {
         const songData = allSongsData.find((s) => s.id == parseInt(songId));
+        const dates = songs[songId].dates.sort();
+        const sessionsPastMonth = dates.filter((date: string) => {
+            return oneMonthAgoDate.getTime() <= (new Date(date)).getTime();
+        }).length;
         return {
             ...songData,
-            dates: songs[songId].dates.sort(),
-            count: songs[songId].count,
-            percent: `${(songs[songId].count / allSessions.length * 100).toFixed(2)}%`
+            dates,
+            sessionsPastMonth,
+            sessionsAllTime: songs[songId].sessionsAllTime,
+            //percent: `${(songs[songId].sessionsAllTime / allSessions.length * 100).toFixed(2)}%`
         }
     });
 
@@ -98,7 +106,7 @@ async function get_top_songs() {
     
 
     const orderedSongs = allSongs.sort((a, b) => {
-        return b.count - a.count
+        return b.sessionsAllTime - a.sessionsAllTime
     })
 
     //const orderedSongs = console.log(orderedSongs);
