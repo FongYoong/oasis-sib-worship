@@ -140,9 +140,9 @@ const StatsPage: NextPage = () => {
     const [songsScrollData, setSongsScrollData] = useState<any>([]);
 
     const { data, isValidating, error } = useSWR(`/api/stats/songs`, fetcher, {
-        revalidateIfStale: false,
-        revalidateOnFocus: true,
-        revalidateOnReconnect: false
+        revalidateIfStale: true,
+        revalidateOnFocus: false,
+        revalidateOnReconnect: true
     });
 
     useEffect(() => {
