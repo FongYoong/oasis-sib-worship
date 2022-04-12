@@ -246,7 +246,7 @@ const StatsPage: NextPage = () => {
                     dataLength={songsScrollData.length}
                     next={fetchMoreSongs}
                     hasMore={songsScrollData.length < songsData.length}
-                    loader={<Loader size='md' />}
+                    //loader={<Loader size='md' />}
                     endMessage={
                         isValidating ? null :
                             <p style={{ textAlign: 'center' }}>
