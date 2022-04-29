@@ -73,7 +73,7 @@ async function get_top_songs() {
 
     const allSongs = Object.keys(songs).map((songId) => {
         const songData = allSongsData.find((s) => s.id == parseInt(songId));
-        const dates = songs[songId].dates.sort();
+        const dates = songs[songId].dates.sort((a: Date, b: Date) => b > a);
         const sessionsPastMonth = dates.filter((date: string) => {
             return oneMonthAgoDate.getTime() <= (new Date(date)).getTime();
         }).length;
@@ -86,75 +86,10 @@ async function get_top_songs() {
         }
     });
 
-    // const allSongs = await Promise.all(Object.keys(songs).map(async (songId) => {
-    //     const songData = await prisma.song.findFirst({
-    //         where: {
-    //             id: parseInt(songId)
-    //         },
-    //         select: {
-    //             title: true,
-    //             artist: true
-    //         }
-    //     });
-    //     return {
-    //         songId,
-    //         ...songData,
-    //         dates: songs[songId].dates.sort(),
-    //         count: songs[songId].count
-    //     }
-    // }));
-    
-
     const orderedSongs = allSongs.sort((a, b) => {
         return b.sessionsAllTime - a.sessionsAllTime
     })
 
-    //const orderedSongs = console.log(orderedSongs);
-
-    
-
-    // const orderBy = sortColumn && sortType ? {
-    //     [sortColumn] : sortType
-    // }: {};
-    // const config = {
-    //     where: {
-    //         OR: [
-    //             {
-    //                 title: {
-    //                     contains: searchText,
-    //                 }
-    //             },
-    //             {
-    //                 artist: {
-    //                     contains: searchText,
-    //                 }
-    //             }
-    //         ],
-    //     }
-    // }
-    // const totalPages = await get_total_pages(config);
-    // let pageConfig = {};
-    // if (page && totalPages > 0) {
-    //     let pageIndex = parseInt(page);
-    //     pageIndex = (pageIndex > totalPages) ? (totalPages - 1) : pageIndex - 1;
-    //     console.log("Page index: " + pageIndex);
-    //     pageConfig = {
-    //         skip: pageIndex * MAX_ITEMS_PER_PAGE,
-    //         take: MAX_ITEMS_PER_PAGE,
-    //     }
-    // }
-
-    // const all_songs = await prisma.song.findMany({
-    //     ...config,
-    //     ...pageConfig,
-    //     select: {
-    //         id: true,
-    //         updatedAt: true,
-    //         title: true,
-    //         artist: true
-    //     },
-    //     orderBy
-    // });
     return {orderedSongs , oldestSessionDate};
 }
 

@@ -101,7 +101,7 @@ const ViewSongPage: NextPage = () => {
 
     return (
     <>
-        {editSongModalLoad && <SongModal editSong={editSongShow} editSongId={song_id} visibility={editSongShow} handleClose={handleEditSongClose} onSuccess={mutate} /> }
+        {editSongModalLoad && <SongModal editSong={true} editSongId={song_id} visibility={editSongShow} handleClose={handleEditSongClose} onSuccess={mutate} /> }
         {exportSongModalLoad && <ExportSongModal songData={song_data} visibility={exportSongShow} handleClose={handleExportSongClose} /> }
         {deleteSongModalLoad && <DeleteSongModal songData={song_data} visibility={deleteSongShow} handleClose={handleDeleteSongClose}
             onSuccess={() => {

@@ -65,7 +65,9 @@ const AllSongsPage: NextPage<AllSongsProps> = ({initialSearchText, initialSortCo
     const [pageIndex, setPageIndex] = useState<number>(initialPageIndex);
 
     const { data, isValidating, error, mutate } = useSWR(`/api/get_songs?page=${pageIndex}&searchText=${searchText}&sortType=${sortType}&sortColumn=${sortColumn}`
-    , songs_fetcher);
+    , songs_fetcher, {
+        revalidateOnFocus: false,
+    });
 
     const [addSongShow, setAddSongShow] = useState<boolean>(false);
     const [editSongShow, setEditSongShow] = useState<boolean>(false);

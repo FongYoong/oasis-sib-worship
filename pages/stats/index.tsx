@@ -138,6 +138,7 @@ const StatsPage: NextPage = () => {
     const [searchText, setSearchText] = useState<string>('');
     const [songsData, setSongsData] = useState<any>([]);
     const [songsScrollData, setSongsScrollData] = useState<any>([]);
+    const [loading, setLoading] = useState<boolean>(true);
 
     const { data, isValidating, error } = useSWR(`/api/stats/songs`, fetcher, {
         revalidateIfStale: true,
@@ -187,6 +188,7 @@ const StatsPage: NextPage = () => {
 
     useEffect(() => {
         if (songsData) {
+            setLoading(false);
             setSongsScrollData(songsData.slice(0, MAX_SONGS));
         }
     }, [songsData])
@@ -256,6 +258,9 @@ const StatsPage: NextPage = () => {
                     scrollableTarget="songsScrollableDiv"
                     >
                     {
+                        loading ?
+                        <Loader size='md' />
+                        :
                         songsScrollData.map((song: any, index: number) => 
                             <>
                                 <SongRow key={song.id} rowData={song} index={index} oldestSessionDate={oldestSessionDate} />
