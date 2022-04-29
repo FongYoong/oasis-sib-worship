@@ -58,7 +58,10 @@ const HomePage: NextPage<HomePageProps> = ({initialSearchText, initialStartDate,
     });
   }
 
-  const { data, isValidating, error, mutate } = useSWR(`/api/get_sessions?page=1&searchText=${searchText}&startDate=${startDateText}&endDate=${endDateText}`, sessions_fetcher);
+  const { data, isValidating, error, mutate } = useSWR(`/api/get_sessions?page=1&searchText=${searchText}&startDate=${startDateText}&endDate=${endDateText}`
+  , sessions_fetcher, {
+    revalidateOnFocus: false,
+  });
 
   const [addSessionShow, setAddSessionShow] = useState<boolean>(false);
   const [editSessionShow, setEditSessionShow] = useState<boolean>(false);
